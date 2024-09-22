@@ -14,6 +14,13 @@ const config: Config = {
             background: "var(--background)",
             foreground: "var(--foreground)",
          },
+         fontFamily: {
+            'IBM-Thai': 'IBM Plex Sans Thai',
+            'IBM-Thai-Looped': 'IBM Plex Sans Thai Looped',
+         },
+         height: {
+            screenDevice: "100dvh",
+         }
       },
    },
    darkMode: "class",

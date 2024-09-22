@@ -1,0 +1,611 @@
+"use client"
+import React, { useState } from "react";
+// import { useTheme } from "next-themes";
+import { Button, Divider, Image, Input, Pagination, Select, SelectItem, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
+import { ArrowDownUp, ArrowLeft, Book, ChevronDown, ClipboardSignature, FileText, MoreHorizontal, Plus, RefreshCcw, ScrollText, Search, Video as VideoLucide } from "lucide-react";
+import { Danger, Video } from "iconsax-react";
+import { courseStatus } from "../../lib/res/const";
+import CustomDrawer from "@/components/Drawer";
+import { Course as CourseT } from "@/lib/model/course";
+import { Document } from "@/lib/model/document";
+
+const Status = ({course}: {course: CourseT}) => {
+  let textColor = ""
+  switch (course.status) {
+    case "noContent":
+      textColor = "text-danger-500";
+      break;
+    case "hasContent":
+      textColor = "text-warning-500";
+      break;
+    case "uploadWebapp":
+      textColor = "text-success-500";
+      break;
+    case "enterForm":
+      textColor = "text-primary-500";
+      break;
+    default:
+      textColor = "text-gray-400";
+  }
+  return (
+    <div className={`flex gap-[2px] items-center font-IBM-Thai-Looped ${textColor}`}>
+      {courseStatus[course.status].icon}
+      <div>
+        {courseStatus[course.status].name}
+      </div>
+    </div>
+  )
+}
+
+const DocumentComponent = ({document}: {document: Document}) => {
+  let icon = <></>
+  switch (document.type) {
+    case "book":
+      icon = <Image className="rounded-sm" width={16} src={`${document.imageUrl}`} />;
+      break;
+    case "sheet":
+      icon = <ScrollText size={16} />;
+      break;
+    case "pre-exam":
+      icon = <ClipboardSignature size={16} />;
+      break;
+    default:
+      break;
+  }
+  return (
+    <div className="flex items-center gap-2">
+      {icon}
+      <div>
+        {document.name}
+      </div>
+    </div>
+  )
+}
+
+const Course = () => {
+  // const {theme, setTheme } = useTheme();
+  const [courses, setCourses] = useState<CourseT[]>([
+    {
+      name: "Dynamics CE (CRMA) midterm",
+      status: "uploadWebapp",
+      tutor: "อิ๊ว",
+      imageUrl: "https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg",
+      documents: [
+        {
+          name: `Dynamics midterm 2/2565`,
+          type: `book`,
+          imageUrl: `https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg`,
+        },
+        {
+          name: `Dynamics - 2566 - 5.1 Rotating Motion`,
+          type: `sheet`,
+        },
+        {
+          name: `Dynamics - 2566 - Pre-Midterm`,
+          type: `pre-exam`,
+        },
+      ],
+    },
+    {
+      name: "Dynamics CE (CRMA) midterm",
+      status: "hasContent",
+      tutor: "อิ๊ว",
+      documents: [
+        {
+          name: `Dynamics midterm 2/2565`,
+          type: `book`,
+          imageUrl: `https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg`,
+        },
+        {
+          name: `Dynamics - 2566 - 5.1 Rotating Motion`,
+          type: `sheet`,
+        },
+        {
+          name: `Dynamics - 2566 - Pre-Midterm`,
+          type: `pre-exam`,
+        },
+      ],
+    },
+    {
+      name: "Dynamics CE (CRMA) midterm",
+      status: "noContent",
+      tutor: "อิ๊ว",
+      documents: [
+        
+      ],
+    },
+    {
+      name: "Dynamics CE (CRMA) midterm",
+      status: "enterForm",
+      tutor: "อิ๊ว",
+      imageUrl: "https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg",
+      documents: [
+        {
+          name: `Dynamics midterm 2/2565`,
+          type: `book`,
+          imageUrl: `https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg`,
+        },
+        {
+          name: `Dynamics - 2566 - 5.1 Rotating Motion`,
+          type: `sheet`,
+        },
+        {
+          name: `Dynamics - 2566 - Pre-Midterm`,
+          type: `pre-exam`,
+        },
+      ],
+    },
+  ])
+  const [selectedCourse, setSelectedCourse] = useState<CourseT | undefined>()
+  const [isOpenDrawer, setIsOpenDrawer] = useState(false)
+  return (
+    <div className="flex flex-col pt-6 px-4 bg-background relative md:h-screenDevice">
+      {/* Drawer */}
+      <ManageCourse
+        isOpenDrawer={isOpenDrawer}
+        selectedCourse={selectedCourse}
+        onClose={() => {
+          setIsOpenDrawer(false)
+            setSelectedCourse(undefined)
+        }}
+      />
+      <div className="font-IBM-Thai text-3xl font-bold py-2">
+        คอร์สเรียน
+      </div>
+      <div className="flex gap-2">
+        <Input
+          className="font-IBM-Thai-Looped"
+          type="text"
+          placeholder="ค้นหา...คอร์สเรียน"
+          startContent={<Search className="text-foreground-400" />}
+          fullWidth
+        />
+        <Select
+          selectionMode="multiple"
+          placeholder={`สถานะ`}
+          aria-label="สถานะ"
+          className="font-IBM-Thai"
+          classNames={{
+            value: [
+              "font-bold",
+            ]
+          }}
+          renderValue={(items) => (<div>สถานะ</div>)}
+        >
+          {Object.keys(courseStatus).map((key, index) => {
+            return (
+            <SelectItem startContent={courseStatus[key].icon} key={index}>
+              {courseStatus[key].name}
+            </SelectItem>
+            )
+          })}
+        </Select>
+        <Select
+          selectionMode="multiple"
+          placeholder={`ติวเตอร์`}
+          aria-label="ติวเตอร์"
+          className="font-IBM-Thai"
+          classNames={{
+            value: [
+              "font-bold",
+            ]
+          }}
+          renderValue={(items) => (<div>ติวเตอร์</div>)}
+        >
+          {["กล้า","จุ๊"].map((value) => {
+            return (
+            <SelectItem aria-label={`${value}`} key={value}>
+              {value}
+            </SelectItem>
+            )
+          })}
+        </Select>
+        <Button
+          className="font-IBM-Thai text-base font-medium bg-default-foreground text-primary-foreground"
+          endContent={<Plus strokeWidth={4} />}
+          onClick={() => setIsOpenDrawer(true)}
+        >
+          เพิ่ม
+        </Button>
+      </div>
+      <div className="mt-4 flex-1">
+        <Table
+          isStriped
+          aria-label="course-table"
+          classNames={{
+            base: "h-full",
+            wrapper: "h-full"
+          }}
+        >
+          <TableHeader>
+            <TableColumn className="font-IBM-Thai">คอร์ส</TableColumn>
+            <TableColumn className="font-IBM-Thai">สถานะ</TableColumn>
+            <TableColumn className="font-IBM-Thai">ติวเตอร์</TableColumn>
+            <TableColumn className="font-IBM-Thai">เอกสาร</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {courses.map((course, index) => (
+              <TableRow key={`${index}`}>
+                <TableCell
+                  onClick={() => {
+                    setSelectedCourse(course);
+                    setIsOpenDrawer(prev => !prev)
+                  }}
+                >
+                  <div className="flex gap-2 items-center">
+                    {course.imageUrl &&
+                      <Image width={40} src={course.imageUrl} />
+                    }
+                    <div className="font-IBM-Thai-Looped">
+                      {course.name}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Status course={course} />
+                </TableCell>
+                <TableCell className="font-IBM-Thai-Looped">อิ้ว</TableCell>
+                <TableCell className="font-IBM-Thai-Looped">
+                  {course.documents.map((document, index) => (
+                    <DocumentComponent key={`documet${index}`} document={document} />
+                  ))}
+                </TableCell>
+              </TableRow>
+            ))}
+            {/* <TableRow className="hidden" key={"1"}>
+              <TableCell className="" onClick={() => setIsOpenDrawer(prev => !prev)}>
+                <div className="flex gap-2 items-center">
+                  <Image width={40} src="https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg" />
+                  <div>
+                    Dynamics CE (CRMA) midterm
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center text-success-500">
+                  <PlayCircle variant="Bulk" />
+                  <div>
+                    ลง Web-app แล้ว
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>อิ้ว</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Image className="rounded-sm" width={16} src="https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg" />
+                  <div>Dynamics midterm 2/2565</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ScrollText size={16} />
+                  <div>Dynamics - 2566 - 5.1 Rotating Motion</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ClipboardSignature size={16} />
+                  <div>Dynamics - 2566 - Pre-Midterm</div>
+                </div>
+              </TableCell>
+            </TableRow>
+            <TableRow className="hidden" key={"2"}>
+              <TableCell>
+                <div className="flex gap-2 items-center">
+                  <div>
+                    Dynamics CE (CRMA) midterm
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center text-warning-500">
+                  <Video variant="Bulk" />
+                  <div>
+                    มีเนื้อหา
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>อิ้ว</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Image className="rounded-sm" width={16} src="https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg" />
+                  <div>Dynamics midterm 2/2565</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ScrollText size={16} />
+                  <div>Dynamics - 2566 - 5.1 Rotating Motion</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ClipboardSignature size={16} />
+                  <div>Dynamics - 2566 - Pre-Midterm</div>
+                </div>
+              </TableCell>
+            </TableRow>
+            <TableRow className="hidden" key={"3"}>
+              <TableCell>
+                <div className="flex gap-2 items-center">
+                  <div>
+                    Dynamics CE (CRMA) midterm
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center text-danger-500">
+                  <ClipboardClose variant="Bulk" />
+                  <div>
+                    ไม่มีเนื้อหา
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>อิ้ว</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Image className="rounded-sm" width={16} src="https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg" />
+                  <div>Dynamics midterm 2/2565</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ScrollText size={16} />
+                  <div>Dynamics - 2566 - 5.1 Rotating Motion</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ClipboardSignature size={16} />
+                  <div>Dynamics - 2566 - Pre-Midterm</div>
+                </div>
+              </TableCell>
+            </TableRow>
+            <TableRow className="hidden" key={"4"}>
+              <TableCell>
+                <div className="flex gap-2 items-center">
+                  <Image width={40} src="https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg" />
+                  <div>
+                    Dynamics CE (CRMA) midterm
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center text-primary-500">
+                  <TickCircle variant="Bulk" />
+                  <div>
+                    ใส่แบบประเมิน
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>อิ้ว</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Image className="rounded-sm" width={16} src="https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg" />
+                  <div>Dynamics midterm 2/2565</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ScrollText size={16} />
+                  <div>Dynamics - 2566 - 5.1 Rotating Motion</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ClipboardSignature size={16} />
+                  <div>Dynamics - 2566 - Pre-Midterm</div>
+                </div>
+              </TableCell>
+            </TableRow> */}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="py-2 flex justify-center">
+        <Pagination
+          total={10}
+          initialPage={1}
+          className="p-0 m-0"
+          classNames={{
+            cursor: 'bg-default-foreground'
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default Course;
+
+const ManageCourse = ({
+  isOpenDrawer,
+  selectedCourse,
+  onClose,
+}: {
+  isOpenDrawer: boolean,
+  selectedCourse: CourseT | undefined,
+  onClose: () => void,
+}) => {
+
+  const handleClose = () => {
+    onClose();
+  }
+  return (
+    <CustomDrawer
+        isOpen={isOpenDrawer}
+        onOpenChange={(open) => {
+          if(!open){
+            handleClose()
+          }
+        }}
+      >
+        <div className="flex h-full">
+          <div className="w-[342px] p-[14px]">
+            {/* TODO: add course */}
+            <div className="flex justify-between">
+              <Button onClick={handleClose} className="bg-default-100" isIconOnly>
+                <ArrowLeft size={24} />
+              </Button>
+              <Button className="bg-default-100 font-IBM-Thai" endContent={<RefreshCcw size={20} />}>
+                แอดมิน
+              </Button>
+            </div>
+            <div className="mt-4">
+              <div className="text-2xl font-bold font-IBM-Thai">
+                {/* Dynamics (CU) midterm */}
+                {selectedCourse?.name}
+              </div>
+              <div className="text-base mt-2 font-IBM-Thai-Looped">
+                วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรี เนื้อหา midterm
+              </div>
+              <div className="space-x-1 mt-2 font-IBM-Thai-Looped">
+                <span className={`font-bold`}>ผู้สอน:</span>
+                <span>{selectedCourse?.tutor}</span>
+              </div>
+              <div className="space-x-1 mt-2 font-IBM-Thai-Looped" style={{overflowWrap: 'break-word'}}>
+                <span className={`font-bold`}>เฉลย:</span>
+                <span>
+                  www.facebook.com/groups/cudynamics167middsfsdfsdf
+                </span>
+              </div>
+              <div className="space-x-1 mt-2 font-IBM-Thai-Looped" style={{overflowWrap: 'break-word'}}>
+                <span className={`font-bold`}>Playlist:</span>
+                <span>
+                  
+                </span>
+              </div>
+              <div className="space-x-1 mt-2 font-IBM-Thai-Looped" style={{overflowWrap: 'break-word'}}>
+                <span className={`font-bold`}>ราคา:</span>
+                <span>
+                  2,400.-
+                </span>
+              </div>
+            </div>
+            <div className="mt-4">
+              <Button className="bg-default-100 font-IBM-Thai font-medium" fullWidth>
+                แก้ไข
+              </Button>
+            </div>
+          </div>
+          <div className="bg-default-100 p-[14px] w-[469px]">
+            <div className="flex items-center gap-3">
+              <div className="font-bold text-2xl font-IBM-Thai">หลักสูตร</div>
+              <Button size="sm" className="bg-transparent" isIconOnly>
+                <ChevronDown size={24} />
+              </Button>
+            </div>
+            <div className="mt-2 rounded-lg bg-danger-50 text-danger-500 border-l-4 border-danger-500 flex items-center gap-2 py-2 px-[14px]">
+              <Danger variant="Bold" />
+              <div className="font-IBM-Thai-Looped font-normal">
+                กรุณาใส่เอกสารในเนื้อหา
+              </div>
+            </div>
+            <div className="mt-2 bg-content1 rounded-lg p-2 border-2 border-danger-500">
+              <div className="flex justify-between items-center">
+                <div className="text-lg font-IBM-Thai-Looped font-medium">
+                  1. Kinematics of Particles
+                </div>
+                <Button size="sm" isIconOnly className="bg-transparent">
+                  <MoreHorizontal size={24} />
+                </Button>
+              </div>
+              <Divider className="mt-2" />
+              <div className="mt-2 font-IBM-Thai-Looped">
+                <div className="flex p-1 items-center">
+                  <div className="w-8 flex">
+                    <Video className="text-foreground-400" size={16} />
+                    <FileText className="text-foreground-400" size={16} />
+                  </div>
+                  <div className="ml-1 flex-1">Dynamics - 1.1 Velocity and Acceleration</div>
+                  <div className="text-sm text-foreground-400">
+                    99 นาที
+                  </div>
+                </div>
+                <div className="flex p-1 items-center">
+                  <div className="w-8 flex">
+                    <Video className="text-foreground-400" size={16} />
+                    <FileText className="text-foreground-400" size={16} />
+                  </div>
+                  <div className="ml-1 flex-1">Dynamics - 1.2 Graphical</div>
+                  <div className="text-sm text-foreground-400">
+                    59 นาที
+                  </div>
+                </div>
+                <div className="flex p-1 items-center">
+                  <div className="w-8 flex">
+                    <Video className="text-foreground-400" size={16} />
+                    {/* <FileText className="text-foreground-400" size={16} /> */}
+                  </div>
+                  <div className="ml-1 flex-1">Dynamics - 1.3 X-Y Coordinate</div>
+                  <div className="text-sm text-foreground-400">
+                    74 นาที
+                  </div>
+                </div>
+                <div className="flex justify-center gap-2">
+                  <Button className="bg-default-100 font-IBM-Thai font-medium" startContent={<ArrowDownUp size={20} />}>
+                    จัดเรียง
+                  </Button>
+                  <Button className="bg-default-100 font-IBM-Thai font-medium" startContent={<VideoLucide size={20} />}>
+                    เพิ่มลด เนื้อหา
+                  </Button>
+                </div>
+              </div>
+              <Divider className="mt-2" />
+              <div className="mt-2 flex flex-col gap-2 items-center">
+                <div className="text-danger-500 text-sm font-IBM-Thai-Looped text-center">
+                  กรุณาใส่เอกสาร
+                </div>
+                <Button className="bg-default-100 font-IBM-Thai font-medium" startContent={<Book size={20} />}>
+                  เอกสาร
+                </Button>
+              </div>
+            </div>
+            <div className="mt-2 bg-content1 rounded-lg p-2">
+              <div className="flex justify-between items-center">
+                <div className="text-lg font-IBM-Thai-Looped font-medium">
+                  2. Force and Acceleration
+                </div>
+                <Button size="sm" isIconOnly className="bg-transparent">
+                  <MoreHorizontal size={24} />
+                </Button>
+              </div>
+              <Divider className="mt-2" />
+              <div className="mt-2 font-IBM-Thai-Looped">
+                <div className="flex p-1 items-center">
+                  <div className="w-8 flex">
+                    <Video className="text-foreground-400" size={16} />
+                    <FileText className="text-foreground-400" size={16} />
+                  </div>
+                  <div className="ml-1 flex-1">Dynamics - 2.1 Force and Acceleration</div>
+                  <div className="text-sm text-foreground-400">
+                    99 นาที
+                  </div>
+                </div>
+                <div className="flex p-1 items-center">
+                  <div className="w-8 flex">
+                    <Video className="text-foreground-400" size={16} />
+                    <FileText className="text-foreground-400" size={16} />
+                  </div>
+                  <div className="ml-1 flex-1">Dynamics - 2.2 Friction</div>
+                  <div className="text-sm text-foreground-400">
+                    59 นาที
+                  </div>
+                </div>
+                <div className="flex p-1 items-center">
+                  <div className="w-8 flex">
+                    <Video className="text-foreground-400" size={16} />
+                    {/* <FileText className="text-foreground-400" size={16} /> */}
+                  </div>
+                  <div className="ml-1 flex-1">Dynamics - 2.3 Friction Pt2</div>
+                  <div className="text-sm text-foreground-400">
+                    74 นาที
+                  </div>
+                </div>
+                <div className="flex justify-center gap-2">
+                  <Button className="bg-default-100 font-IBM-Thai font-medium" startContent={<ArrowDownUp size={20} />}>
+                    จัดเรียง
+                  </Button>
+                  <Button className="bg-default-100 font-IBM-Thai font-medium" startContent={<VideoLucide size={20} />}>
+                    เพิ่มลด เนื้อหา
+                  </Button>
+                </div>
+              </div>
+              <Divider className="mt-2" />
+              <div className="mt-2 flex flex-col gap-2 items-center">
+                <div className="text-danger-500 text-sm font-IBM-Thai-Looped text-center">
+                  กรุณาใส่เอกสาร
+                </div>
+                <Button className="bg-default-100 font-IBM-Thai font-medium" startContent={<Book size={20} />}>
+                  เอกสาร
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CustomDrawer>
+  )
+}
