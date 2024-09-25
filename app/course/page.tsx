@@ -1,13 +1,15 @@
 "use client"
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 // import { useTheme } from "next-themes";
-import { Button, Divider, Image, Input, Pagination, Select, SelectItem, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
-import { ArrowDownUp, ArrowLeft, Book, ChevronDown, ClipboardSignature, FileText, MoreHorizontal, Plus, RefreshCcw, ScrollText, Search, Video as VideoLucide } from "lucide-react";
+import { Button, Divider, Image, Input, Modal, ModalContent, Pagination, Select, SelectItem, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Textarea } from "@nextui-org/react";
+import { ArrowDownUp, ArrowLeft, Book, ChevronDown, ClipboardSignature, FileText, MoreHorizontal, Plus, RefreshCcw, ScrollText, Search, Video as VideoLucide, X } from "lucide-react";
 import { Danger, Video } from "iconsax-react";
 import { courseStatus } from "../../lib/res/const";
 import CustomDrawer from "@/components/Drawer";
 import { Course as CourseT } from "@/lib/model/course";
 import { Document } from "@/lib/model/document";
+import SortableComponent from "@/components/Sortable";
+import { arrayMove } from "@dnd-kit/sortable";
 
 const Status = ({course}: {course: CourseT}) => {
   let textColor = ""
@@ -138,21 +140,26 @@ const Course = () => {
   ])
   const [selectedCourse, setSelectedCourse] = useState<CourseT | undefined>()
   const [isOpenDrawer, setIsOpenDrawer] = useState(false)
+  const [isSort, setIsSort] = useState(false)
   return (
-    <div className="flex flex-col pt-6 px-4 bg-background relative md:h-screenDevice">
+    // <div className="flex flex-col pt-6 px-4 bg-background relative md:h-screenDevice bg-red-400 md:bg-green-400">
+    <div className="flex flex-col pt-6 px-4 bg-background relative h-screenDevice">
       {/* Drawer */}
       <ManageCourse
         isOpenDrawer={isOpenDrawer}
         selectedCourse={selectedCourse}
         onClose={() => {
           setIsOpenDrawer(false)
-            setSelectedCourse(undefined)
+          setSelectedCourse(undefined)
+        }}
+        onConfirm={async () => {
+          
         }}
       />
-      <div className="font-IBM-Thai text-3xl font-bold py-2">
+      <div className="font-IBM-Thai text-3xl font-bold py-2 hidden md:block">
         คอร์สเรียน
       </div>
-      <div className="flex gap-2">
+      <div className="block md:flex gap-2">
         <Input
           className="font-IBM-Thai-Looped"
           type="text"
@@ -160,50 +167,54 @@ const Course = () => {
           startContent={<Search className="text-foreground-400" />}
           fullWidth
         />
-        <Select
-          selectionMode="multiple"
-          placeholder={`สถานะ`}
-          aria-label="สถานะ"
-          className="font-IBM-Thai"
-          classNames={{
-            value: [
-              "font-bold",
-            ]
-          }}
-          renderValue={(items) => (<div>สถานะ</div>)}
-        >
-          {Object.keys(courseStatus).map((key, index) => {
-            return (
-            <SelectItem startContent={courseStatus[key].icon} key={index}>
-              {courseStatus[key].name}
-            </SelectItem>
-            )
-          })}
-        </Select>
-        <Select
-          selectionMode="multiple"
-          placeholder={`ติวเตอร์`}
-          aria-label="ติวเตอร์"
-          className="font-IBM-Thai"
-          classNames={{
-            value: [
-              "font-bold",
-            ]
-          }}
-          renderValue={(items) => (<div>ติวเตอร์</div>)}
-        >
-          {["กล้า","จุ๊"].map((value) => {
-            return (
-            <SelectItem aria-label={`${value}`} key={value}>
-              {value}
-            </SelectItem>
-            )
-          })}
-        </Select>
+        <div className="flex gap-2 mt-2 md:mt-0">
+          <Select
+            selectionMode="multiple"
+            placeholder={`สถานะ`}
+            aria-label="สถานะ"
+            className="font-IBM-Thai md:w-[113px]"
+            classNames={{
+              value: [
+                "font-bold",
+              ]
+            }}
+            renderValue={(items) => (<div>สถานะ</div>)}
+          >
+            {Object.keys(courseStatus).map((key, index) => {
+              return (
+              <SelectItem startContent={courseStatus[key].icon} key={index}>
+                {courseStatus[key].name}
+              </SelectItem>
+              )
+            })}
+          </Select>
+          <Select
+            selectionMode="multiple"
+            placeholder={`ติวเตอร์`}
+            aria-label="ติวเตอร์"
+            className="font-IBM-Thai md:w-[113px]"
+            classNames={{
+              value: [
+                "font-bold",
+              ]
+            }}
+            renderValue={(items) => (<div>ติวเตอร์</div>)}
+          >
+            {["กล้า","จุ๊"].map((value) => {
+              return (
+              <SelectItem aria-label={`${value}`} key={value}>
+                {value}
+              </SelectItem>
+              )
+            })}
+          </Select>
+        </div>
         <Button
-          className="font-IBM-Thai text-base font-medium bg-default-foreground text-primary-foreground"
+          className="mt-2 md:mt-0 w-full md:w-auto font-IBM-Thai text-base font-medium bg-default-foreground text-primary-foreground"
           endContent={<Plus strokeWidth={4} />}
-          onClick={() => setIsOpenDrawer(true)}
+          onClick={() => {
+            setIsOpenDrawer(true)
+          }}
         >
           เพิ่ม
         </Button>
@@ -214,7 +225,8 @@ const Course = () => {
           aria-label="course-table"
           classNames={{
             base: "h-full",
-            wrapper: "h-full"
+            wrapper: "h-full overflow-x-auto scrollbar-hide",
+            table: "min-w-[700px]",
           }}
         >
           <TableHeader>
@@ -405,15 +417,43 @@ const ManageCourse = ({
   isOpenDrawer,
   selectedCourse,
   onClose,
+  onConfirm,
 }: {
   isOpenDrawer: boolean,
   selectedCourse: CourseT | undefined,
   onClose: () => void,
+  onConfirm?: () => Promise<void>,
 }) => {
+  const [isAdd, setIsAdd] = useState(false)
+  const [isEdit, setIsEdit] = useState(false)
+  const [isDelete, setIsDelete] = useState(false)
+  const [isSort, setIsSort] = useState(false)
+  const [lessons, setLessons] = useState([
+    { id: 1, title: 'Dynamics - 1.1 Velocity and Acceleration'},
+    { id: 2, title: 'Dynamics - 1.2 Graphical'},
+    { id: 3, title: 'Dynamics - 1.3 X-Y Coordinate'},
+  ])
 
+  useMemo(() => {
+    setIsAdd(selectedCourse == undefined)
+    console.log("use Memo");
+  }, [selectedCourse])
+  
   const handleClose = () => {
+    setIsEdit(false)
+    setIsDelete(false)
+    setIsAdd(true)
     onClose();
   }
+
+  const handleConfirm = async () =>{
+    if(!onConfirm){
+      return
+    }
+    await onConfirm()
+    setIsAdd(false)
+  }
+
   return (
     <CustomDrawer
         isOpen={isOpenDrawer}
@@ -423,8 +463,43 @@ const ManageCourse = ({
           }
         }}
       >
-        <div className="flex h-full">
-          <div className="w-[342px] p-[14px]">
+        <Modal
+          isOpen={isSort}
+          closeButton={<></>}
+        >
+          <ModalContent>
+            {() => (
+              <div className="p-[14px]">
+                <div className="flex">
+                  <div className="flex-1"></div>
+                  <div className={`flex-1 text-nowrap text-3xl font-semibold font-IBM-Thai`}>จัดเรียงเนื้อหา</div>
+                  <div className="flex-1 flex justify-end">
+                    <Button className="bg-transparent" isIconOnly onClick={() => setIsSort(false)}>
+                      <X />
+                    </Button>
+                  </div>
+                </div>
+                <div className={`mt-[14px] overflow-hidden`}>
+                  <SortableComponent
+                    lessons={lessons}
+                    onDragEnd={(event) => {
+                      // console.log(`event.collisions`, event.collisions);
+                      const {active, over} = event
+                      setLessons((lessons) => {
+                        const originalPos = lessons.findIndex(lesson => lesson.id === active.id)
+                        const newPos = lessons.findIndex(lesson => lesson.id === over!.id)
+                        return arrayMove(lessons, originalPos, newPos)
+                      })
+                      // setLessons(event.collisions)
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </ModalContent>
+        </Modal>
+        <div className="block md:flex h-full w-auto overflow-auto">
+          <div className="min-w-[342px] md:w-[342px] p-[14px]">
             {/* TODO: add course */}
             <div className="flex justify-between">
               <Button onClick={handleClose} className="bg-default-100" isIconOnly>
@@ -434,6 +509,67 @@ const ManageCourse = ({
                 แอดมิน
               </Button>
             </div>
+            {isEdit || isAdd
+            ?
+            <div className="mt-2">
+              <Input
+                defaultValue={isAdd ? undefined : `${selectedCourse?.name}`}
+                className="font-IBM-Thai-Looped text-lg font-medium"
+                classNames={{
+                  input: "font-IBM-Thai-Looped text-lg font-medium"
+                }}
+                placeholder="ชื่อวิชา"
+              />
+              <Textarea
+                defaultValue={isAdd ? undefined : `วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรี เนื้อหา midterm`}
+                className="mt-2 font-IBM-Thai-Looped"
+                placeholder="วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรีเนื้อหา midterm"
+              />
+              <Select
+                placeholder={`ติวเตอร์`}
+                defaultSelectedKeys={isAdd ? undefined : [`${selectedCourse?.tutor}`]}
+                aria-label="ติวเตอร์"
+                className="font-IBM-Thai mt-2"
+                // classNames={{
+                //   value: [
+                //     "font-bold",
+                //   ]
+                // }}
+                // renderValue={(items) => (<div>ติวเตอร์</div>)}
+              >
+                {["กล้า","อิ๊ว"].map((value) => {
+                  return (
+                  <SelectItem aria-label={`${value}`} key={value}>
+                    {value}
+                  </SelectItem>
+                  )
+                })}
+              </Select>
+              <Input
+                defaultValue={isAdd ? undefined : `www.facebook.com/groups/cudynamics167middsfsdfsdf`}
+                className="font-IBM-Thai-Looped mt-2"
+                placeholder="Link เฉลย"
+              />
+              <Select
+                placeholder={`Playlist`}
+                aria-label="Playlist"
+                className="font-IBM-Thai mt-2"
+              >
+                {["Dynamics (CU) midterm 1/2567"].map((value) => {
+                  return (
+                  <SelectItem aria-label={`${value}`} key={value}>
+                    {value}
+                  </SelectItem>
+                  )
+                })}
+              </Select>
+              <Input
+                defaultValue={isAdd ? undefined : `2,400`}
+                className="font-IBM-Thai-Looped mt-2"
+                placeholder="ราคา"
+              />
+            </div>
+            :
             <div className="mt-4">
               <div className="text-2xl font-bold font-IBM-Thai">
                 {/* Dynamics (CU) midterm */}
@@ -465,13 +601,33 @@ const ManageCourse = ({
                 </span>
               </div>
             </div>
+            }
             <div className="mt-4">
-              <Button className="bg-default-100 font-IBM-Thai font-medium" fullWidth>
-                แก้ไข
-              </Button>
+              {isAdd
+              ?
+                <Button onClick={() => handleConfirm()} className="bg-default-foreground text-primary-foreground font-IBM-Thai font-medium" fullWidth>
+                  บันทึก
+                </Button>
+              :
+              isEdit
+              ?
+                <>
+                  <Button onClick={() => setIsEdit(false)} className="bg-default-foreground text-primary-foreground font-IBM-Thai font-medium" fullWidth>
+                    บันทึก
+                  </Button>
+                  <Button onClick={() => setIsDelete(true)} className="bg-transparent text-danger-500 font-IBM-Thai font-medium mt-2" fullWidth>
+                    ลบ
+                  </Button>
+                </>
+              :
+                <Button onClick={() => setIsEdit(true)} className="bg-default-100 font-IBM-Thai font-medium" fullWidth>
+                  แก้ไข
+                </Button>
+              }
             </div>
           </div>
-          <div className="bg-default-100 p-[14px] w-[469px]">
+          {/* lesson */}
+          <div className="bg-default-100 p-[14px] min-w-[469px] md:w-[469px] overflow-y-auto">
             <div className="flex items-center gap-3">
               <div className="font-bold text-2xl font-IBM-Thai">หลักสูตร</div>
               <Button size="sm" className="bg-transparent" isIconOnly>
@@ -526,7 +682,7 @@ const ManageCourse = ({
                   </div>
                 </div>
                 <div className="flex justify-center gap-2">
-                  <Button className="bg-default-100 font-IBM-Thai font-medium" startContent={<ArrowDownUp size={20} />}>
+                  <Button onClick={() => setIsSort(true)} className="bg-default-100 font-IBM-Thai font-medium" startContent={<ArrowDownUp size={20} />}>
                     จัดเรียง
                   </Button>
                   <Button className="bg-default-100 font-IBM-Thai font-medium" startContent={<VideoLucide size={20} />}>

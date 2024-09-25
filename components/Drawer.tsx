@@ -15,6 +15,7 @@ const CustomDrawer: React.FC<Props> = ({ ...props }) => {
       // placement="center"
       // backdrop="opaque"
       size="full"
+      className="rounded-md md:max-w-max h-screen max-h-screen"
       classNames={{
         wrapper: "flex justify-end",
       }}
@@ -39,7 +40,6 @@ const CustomDrawer: React.FC<Props> = ({ ...props }) => {
           },
         }
       }}
-      className="rounded-md max-w-max h-screen max-h-screen"
       >
       <ModalContent>{() => <>{props.children}</>}</ModalContent>
     </Modal>
