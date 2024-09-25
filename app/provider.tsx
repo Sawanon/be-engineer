@@ -42,7 +42,9 @@ function getQueryClient() {
 export default function Providers({ children }: { children: React.ReactNode }) {
    const queryClient = getQueryClient();
    return (
-      <NextUIProvider>
+      <NextUIProvider 
+      // locale="th"
+      >
          <QueryClientProvider client={queryClient}>
             {children}
          </QueryClientProvider>
