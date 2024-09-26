@@ -18,6 +18,10 @@ export const metadata: Metadata = {
    description: "Course",
 };
 
+
+
+
+
 export default function RootLayout({
    children,
 }: Readonly<{
@@ -25,9 +29,7 @@ export default function RootLayout({
 }>) {
    return (
       <html lang="en">
-         <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-         >
+         <body className=" flex flex-col ">
             <Providers>{children}</Providers>
          </body>
       </html>
