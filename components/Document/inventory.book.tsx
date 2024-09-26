@@ -28,13 +28,21 @@ import {
    LuPrinter,
 } from "react-icons/lu";
 
-const BookInventory = () => {
+const BookInventory = ({
+   open,
+   onClose,
+   onEditStock
+}:{
+   open: boolean
+   onClose: () => void,
+   onEditStock: () => void,
+}) => {
    return (
       <Modal
          size={"full"}
          className="rounded-none bg-transparent"
          closeButton={<></>}
-         isOpen={!true}
+         isOpen={open}
          backdrop="blur"
          onClose={() => {}}
          scrollBehavior={"inside"}
@@ -45,7 +53,7 @@ const BookInventory = () => {
                   <div className="hidden md:block flex-1"></div>
                   <div className=" flex flex-col h-screen w-full md:w-[480px] gap-2  bg-white px-4 py-2">
                      <div className="flex gap-1 items-center  ">
-                        <Button isIconOnly>
+                        <Button isIconOnly onClick={onClose}>
                            <LuArrowLeft size={24} />
                         </Button>
                         <div className="flex flex-1 gap-2">
@@ -71,7 +79,7 @@ const BookInventory = () => {
                            </div>
                         </div>
                      </div>
-                     <Button color="primary">
+                     <Button onClick={onEditStock} className="bg-default-foreground text-primary-foreground">
                         <LuPlus size={24} /> เพิ่ม/ลด รายการ
                      </Button>
                      <div className="space-y-2  flex-1 mt-2  overflow-y-auto">

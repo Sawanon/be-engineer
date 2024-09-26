@@ -34,12 +34,18 @@ import {
 import thaipost from "../../assets/thaipost.png";
 import Image from "next/image";
 
-const EditInventory = () => {
+const EditInventory = ({
+   open,
+   onClose,
+}:{
+   open: boolean,
+   onClose: () => void,
+}) => {
    return (
       <Modal
          //  size={"full"}
          // className=" bg-white"
-         isOpen={!true}
+         isOpen={open}
          classNames={{
             base: "top-0 p-0 m-0 absolute md:relative w-screen   md:w-[428px] bg-white sm:m-0  max-w-full ",
          }}
@@ -78,6 +84,7 @@ const EditInventory = () => {
                            variant="flat"
                            isIconOnly
                            className="bg-transparent text-black absolute right-1 top-1"
+                           onClick={onClose}
                         >
                            <LuX size={24} />
                         </Button>

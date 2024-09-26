@@ -16,18 +16,46 @@ const DocumentComp = () => {
       data: undefined,
    });
    // console.log(selectState);
+   const [isInventory, setIsInventory] = useState(false)
+   const [isAddDocument, setIsAddDocument] = useState(false)
+   const [isEditStock, setIsEditStock] = useState(false)
+   const [isDelete, setIsDelete] = useState(false)
+   const [isViewUsage, setIsViewUsage] = useState(false)
 
    return (
       <div className="flex flex-col relative flex-1 ">
-         <BookInventory />
-         <EditInventory />
-         <AddBook />
-         <ConfirmBook />
-         <BookUsage />
+         <BookInventory
+            open={isInventory}
+            onClose={() => setIsInventory(false)}
+            onEditStock={() => setIsEditStock(true)}
+         />
+         <EditInventory
+            open={isEditStock}
+            onClose={() => setIsEditStock(false)}
+         />
+         <AddBook
+            open={isAddDocument}
+            onClose={() => setIsAddDocument(false)}
+            onDelete={() => setIsDelete(true)}
+         />
+         <ConfirmBook
+            open={isDelete}
+            onClose={() => setIsDelete(false)}
+         />
+         <BookUsage
+            open={isViewUsage}
+            onClose={() => setIsViewUsage(false)}
+         />
 
-         <FormDocument />
+         <FormDocument
+            onAddDocument={() => setIsAddDocument(true)}
+         />
          <div className="flex-1 pr-2">
-            <TableDocument />
+            <TableDocument
+               onViewStock={() => setIsInventory(true)}
+               onEditBook={() => setIsAddDocument(true)}
+               onViewUsage={() => setIsViewUsage(true)}
+            />
          </div>
       </div>
    );

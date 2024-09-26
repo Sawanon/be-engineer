@@ -26,13 +26,21 @@ import {
 
 import thaipost from "../../assets/thaipost.png";
 import Image from "next/image";
+import { useState } from "react";
 
-const AddTracking = () => {
+const AddTracking = ({
+   open,
+   onClose,
+}:{
+   open: boolean,
+   onClose: () => void,
+}) => {
+   const [isAddTracking, setIsAddTracking] = useState(true)
    return (
       <Modal
          //  size={"full"}
          // className=" bg-white"
-         isOpen={true}
+         isOpen={open}
          classNames={{
             base: "top-0 absolute md:relative w-screen   md:w-[428px] bg-white sm:m-0  max-w-full ",
          }}
@@ -43,64 +51,18 @@ const AddTracking = () => {
       >
          <ModalContent>
             <ModalBody className={cn("p-0 flex-1 ")}>
-               <div className="flex flex-col ">
-                  <div className=" flex flex-col rounded-xl md:rounded-none   bg-white flex-1 px-4 space-y-2">
-                     <div className="flex gap-1 justify-center my-3  ">
-                        <p className="text-3xl font-semibold">
-                           ธีร์ธนรัชต์ นื่มทวัฒน์
-                        </p>
-                        <Button
-                           variant="flat"
-                           isIconOnly
-                           className="bg-transparent text-black absolute right-1 top-1"
-                        >
-                           <LuX size={24} />
-                        </Button>
-                     </div>
-                     <p className="font-bold text-sm text-[#A1A1AA]">หนังสือ</p>
-                     <div className="flex gap-2">
-                        <NextUiImage
-                           width={24}
-                           height={34}
-                           alt="NextUI hero Image"
-                           src="https://nextui-docs-v2.vercel.app/images/hero-card-complete.jpeg"
-                        />
-                        <path>Dynamics midterm 2/2565</path>
-                     </div>
-                     <p className="font-bold text-sm text-[#A1A1AA]">เอกสาร</p>
-                     <div className="flex gap-2 items-center ">
-                        <LuScrollText size={20} />
-                        <p className="flex items-center gap-2">
-                           Dynamics - 5. Plane Motion of Rigid Body
-                           <Button isIconOnly color="secondary">
-                              <LuExternalLink size={32} />
-                           </Button>
-                        </p>
-                     </div>
-                     <div id="textarea-wrapper">
-                        <Textarea
-                           placeholder="หมายเหตุ(ถ้ามี)"
-            
-                        />
-                     </div>
-                     <div className="py-2 grid grid-cols-3 gap-2">
-                        <Button
-                           fullWidth
-                           color="secondary"
-                           className="flex gap-3 bg-white md:order-1 order-2  col-span-3 md:col-span-1"
-                        >
-                           <LuArrowRightLeft /> จัดส่ง
-                        </Button>
-                        <Button
-                           fullWidth
-                           color="primary"
-                           className="md:col-span-2 col-span-3 order-1"
-                        >
-                           รับหนังสือ
-                        </Button>
-                     </div>
-                  </div>
-               </div>
+               {isAddTracking
+                  ?
+                  <SingleTrack
+                     onChangeType={() => setIsAddTracking(false)}
+                     onClose={onClose}
+                  />
+                  :
+                  <ReceiveBook
+                     onChangeType={() => setIsAddTracking(true)}
+                     onClose={onClose}
+                  />
+               }
             </ModalBody>
          </ModalContent>
       </Modal>
@@ -109,9 +71,86 @@ const AddTracking = () => {
 
 export default AddTracking;
 
-const SingleTrack = () => {
+const ReceiveBook = ({
+   onChangeType,
+   onClose
+}:{
+   onChangeType: () => void
+   onClose: () => void
+}) => {
    return (
-      <div className="flex flex-col">
+      <div className="flex flex-col ">
+         <div className=" flex flex-col rounded-xl md:rounded-none   bg-white flex-1 px-4 space-y-2">
+            <div className="flex gap-1 justify-center my-3  ">
+               <p className="text-3xl font-semibold">
+                  ธีร์ธนรัชต์ นื่มทวัฒน์
+               </p>
+               <Button
+                  variant="flat"
+                  isIconOnly
+                  className="bg-transparent text-black absolute right-1 top-1"
+                  onClick={onClose}
+               >
+                  <LuX size={24} />
+               </Button>
+            </div>
+            <p className="font-bold text-sm text-[#A1A1AA]">หนังสือ</p>
+            <div className="flex gap-2">
+               <NextUiImage
+                  width={24}
+                  height={34}
+                  alt="NextUI hero Image"
+                  src="https://nextui-docs-v2.vercel.app/images/hero-card-complete.jpeg"
+               />
+               <path>Dynamics midterm 2/2565</path>
+            </div>
+            <p className="font-bold text-sm text-[#A1A1AA]">เอกสาร</p>
+            <div className="flex gap-2 items-center ">
+               <LuScrollText size={20} />
+               <p className="flex items-center gap-2">
+                  Dynamics - 5. Plane Motion of Rigid Body
+                  <Button isIconOnly color="secondary">
+                     <LuExternalLink size={32} />
+                  </Button>
+               </p>
+            </div>
+            <div id="textarea-wrapper">
+               <Textarea
+                  placeholder="หมายเหตุ(ถ้ามี)"
+   
+               />
+            </div>
+            <div className="py-2 grid grid-cols-3 gap-2">
+               <Button
+                  fullWidth
+                  color="secondary"
+                  className="flex gap-3 bg-white md:order-1 order-2  col-span-3 md:col-span-1"
+                  onClick={onChangeType}
+               >
+                  <LuArrowRightLeft /> จัดส่ง
+               </Button>
+               <Button
+                  fullWidth
+                  color="primary"
+                  className="md:col-span-2 col-span-3 order-1 bg-default-foreground text-primary-foreground"
+               >
+                  รับหนังสือ
+               </Button>
+            </div>
+         </div>
+      </div>
+   )
+}
+
+const SingleTrack = ({
+   onChangeType,
+   onClose
+}:{
+   onChangeType: () => void
+   onClose: () => void
+}) => {
+   return (
+      <div className="flex flex-col font-IBM-Thai">
          <div className=" flex flex-col rounded-t-xl md:rounded-none   bg-white flex-1 px-4 space-y-2">
             <div className="flex gap-1 justify-center my-3  ">
                <p className="text-3xl font-semibold">ธีร์ธนรัชต์ นื่มทวัฒน์</p>
@@ -119,6 +158,7 @@ const SingleTrack = () => {
                   variant="flat"
                   isIconOnly
                   className="bg-transparent text-black absolute right-1 top-1"
+                  onClick={onClose}
                >
                   <LuX size={24} />
                </Button>
@@ -192,13 +232,14 @@ const SingleTrack = () => {
                   fullWidth
                   color="secondary"
                   className="flex gap-3 bg-white md:order-2 md:col-span-3"
+                  onClick={onChangeType}
                >
                   <LuArrowRightLeft /> รับที่สถาบัน
                </Button>
                <Button
                   fullWidth
                   color="primary"
-                  className="col-span-2 md:col-span-3 md:order-1"
+                  className="col-span-2 md:col-span-3 md:order-1 bg-default-foreground text-primary-foreground"
                >
                   บันทึก
                </Button>
@@ -208,7 +249,11 @@ const SingleTrack = () => {
    );
 };
 
-const muitiTracking = () => {
+export const MuitiTracking = ({
+   onClose
+}:{
+   onClose: () => void
+}) => {
    return (
       <div className="flex flex-col">
          <div className=" flex flex-col rounded-t-xl md:rounded-none   bg-white flex-1 px-4 space-y-2">
@@ -218,6 +263,7 @@ const muitiTracking = () => {
                   variant="flat"
                   isIconOnly
                   className="bg-transparent text-black absolute right-1 top-1"
+                  onClick={onClose}
                >
                   <LuX size={24} />
                </Button>

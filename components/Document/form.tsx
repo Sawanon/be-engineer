@@ -26,7 +26,11 @@ import {
 } from "react-icons/lu";
 import dayjs from "dayjs";
 import { modalProps, stateProps } from "@/@type";
-const FormDocument = () => {
+const FormDocument = ({
+   onAddDocument,
+}:{
+   onAddDocument: () => void,
+}) => {
    return (
       <section className="w-screen py-2 px-2 grid grid-cols-12  gap-2  items-center">
          <Input
@@ -42,7 +46,7 @@ const FormDocument = () => {
 
          <div className="flex  gap-2 flex-1 order-2 md:col-span-4 col-span-12">
             <StatusSelect />
-            <Button className="flex-1"  color="primary" endContent={<LuPlus size={20} />}>
+            <Button onClick={onAddDocument} className="flex-1 bg-default-foreground text-primary-foreground" endContent={<LuPlus size={20} />}>
                เพิ่มเอกสาร
             </Button>
          </div>

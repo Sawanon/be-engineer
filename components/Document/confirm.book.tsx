@@ -21,12 +21,18 @@ import {
 import thaipost from "../../assets/thaipost.png";
 import Image from "next/image";
 
-const ConfirmBook = () => {
+const ConfirmBook = ({
+   open,
+   onClose,
+}:{
+   open: boolean,
+   onClose: () => void,
+}) => {
    return (
       <Modal
          //  size={"full"}
          // className=" bg-white"
-         isOpen={!true}
+         isOpen={open}
          classNames={{
             base: "bottom-0 absolute md:relative w-screen md:w-[428px] bg-white m-0 ",
             body: "p-0",
@@ -46,6 +52,7 @@ const ConfirmBook = () => {
                            variant="flat"
                            isIconOnly
                            className="bg-transparent text-black absolute right-1 top-4"
+                           onClick={onClose}
                         >
                            <LuX size={24} />
                         </Button>
@@ -56,7 +63,7 @@ const ConfirmBook = () => {
                         หนังสือ Dynamics midterm 1/2567 vol.1
                      </p>{" "}
                      <div className="py-2 grid grid-cols-2 md:flex md:justify-end gap-2">
-                        <Button  color="secondary" className="">
+                        <Button onClick={onClose} color="secondary" className="">
                            ยกเลิก
                         </Button>
                         <Button  color="secondary" className="text-[#F31260]">

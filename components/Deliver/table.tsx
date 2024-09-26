@@ -12,7 +12,7 @@ import {
 import { HiOutlineTruck } from "react-icons/hi";
 import { LuFileSignature, LuPackage, LuPrinter } from "react-icons/lu";
 
-const TableDeliver = ({ state }: { state: stateProps<modalProps> }) => {
+const TableDeliver = ({ state, onPrint, onAddTrackings }: { state: stateProps<modalProps>, onPrint: () => void, onAddTrackings: () => void }) => {
    const [selectState, setSelectState] = state;
 
    return (
@@ -57,12 +57,14 @@ const TableDeliver = ({ state }: { state: stateProps<modalProps> }) => {
                   <Button
                      color="secondary"
                      startContent={<LuPackage size={20} />}
+                     onClick={onAddTrackings}
                   >
                      เพิ่ม Track no.
                   </Button>
                   <Button
                      color="secondary"
                      startContent={<LuPrinter size={20} />}
+                     onClick={onPrint}
                   >
                      พิมพ์ใบปะหน้า
                   </Button>

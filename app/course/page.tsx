@@ -520,11 +520,13 @@ const ManageCourse = ({
                 }}
                 placeholder="ชื่อวิชา"
               />
-              <Textarea
-                defaultValue={isAdd ? undefined : `วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรี เนื้อหา midterm`}
-                className="mt-2 font-IBM-Thai-Looped"
-                placeholder="วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรีเนื้อหา midterm"
-              />
+              <div id="textarea-wrapper">
+                <Textarea
+                  defaultValue={isAdd ? undefined : `วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรี เนื้อหา midterm`}
+                  className="mt-2 font-IBM-Thai-Looped"
+                  placeholder="วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรีเนื้อหา midterm"
+                />
+              </div>
               <Select
                 placeholder={`ติวเตอร์`}
                 defaultSelectedKeys={isAdd ? undefined : [`${selectedCourse?.tutor}`]}

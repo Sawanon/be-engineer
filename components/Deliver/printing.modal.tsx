@@ -14,13 +14,21 @@ import {
 import { useRef } from "react";
 import { LuArrowLeft, LuPenSquare, LuPrinter } from "react-icons/lu";
 
-const DeliverModal = () => {
+const DeliverModal = ({
+   open,
+   onEdit,
+   onClose,
+}:{
+   open: boolean
+   onEdit: () => void
+   onClose: () => void
+}) => {
    return (
          <Modal
             size={"full"}
             className="rounded-none bg-transparent"
             closeButton={<></>}
-            isOpen={true}
+            isOpen={open}
             backdrop="blur"
             onClose={() => {}}
             scrollBehavior={"inside"}
@@ -31,7 +39,10 @@ const DeliverModal = () => {
                      <div className="hidden md:block flex-1"></div>
                      <div className=" flex flex-col   bg-gradient-to-b from-[#838388] to-[#9B9BA5] px-4 py-2">
                         <div className="flex gap-1 justify-between ">
-                           <Button isIconOnly>
+                           <Button
+                              isIconOnly
+                              onClick={onClose}
+                           >
                               <LuArrowLeft size={24} />
                            </Button>
                            <Button color="primary">
@@ -39,12 +50,12 @@ const DeliverModal = () => {
                            </Button>
                         </div>
                         <div className="space-y-2  flex-1 mt-2  overflow-y-auto">
-                           <CardDeliver />
-                           <CardDeliver />
-                           <CardDeliver />
-                           <CardDeliver />
-                           <CardDeliver />
-                           <CardDeliver />
+                           <CardDeliver onEdit={onEdit} />
+                           <CardDeliver onEdit={onEdit} />
+                           <CardDeliver onEdit={onEdit} />
+                           <CardDeliver onEdit={onEdit} />
+                           <CardDeliver onEdit={onEdit} />
+                           <CardDeliver onEdit={onEdit} />
                         </div>
                      </div>
                   </div>
@@ -56,7 +67,11 @@ const DeliverModal = () => {
 
 export default DeliverModal;
 
-const CardDeliver = () => {
+const CardDeliver = ({
+   onEdit,
+}:{
+   onEdit: () => void,
+}) => {
    const myRef = useRef<HTMLDivElement>(null);
 
    const handleMouseOver = () => {
@@ -124,7 +139,7 @@ const CardDeliver = () => {
             <div className="h-7 flex justify-center mt-3">
                <div ref={myRef} className={cn("hidden", {})}>
                   {/* Your component here */}
-                  <Button size="sm" endContent={<LuPenSquare size={20} />}>
+                  <Button onClick={onEdit} size="sm" endContent={<LuPenSquare size={20} />}>
                      แก้ไขที่อยู่
                   </Button>
                </div>

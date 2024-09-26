@@ -28,12 +28,20 @@ import {
 import thaipost from "../../assets/thaipost.png";
 import Image from "next/image";
 
-const AddBook = () => {
+const AddBook = ({
+   open,
+   onClose,
+   onDelete
+}: {
+   open: boolean,
+   onClose: () => void,
+   onDelete: () => void,
+}) => {
    return (
       <Modal
          //  size={"full"}
          // className=" bg-white"
-         isOpen={!true}
+         isOpen={open}
          classNames={{
             base: "top-0 absolute md:relative w-screen   md:w-[428px] bg-white sm:m-0  max-w-full ",
          }}
@@ -52,6 +60,7 @@ const AddBook = () => {
                            variant="flat"
                            isIconOnly
                            className="bg-transparent text-black absolute right-1 top-1"
+                           onClick={onClose}
                         >
                            <LuX size={24} />
                         </Button>
@@ -72,12 +81,14 @@ const AddBook = () => {
                         <Button
                            color="secondary"
                            className="text-[#F31260] "
+                           onClick={onDelete}
                         >
                            ลบ
                         </Button>
                         <Button
                            fullWidth
-                           color="primary"
+                           // color="primary"
+                           className="bg-default-foreground text-primary-foreground"
                         >
                            บันทึก
                         </Button>

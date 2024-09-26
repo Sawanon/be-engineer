@@ -21,7 +21,15 @@ import {
    LuPrinter,
 } from "react-icons/lu";
 
-const TableDocument = () => {
+const TableDocument = ({
+   onViewStock,
+   onEditBook,
+   onViewUsage
+}:{
+   onViewStock: () => void,
+   onEditBook: () => void,
+   onViewUsage: () => void,
+}) => {
    return (
       <Table
          bottomContent={
@@ -46,7 +54,7 @@ const TableDocument = () => {
          <TableBody>
             <TableRow key="1">
                <TableCell>
-                  <div className="flex gap-2 items-center">
+                  <div onClick={onEditBook} className="flex gap-2 items-center">
                      <Image
                         // width={24}
                         height={44}
@@ -59,7 +67,7 @@ const TableDocument = () => {
                <TableCell className="">
                   <div className="flex gap-2  items-center">
                      <p className="text-sm">12</p>
-                     <Button isIconOnly color="secondary">
+                     <Button onClick={onViewStock} isIconOnly color="secondary">
                         <LuClipboardList size={24} />
                      </Button>
                   </div>
@@ -67,7 +75,7 @@ const TableDocument = () => {
                <TableCell>
                   <div className="flex gap-2  items-center">
                      <p className="text-sm">1</p>
-                     <Button isIconOnly color="secondary">
+                     <Button onClick={onViewUsage} isIconOnly color="secondary">
                         <LuListTree size={24} />
                      </Button>
                   </div>{" "}
@@ -88,7 +96,7 @@ const TableDocument = () => {
                <TableCell className="">
                   <div className="flex gap-2  items-center">
                      <p className="text-sm">12</p>
-                     <Button isIconOnly color="secondary">
+                     <Button onClick={onViewStock} isIconOnly color="secondary">
                         <LuClipboardList size={24} />
                      </Button>
                   </div>
@@ -96,7 +104,7 @@ const TableDocument = () => {
                <TableCell>
                   <div className="flex gap-2  items-center">
                      <p className="text-sm">1</p>
-                     <Button isIconOnly color="secondary">
+                     <Button onClick={onViewUsage} isIconOnly color="secondary">
                         <LuListTree size={24} />
                      </Button>
                   </div>{" "}
@@ -117,7 +125,7 @@ const TableDocument = () => {
                <TableCell className="">
                   <div className="flex gap-2  items-center">
                      <p className="text-sm">12</p>
-                     <Button isIconOnly color="secondary">
+                     <Button onClick={onViewStock} isIconOnly color="secondary">
                         <LuClipboardList size={24} />
                      </Button>
                   </div>
@@ -125,7 +133,7 @@ const TableDocument = () => {
                <TableCell>
                   <div className="flex gap-2  items-center">
                      <p className="text-sm">1</p>
-                     <Button isIconOnly color="secondary">
+                     <Button onClick={onViewUsage} isIconOnly color="secondary">
                         <LuListTree size={24} />
                      </Button>
                   </div>{" "}

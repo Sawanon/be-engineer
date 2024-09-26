@@ -25,7 +25,7 @@ import {
 } from "react-icons/lu";
 import dayjs from "dayjs";
 import { modalProps, stateProps } from "@/@type";
-const FormDeliver = ({ state }: { state: stateProps<modalProps> }) => {
+const FormDeliver = ({ state, onAddTrackings, onPrint }: { state: stateProps<modalProps>, onAddTrackings: () => void, onPrint: () => void }) => {
    const [selectState, setSelectState] = state;
    const onOpenSelect = () => {
       setSelectState({
@@ -134,15 +134,15 @@ const FormDeliver = ({ state }: { state: stateProps<modalProps> }) => {
                <Button
                   color="secondary"
                   className={cn("font-medium w-full", {})}
-                  onClick={onOpenSelect}
+                  onClick={onAddTrackings}
                >
                   <LuTruck />
                   <p className="">ใส่เลข Track</p>
                </Button>
                <Button
-                  color={"primary"}
-                  className={cn("font-medium w-full", {})}
-                  onClick={onOpenSelect}
+                  // color={"primary"}
+                  className={cn("font-medium w-full bg-default-foreground text-primary-foreground", {})}
+                  onClick={onPrint}
                >
                   <LuPrinter />
                   <p className="flex  ">
