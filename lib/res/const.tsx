@@ -1,4 +1,5 @@
 import { ClipboardClose, PlayCircle, TickCircle, Video } from "iconsax-react";
+import { BookOpen, MonitorPlay, Package } from "lucide-react";
 
 export const courseStatus:{
     [x:string]: {
@@ -24,3 +25,21 @@ export const courseStatus:{
     },
 }
 // "ไม่มีเนื้อหา", "มีเนื้อหา", "ลง Web-app แล้ว", "ใส่แบบประเมิน"
+
+export const menuItems = [
+    {
+        name: "การจัดส่ง",
+        path: "/deliver",
+        icon: <Package size={24} />,
+    },
+    {
+        name: "คอร์สเรียน",
+        path: "/course",
+        icon: <MonitorPlay size={24} />,
+    },
+    {
+        name: "เอกสาร",
+        path: "/document",
+        icon: <BookOpen size={24} />,
+    },
+];

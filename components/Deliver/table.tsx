@@ -14,11 +14,26 @@ import { LuFileSignature, LuPackage, LuPrinter } from "react-icons/lu";
 
 const TableDeliver = ({ state, onPrint, onAddTrackings }: { state: stateProps<modalProps>, onPrint: () => void, onAddTrackings: () => void }) => {
    const [selectState, setSelectState] = state;
-
+   const tableClassnames = {
+      wrapper: ["p-0", "shadow-none", "border-1", "rounded-xl"],
+      th: [
+        "bg-default-100",
+        "border-b-1",
+        "first:rounded-none",
+        "last:rounded-none",
+      ],
+      td: [
+        "first:before:rounded-l-none",
+        "rtl:first:before:rounded-r-none",
+        "last:before:rounded-r-none",
+        "rtl:last:before:rounded-l-none",
+      ],
+   };
    return (
       <Table
          color={"primary"}
          selectionMode={selectState.open ? "multiple" : "none"}
+         classNames={tableClassnames}
          //  selectedKeys={selectedKeys}
          //  onSelectionChange={setSelectedKeys}
          //  defaultSelectedKeys={["2", "3"]}

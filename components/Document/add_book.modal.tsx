@@ -41,9 +41,13 @@ const AddBook = ({
       <Modal
          //  size={"full"}
          // className=" bg-white"
+         // z-50 bg-overlay/50 backdrop-opacity-disabled w-screen h-screen fixed inset-0
+         // z-50 backdrop-blur-md backdrop-saturate-150 bg-overlay/30 w-screen h-screen fixed inset-0
+         // z-50 backdrop-blur-md backdrop-saturate-150 w-screen h-screen fixed inset-0 bg-transparent
          isOpen={open}
          classNames={{
             base: "top-0 absolute md:relative w-screen   md:w-[428px] bg-white sm:m-0  max-w-full ",
+            backdrop: "bg-backdrop"
          }}
          backdrop="blur"
          onClose={() => {}}

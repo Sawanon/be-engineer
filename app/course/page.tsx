@@ -141,9 +141,24 @@ const Course = () => {
   const [selectedCourse, setSelectedCourse] = useState<CourseT | undefined>()
   const [isOpenDrawer, setIsOpenDrawer] = useState(false)
   const [isSort, setIsSort] = useState(false)
+  const tableClassnames = {
+    wrapper: ["p-0", "shadow-none", "border-1", "rounded-xl"],
+    th: [
+      "bg-default-100",
+      "border-b-1",
+      "first:rounded-none",
+      "last:rounded-none",
+    ],
+    td: [
+      "first:before:rounded-l-none",
+      "rtl:first:before:rounded-r-none",
+      "last:before:rounded-r-none",
+      "rtl:last:before:rounded-l-none",
+    ],
+  };
   return (
     // <div className="flex flex-col pt-6 px-4 bg-background relative md:h-screenDevice bg-red-400 md:bg-green-400">
-    <div className="flex flex-col pt-6 px-4 bg-background relative h-screenDevice">
+    <div className="flex flex-col pt-6 px-4 bg-background relative h-screenDevice bg-default-50">
       {/* Drawer */}
       <ManageCourse
         isOpenDrawer={isOpenDrawer}
@@ -176,13 +191,19 @@ const Course = () => {
             classNames={{
               value: [
                 "font-bold",
-              ]
+              ],
+              popoverContent: [
+                `w-max right-0 absolute`
+              ],
             }}
             renderValue={(items) => (<div>สถานะ</div>)}
           >
             {Object.keys(courseStatus).map((key, index) => {
               return (
-              <SelectItem startContent={courseStatus[key].icon} key={index}>
+              <SelectItem
+                key={index}
+                startContent={courseStatus[key].icon}
+              >
                 {courseStatus[key].name}
               </SelectItem>
               )
@@ -225,8 +246,20 @@ const Course = () => {
           aria-label="course-table"
           classNames={{
             base: "h-full",
-            wrapper: "h-full overflow-x-auto scrollbar-hide",
+            wrapper: "h-full overflow-x-auto scrollbar-hide p-0 shadow-none border-1 rounded-xl",
             table: "min-w-[700px]",
+            th: [
+              "bg-default-100",
+              "border-b-1",
+              "first:rounded-none",
+              "last:rounded-none",
+            ],
+            td: [
+              "first:before:rounded-l-none",
+              "rtl:first:before:rounded-r-none",
+              "last:before:rounded-r-none",
+              "rtl:last:before:rounded-l-none",
+            ],
           }}
         >
           <TableHeader>
@@ -246,7 +279,7 @@ const Course = () => {
                 >
                   <div className="flex gap-2 items-center">
                     {course.imageUrl &&
-                      <Image width={40} src={course.imageUrl} />
+                      <Image radius="sm" width={40} src={course.imageUrl} />
                     }
                     <div className="font-IBM-Thai-Looped">
                       {course.name}
@@ -498,7 +531,8 @@ const ManageCourse = ({
             )}
           </ModalContent>
         </Modal>
-        <div className="block md:flex h-full w-auto overflow-auto">
+        {/* <div className="block md:flex h-full w-auto overflow-auto"> */}
+        <div className="block md:flex w-auto overflow-auto">
           <div className="min-w-[342px] md:w-[342px] p-[14px]">
             {/* TODO: add course */}
             <div className="flex justify-between">
@@ -513,6 +547,7 @@ const ManageCourse = ({
             ?
             <div className="mt-2">
               <Input
+                size="lg"
                 defaultValue={isAdd ? undefined : `${selectedCourse?.name}`}
                 className="font-IBM-Thai-Looped text-lg font-medium"
                 classNames={{
@@ -531,7 +566,7 @@ const ManageCourse = ({
                 placeholder={`ติวเตอร์`}
                 defaultSelectedKeys={isAdd ? undefined : [`${selectedCourse?.tutor}`]}
                 aria-label="ติวเตอร์"
-                className="font-IBM-Thai mt-2"
+                className="font-IBM-Thai-Looped mt-2"
                 // classNames={{
                 //   value: [
                 //     "font-bold",
@@ -541,7 +576,7 @@ const ManageCourse = ({
               >
                 {["กล้า","อิ๊ว"].map((value) => {
                   return (
-                  <SelectItem aria-label={`${value}`} key={value}>
+                  <SelectItem className="font-IBM-Thai-Looped" aria-label={`${value}`} key={value}>
                     {value}
                   </SelectItem>
                   )
@@ -552,7 +587,7 @@ const ManageCourse = ({
                 className="font-IBM-Thai-Looped mt-2"
                 placeholder="Link เฉลย"
               />
-              <Select
+              {/* <Select
                 placeholder={`Playlist`}
                 aria-label="Playlist"
                 className="font-IBM-Thai mt-2"
@@ -564,7 +599,11 @@ const ManageCourse = ({
                   </SelectItem>
                   )
                 })}
-              </Select>
+              </Select> */}
+              <Input
+                className={`font-IBM-Thai-Looped mt-2`}
+                placeholder={`Playlist`}
+              />
               <Input
                 defaultValue={isAdd ? undefined : `2,400`}
                 className="font-IBM-Thai-Looped mt-2"
@@ -629,7 +668,7 @@ const ManageCourse = ({
             </div>
           </div>
           {/* lesson */}
-          <div className="bg-default-100 p-[14px] min-w-[469px] md:w-[469px] overflow-y-auto">
+          <div className="bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto">
             <div className="flex items-center gap-3">
               <div className="font-bold text-2xl font-IBM-Thai">หลักสูตร</div>
               <Button size="sm" className="bg-transparent" isIconOnly>

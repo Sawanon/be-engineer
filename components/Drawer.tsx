@@ -15,11 +15,15 @@ const CustomDrawer: React.FC<Props> = ({ ...props }) => {
       // placement="center"
       // backdrop="opaque"
       size="full"
-      className="rounded-md md:max-w-max h-screen max-h-screen"
+      // className="rounded-md md:max-w-max h-screen max-h-screen"
+      className={`md:max-w-max h-screenDevice my-0`}
       classNames={{
         wrapper: "flex justify-end",
+        backdrop: `bg-backdrop`,
       }}
+      backdrop="blur"
       closeButton={<></>}
+      scrollBehavior="outside"
       motionProps={{
         variants: {
           enter: {

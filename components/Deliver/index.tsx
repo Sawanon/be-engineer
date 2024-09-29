@@ -65,7 +65,6 @@ const DeliverComp = () => {
             onPrint={() => setIsPrint(true)}
          />
          <div className="flex-1 px-2">
-            {`${isAddTracking}`}
             <TableDeliver
                state={[selectState, setSelectState]}
                onPrint={() => setIsPrint(true)}
