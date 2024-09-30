@@ -45,6 +45,8 @@ const config: Config = {
    },
    important: true,
    darkMode: "class",
-   plugins: [nextui({})],
+   plugins: [nextui({
+      //TODO: config color primary calendar this here
+   })],
 };
 export default config;

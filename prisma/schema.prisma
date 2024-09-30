@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Course {
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  detail               String?
+  defaultHours         Int
+  tutorLink            String
+  clueLink             String
+  price                Int
+  status               String
+  odmCourseId          Int?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime
+  CourseOnCourseLesson CourseOnCourseLesson[]
+
+  @@index([name])
+}
+
+model CourseLesson {
+  id                    Int                     @id @default(autoincrement())
+  name                  String
+  position              Int
+  CourseOnCourseLesson  CourseOnCourseLesson[]
+  CourseVideo           CourseVideo[]
+  LessonOnDocument      LessonOnDocument[]
+  LessonOnDocumentBook  LessonOnDocumentBook[]
+  LessonOnDocumentSheet LessonOnDocumentSheet[]
+}
+
+model CourseOnCourseLesson {
+  courseId     Int
+  lessonId     Int
+  Course       Course       @relation(fields: [courseId], references: [id])
+  CourseLesson CourseLesson @relation(fields: [lessonId], references: [id])
+
+  @@id([courseId, lessonId])
+  @@index([lessonId], map: "CourseOnCourseLesson_lessonId_fkey")
+}
+
+model CourseVideo {
+  id            Int          @id @default(autoincrement())
+  videoLink     String
+  hour          Int
+  minute        Int
+  position      Int
+  lessonId      Int
+  descriptionId Int?
+  CourseLesson  CourseLesson @relation(fields: [lessonId], references: [id])
+
+  @@index([lessonId], map: "CourseVideo_lessonId_fkey")
+}
+
+model DocumentBook {
+  id                   Int                    @id @default(autoincrement())
+  image                String?
+  inStock              Int?
+  name                 String
+  LessonOnDocumentBook LessonOnDocumentBook[]
+
+  @@index([name])
+}
+
+model DocumentPreExam {
+  id               Int                @id @default(autoincrement())
+  name             String
+  url              String
+  LessonOnDocument LessonOnDocument[]
+
+  @@index([name])
+}
+
+model DocumentSheet {
+  id                    Int                     @id @default(autoincrement())
+  name                  String
+  url                   String
+  LessonOnDocumentSheet LessonOnDocumentSheet[]
+
+  @@index([name])
+}
+
+model LessonOnDocument {
+  lessonId        Int
+  preExamId       Int
+  CourseLesson    CourseLesson    @relation(fields: [lessonId], references: [id])
+  DocumentPreExam DocumentPreExam @relation(fields: [preExamId], references: [id])
+
+  @@id([lessonId, preExamId])
+  @@index([preExamId], map: "LessonOnDocument_preExamId_fkey")
+}
+
+model LessonOnDocumentBook {
+  lessonId     Int
+  bookId       Int
+  DocumentBook DocumentBook @relation(fields: [bookId], references: [id])
+  CourseLesson CourseLesson @relation(fields: [lessonId], references: [id])
+
+  @@id([lessonId, bookId])
+  @@index([bookId], map: "LessonOnDocumentBook_bookId_fkey")
+}
+
+model LessonOnDocumentSheet {
+  lessonId      Int
+  sheetId       Int
+  CourseLesson  CourseLesson  @relation(fields: [lessonId], references: [id])
+  DocumentSheet DocumentSheet @relation(fields: [sheetId], references: [id])
+
+  @@id([lessonId, sheetId])
+  @@index([sheetId], map: "LessonOnDocumentSheet_sheetId_fkey")
+}
