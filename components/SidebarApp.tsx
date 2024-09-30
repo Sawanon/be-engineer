@@ -8,7 +8,7 @@ import React from 'react'
 const SidebarApp = () => {
   const pathName = usePathname()
 
-  const isMenuActive = (menu: any) => {
+  const isMenuActive = (menu: {name: string, path: string, icon: JSX.Element}) => {
     return pathName === menu.path;
   };
 

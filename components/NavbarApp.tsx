@@ -31,7 +31,7 @@ const NavbarApp = () => {
     return menu.name;
   };
 
-  const isMenuActive = (menu: any) => {
+  const isMenuActive = (menu: {name: string, path: string, icon: JSX.Element}) => {
     return pathName === menu.path;
   };
   return (
