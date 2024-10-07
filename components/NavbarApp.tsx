@@ -34,10 +34,12 @@ const NavbarApp = () => {
   const isMenuActive = (menu: {name: string, path: string, icon: JSX.Element}) => {
     return pathName === menu.path;
   };
+
+  const isLoginOrMenuPage = pathName === "/login" || pathName === "/"
   return (
     <Navbar
       // className={`md:hidden ${isOpen ? "bg-default-100" : "bg-backdrop bg-opacity-20 backdrop-blur-md"}`}
-      className={`md:hidden ${isOpen ? "bg-default-100" : "bg-backdrop"}`}
+      className={`${isLoginOrMenuPage ? "hidden": ""} md:hidden ${isOpen ? "bg-default-100" : "bg-backdrop"}`}
       classNames={{
         // wrapper: "bg-backdrop"
         wrapper: "bg-transparent"

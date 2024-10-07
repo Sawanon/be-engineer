@@ -50,7 +50,7 @@ const DocumentComp = () => {
          <FormDocument
             onAddDocument={() => setIsAddDocument(true)}
          />
-         <div className="flex-1 pr-2">
+         <div className="flex-1 px-2">
             <TableDocument
                onViewStock={() => setIsInventory(true)}
                onEditBook={() => setIsAddDocument(true)}

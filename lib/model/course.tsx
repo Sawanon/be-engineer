@@ -15,7 +15,20 @@ import { Document } from "./document";
 export type Course = {
   name: string;
   status: "noContent" | "hasContent" | "uploadWebapp" | "enterForm";
-  tutor: string;
-  imageUrl?: string;
-  documents: Document[];
+  tutor?: string;
+  image?: string;
+  documents?: Document[];
+  branch: string
+  id: number
+  hasFeedback: boolean;
+  isWebApp: boolean;
+  detail?: string
+  clueLink?: string
+  webappPlaylistId?: number
+  price?: number
 };
+
+export type CourseByBranch = {
+  branch: string;
+  courses: Course[];
+}

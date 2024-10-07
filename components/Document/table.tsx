@@ -1,4 +1,5 @@
 import { modalProps, stateProps } from "@/@type";
+import { tableClassnames } from "@/lib/res/const";
 import {
    Button,
    Chip,
@@ -32,6 +33,7 @@ const TableDocument = ({
 }) => {
    return (
       <Table
+         classNames={tableClassnames}
          bottomContent={
             <div className="flex w-full justify-center">
                <Pagination

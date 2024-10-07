@@ -8,18 +8,23 @@ datasource db {
 }
 
 model Course {
-  id                   Int                    @id @default(autoincrement())
-  name                 String
-  detail               String?
-  defaultHours         Int
-  tutorLink            String
-  clueLink             String
-  price                Int
-  status               String
-  odmCourseId          Int?
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime
-  CourseOnCourseLesson CourseOnCourseLesson[]
+  id                     Int                    @id @default(autoincrement())
+  name                   String
+  detail                 String?
+  defaultHours           Int
+  tutorLink              String
+  clueLink               String
+  price                  Int
+  status                 String
+  odmCourseId            Int?
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @default(now())
+  branch                 String                 @db.VarChar(45)
+  webappCourseId         Int?
+  webappTableOfContentId Int?
+  webappPlaylistId       Int?
+  CourseOnCourseLesson   CourseOnCourseLesson[]
+  Delivery               Delivery[]
 
   @@index([name])
 }
@@ -114,4 +119,33 @@ model LessonOnDocumentSheet {
 
   @@id([lessonId, sheetId])
   @@index([sheetId], map: "LessonOnDocumentSheet_sheetId_fkey")
+}
+
+model DeliverShipService {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(45)
+  imageUrl    String?
+  trackingUrl String?
+  Delivery    Delivery[]
+}
+
+model Delivery {
+  id                 Int                 @id @default(autoincrement())
+  type               String              @db.VarChar(45)
+  status             String              @db.VarChar(45)
+  updatedAddress     String?             @db.VarChar(45)
+  courseId           Int?
+  webappOrderId      Int?
+  webappCourseId     Int?
+  webappAdminId      Int?
+  note               String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @default(now())
+  serviceId          Int?
+  trackingCode       String?
+  Course             Course?             @relation(fields: [courseId], references: [id], onUpdate: NoAction, map: "courseId")
+  DeliverShipService DeliverShipService? @relation(fields: [serviceId], references: [id], onDelete: Restrict, map: "trackingServiceId")
+
+  @@index([courseId], map: "courseId_idx")
+  @@index([serviceId], map: "trackingServiceId_idx")
 }

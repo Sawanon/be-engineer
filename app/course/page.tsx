@@ -4,12 +4,15 @@ import React, { useMemo, useState } from "react";
 import { Button, Divider, Image, Input, Modal, ModalContent, Pagination, Select, SelectItem, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Textarea } from "@nextui-org/react";
 import { ArrowDownUp, ArrowLeft, Book, ChevronDown, ClipboardSignature, FileText, MoreHorizontal, Plus, RefreshCcw, ScrollText, Search, Video as VideoLucide, X } from "lucide-react";
 import { Danger, Video } from "iconsax-react";
-import { courseStatus } from "../../lib/res/const";
+import { courseStatus, tableClassnames } from "../../lib/res/const";
 import CustomDrawer from "@/components/Drawer";
 import { Course as CourseT } from "@/lib/model/course";
 import { Document } from "@/lib/model/document";
 import SortableComponent from "@/components/Sortable";
 import { arrayMove } from "@dnd-kit/sortable";
+import axios from "axios";
+import { listCourseAction } from "@/lib/actions/course.actions";
+import { useQuery } from "@tanstack/react-query";
 
 const Status = ({course}: {course: CourseT}) => {
   let textColor = ""
@@ -64,101 +67,130 @@ const DocumentComponent = ({document}: {document: Document}) => {
   )
 }
 
+
 const Course = () => {
   // const {theme, setTheme } = useTheme();
-  const [courses, setCourses] = useState<CourseT[]>([
-    {
-      name: "Dynamics CE (CRMA) midterm",
-      status: "uploadWebapp",
-      tutor: "อิ๊ว",
-      imageUrl: "https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg",
-      documents: [
-        {
-          name: `Dynamics midterm 2/2565`,
-          type: `book`,
-          imageUrl: `https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg`,
-        },
-        {
-          name: `Dynamics - 2566 - 5.1 Rotating Motion`,
-          type: `sheet`,
-        },
-        {
-          name: `Dynamics - 2566 - Pre-Midterm`,
-          type: `pre-exam`,
-        },
-      ],
-    },
-    {
-      name: "Dynamics CE (CRMA) midterm",
-      status: "hasContent",
-      tutor: "อิ๊ว",
-      documents: [
-        {
-          name: `Dynamics midterm 2/2565`,
-          type: `book`,
-          imageUrl: `https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg`,
-        },
-        {
-          name: `Dynamics - 2566 - 5.1 Rotating Motion`,
-          type: `sheet`,
-        },
-        {
-          name: `Dynamics - 2566 - Pre-Midterm`,
-          type: `pre-exam`,
-        },
-      ],
-    },
-    {
-      name: "Dynamics CE (CRMA) midterm",
-      status: "noContent",
-      tutor: "อิ๊ว",
-      documents: [
+  // const [courses, setCourses] = useState<CourseT[]>([
+  //   {
+  //     name: "Dynamics CE (CRMA) midterm",
+  //     status: "uploadWebapp",
+  //     tutor: "อิ๊ว",
+  //     imageUrl: "https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg",
+  //     documents: [
+  //       {
+  //         name: `Dynamics midterm 2/2565`,
+  //         type: `book`,
+  //         imageUrl: `https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg`,
+  //       },
+  //       {
+  //         name: `Dynamics - 2566 - 5.1 Rotating Motion`,
+  //         type: `sheet`,
+  //       },
+  //       {
+  //         name: `Dynamics - 2566 - Pre-Midterm`,
+  //         type: `pre-exam`,
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     name: "Dynamics CE (CRMA) midterm",
+  //     status: "hasContent",
+  //     tutor: "อิ๊ว",
+  //     documents: [
+  //       {
+  //         name: `Dynamics midterm 2/2565`,
+  //         type: `book`,
+  //         imageUrl: `https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg`,
+  //       },
+  //       {
+  //         name: `Dynamics - 2566 - 5.1 Rotating Motion`,
+  //         type: `sheet`,
+  //       },
+  //       {
+  //         name: `Dynamics - 2566 - Pre-Midterm`,
+  //         type: `pre-exam`,
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     name: "Dynamics CE (CRMA) midterm",
+  //     status: "noContent",
+  //     tutor: "อิ๊ว",
+  //     documents: [
         
-      ],
-    },
-    {
-      name: "Dynamics CE (CRMA) midterm",
-      status: "enterForm",
-      tutor: "อิ๊ว",
-      imageUrl: "https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg",
-      documents: [
-        {
-          name: `Dynamics midterm 2/2565`,
-          type: `book`,
-          imageUrl: `https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg`,
-        },
-        {
-          name: `Dynamics - 2566 - 5.1 Rotating Motion`,
-          type: `sheet`,
-        },
-        {
-          name: `Dynamics - 2566 - Pre-Midterm`,
-          type: `pre-exam`,
-        },
-      ],
-    },
-  ])
+  //     ],
+  //   },
+  //   {
+  //     name: "Dynamics CE (CRMA) midterm",
+  //     status: "enterForm",
+  //     tutor: "อิ๊ว",
+  //     imageUrl: "https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg",
+  //     documents: [
+  //       {
+  //         name: `Dynamics midterm 2/2565`,
+  //         type: `book`,
+  //         imageUrl: `https://app.odm-engineer.com/media/images/course/course_1726828605_70ba503e-0c22-4eb0-a227-9788caae9d5d.jpg`,
+  //       },
+  //       {
+  //         name: `Dynamics - 2566 - 5.1 Rotating Motion`,
+  //         type: `sheet`,
+  //       },
+  //       {
+  //         name: `Dynamics - 2566 - Pre-Midterm`,
+  //         type: `pre-exam`,
+  //       },
+  //     ],
+  //   },
+  // ])
+  // const [courses, setCourse] = useState<CourseT[]>([])
   const [selectedCourse, setSelectedCourse] = useState<CourseT | undefined>()
   const [isOpenDrawer, setIsOpenDrawer] = useState(false)
   const [isSort, setIsSort] = useState(false)
-  const tableClassnames = {
-    wrapper: ["p-0", "shadow-none", "border-1", "rounded-xl"],
-    th: [
-      "bg-default-100",
-      "border-b-1",
-      "first:rounded-none",
-      "last:rounded-none",
-    ],
-    td: [
-      "first:before:rounded-l-none",
-      "rtl:first:before:rounded-r-none",
-      "last:before:rounded-r-none",
-      "rtl:last:before:rounded-l-none",
-    ],
-  };
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const rowsPerPage = 5;
+  const {data:courses, isLoading, status, error} = useQuery({
+    queryKey: ['listCourseAction'],
+    queryFn: () => listCourseAction()
+  })
+
+  // const listCourse = async () => {
+  //   const courseList = await listCourseAction()
+  //   console.log(courseList);
+  //   if(courseList === undefined){
+  //     return
+  //   }
+  //   setCourse(courseList)
+  //   setPageSize(Math.ceil(courseList.length / rowsPerPage))
+  // }
+console.table({
+  status,
+});
+console.log(error);
+
+
+  const courseItem = useMemo(() => {
+    const startIndex = (page - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    console.table({startIndex, endIndex});
+    console.log(courses);
+    
+    const currentCourses = courses?.slice(startIndex, endIndex);
+    if(courses){
+      setPageSize(courses.length / rowsPerPage)
+    }
+    return currentCourses;
+  }, [page, courses, isLoading])
+
+  console.log(courseItem);
+  
+
   return (
     // <div className="flex flex-col pt-6 px-4 bg-background relative md:h-screenDevice bg-red-400 md:bg-green-400">
-    <div className="flex flex-col pt-6 px-4 bg-background relative h-screenDevice bg-default-50">
+    <div className="flex flex-col pt-6 px-app bg-background relative h-screenDevice bg-default-50">
+      <div>
+        Boom {`${pageSize}`} / {`${courseItem?.length}`}
+      </div>
       {/* Drawer */}
       <ManageCourse
         isOpenDrawer={isOpenDrawer}
@@ -244,23 +276,7 @@ const Course = () => {
         <Table
           isStriped
           aria-label="course-table"
-          classNames={{
-            base: "h-full",
-            wrapper: "h-full overflow-x-auto scrollbar-hide p-0 shadow-none border-1 rounded-xl",
-            table: "min-w-[700px]",
-            th: [
-              "bg-default-100",
-              "border-b-1",
-              "first:rounded-none",
-              "last:rounded-none",
-            ],
-            td: [
-              "first:before:rounded-l-none",
-              "rtl:first:before:rounded-r-none",
-              "last:before:rounded-r-none",
-              "rtl:last:before:rounded-l-none",
-            ],
-          }}
+          classNames={tableClassnames}
         >
           <TableHeader>
             <TableColumn className="font-IBM-Thai">คอร์ส</TableColumn>
@@ -268,9 +284,10 @@ const Course = () => {
             <TableColumn className="font-IBM-Thai">ติวเตอร์</TableColumn>
             <TableColumn className="font-IBM-Thai">เอกสาร</TableColumn>
           </TableHeader>
-          <TableBody>
-            {courses.map((course, index) => (
-              <TableRow key={`${index}`}>
+          <TableBody items={courseItem ?? []}>
+            {/* {courses.map((course, index) => ( */}
+            {(course) => (
+              <TableRow key={`${course.id}`}>
                 <TableCell
                   onClick={() => {
                     setSelectedCourse(course);
@@ -278,11 +295,11 @@ const Course = () => {
                   }}
                 >
                   <div className="flex gap-2 items-center">
-                    {course.imageUrl &&
-                      <Image radius="sm" width={40} src={course.imageUrl} />
+                    {course.image &&
+                      <Image radius="sm" width={40} src={course.image} />
                     }
                     <div className="font-IBM-Thai-Looped">
-                      {course.name}
+                      {course.name} {course.id}
                     </div>
                   </div>
                 </TableCell>
@@ -291,12 +308,12 @@ const Course = () => {
                 </TableCell>
                 <TableCell className="font-IBM-Thai-Looped">อิ้ว</TableCell>
                 <TableCell className="font-IBM-Thai-Looped">
-                  {course.documents.map((document, index) => (
+                  {course.documents?.map((document, index) => (
                     <DocumentComponent key={`documet${index}`} document={document} />
                   ))}
                 </TableCell>
               </TableRow>
-            ))}
+            )}
             {/* <TableRow className="hidden" key={"1"}>
               <TableCell className="" onClick={() => setIsOpenDrawer(prev => !prev)}>
                 <div className="flex gap-2 items-center">
@@ -432,12 +449,13 @@ const Course = () => {
       </div>
       <div className="py-2 flex justify-center">
         <Pagination
-          total={10}
-          initialPage={1}
+          total={pageSize}
+          initialPage={page}
           className="p-0 m-0"
           classNames={{
             cursor: 'bg-default-foreground'
           }}
+          onChange={(page) => setPage(page)}
         />
       </div>
     </div>
@@ -557,7 +575,8 @@ const ManageCourse = ({
               />
               <div id="textarea-wrapper">
                 <Textarea
-                  defaultValue={isAdd ? undefined : `วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรี เนื้อหา midterm`}
+                  // defaultValue={isAdd ? undefined : `วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรี เนื้อหา midterm`}
+                  defaultValue={isAdd ? undefined : selectedCourse?.detail}
                   className="mt-2 font-IBM-Thai-Looped"
                   placeholder="วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรีเนื้อหา midterm"
                 />
@@ -583,7 +602,7 @@ const ManageCourse = ({
                 })}
               </Select>
               <Input
-                defaultValue={isAdd ? undefined : `www.facebook.com/groups/cudynamics167middsfsdfsdf`}
+                defaultValue={isAdd ? undefined : selectedCourse?.clueLink}
                 className="font-IBM-Thai-Looped mt-2"
                 placeholder="Link เฉลย"
               />
@@ -601,11 +620,12 @@ const ManageCourse = ({
                 })}
               </Select> */}
               <Input
+                defaultValue={selectedCourse?.webappPlaylistId?.toString()}
                 className={`font-IBM-Thai-Looped mt-2`}
                 placeholder={`Playlist`}
               />
               <Input
-                defaultValue={isAdd ? undefined : `2,400`}
+                defaultValue={selectedCourse?.price?.toString()}
                 className="font-IBM-Thai-Looped mt-2"
                 placeholder="ราคา"
               />
@@ -617,28 +637,31 @@ const ManageCourse = ({
                 {selectedCourse?.name}
               </div>
               <div className="text-base mt-2 font-IBM-Thai-Looped">
-                วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรี เนื้อหา midterm
+                {selectedCourse?.detail ?? '-'}
+                {/* วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรี เนื้อหา midterm */}
               </div>
               <div className="space-x-1 mt-2 font-IBM-Thai-Looped">
                 <span className={`font-bold`}>ผู้สอน:</span>
-                <span>{selectedCourse?.tutor}</span>
+                <span>{selectedCourse?.tutor ?? '-'}</span>
               </div>
               <div className="space-x-1 mt-2 font-IBM-Thai-Looped" style={{overflowWrap: 'break-word'}}>
                 <span className={`font-bold`}>เฉลย:</span>
                 <span>
-                  www.facebook.com/groups/cudynamics167middsfsdfsdf
+                  {selectedCourse?.clueLink ?? '-'}
+                  {/* www.facebook.com/groups/cudynamics167middsfsdfsdf */}
                 </span>
               </div>
               <div className="space-x-1 mt-2 font-IBM-Thai-Looped" style={{overflowWrap: 'break-word'}}>
                 <span className={`font-bold`}>Playlist:</span>
                 <span>
-                  
+                  {selectedCourse?.webappPlaylistId ?? '-'}
                 </span>
               </div>
               <div className="space-x-1 mt-2 font-IBM-Thai-Looped" style={{overflowWrap: 'break-word'}}>
                 <span className={`font-bold`}>ราคา:</span>
                 <span>
-                  2,400.-
+                  {selectedCourse?.price ?? '-'}
+                  {/* 2,400.- */}
                 </span>
               </div>
             </div>
