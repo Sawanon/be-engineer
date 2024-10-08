@@ -1,6 +1,7 @@
 // class Course {
 //     name: string;
 
+import { CourseLesson, Tutor } from "@prisma/client";
 import { Document } from "./document";
 
 //     constructor(name: string){
@@ -15,7 +16,7 @@ import { Document } from "./document";
 export type Course = {
   name: string;
   status: "noContent" | "hasContent" | "uploadWebapp" | "enterForm" | string;
-  tutorLink: string;
+  tutorLink: number;
   image?: string;
   documents?: Document[];
   branch: string | null
@@ -28,7 +29,9 @@ export type Course = {
   webappCourseId?: number | null
   webappTableOfContentId?: number | null
   playlist?: string | null
-  price: number
+  price: number,
+  Tutor: Tutor,
+  CourseLesson: CourseLesson[]
 };
 
 export type CourseByBranch = {
@@ -39,7 +42,7 @@ export type CourseByBranch = {
 export type CourseCreate =  {
   name: string;
   status: "noContent" | "hasContent" | "uploadWebapp" | "enterForm";
-  tutor: string;
+  tutor: number;
   detail: string
   clueLink: string
   price: number

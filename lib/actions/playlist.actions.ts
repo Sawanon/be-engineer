@@ -14,11 +14,25 @@ export const listPlayList = async ():Promise<PlayList[] | undefined> => {
         "B-API-KEY": `${B_API_KEY}`
       },
     })
-    console.log(response.data);
     
     return response.data
   } catch (error) {
     console.error(error)
     return []
+  }
+}
+
+export const getDetailPlayList = async (playlistId: string) => {
+  try {
+    const response = await axios({
+      url: `${ENDPOINT_BE_ENGINEER_URL}/api/playlist/${playlistId}`,
+      method: "GET",
+      headers: {
+        "B-API-KEY": `${B_API_KEY}`
+      },
+    })
+    return response.data
+  } catch (error) {
+    console.error(error)
   }
 }

@@ -8,27 +8,27 @@ datasource db {
 }
 
 model Course {
-  id                     Int                    @id @default(autoincrement())
-  name                   String
-  detail                 String?
-  defaultHours           Int
-  tutorLink              String
-  clueLink               String
-  price                  Int
-  status                 String
-  odmCourseId            Int?
-  createdAt              DateTime               @default(now())
-  updatedAt              DateTime               @default(now())
-  branch                 String?                @db.VarChar(45)
-  webappCourseId         Int?
-  webappTableOfContentId Int?
-  webappPlaylistId       Int?
-  playlist               String?
-  CourseLesson           CourseLesson[]
-  CourseOnCourseLesson   CourseOnCourseLesson[]
-  Delivery               Delivery[]
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  detail               String?
+  defaultHours         Int
+  tutorLink            Int
+  clueLink             String
+  price                Int
+  status               String
+  odmCourseId          Int?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @default(now())
+  branch               String?                @db.VarChar(45)
+  webappCourseId       Int?
+  playlist             String?
+  Tutor                Tutor                  @relation(fields: [tutorLink], references: [id], map: "tutorLink")
+  CourseLesson         CourseLesson[]
+  CourseOnCourseLesson CourseOnCourseLesson[]
+  Delivery             Delivery[]
 
   @@index([name])
+  @@index([tutorLink], map: "tutorLink_idx")
 }
 
 model CourseLesson {
@@ -36,7 +36,8 @@ model CourseLesson {
   name                  String
   position              Int
   courseIdLesson        Int?
-  Course                Course?                 @relation(fields: [courseIdLesson], references: [id], map: "courseIdLesson")
+  courseId              Int
+  Course                Course                  @relation(fields: [courseId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "courseIdLesson")
   CourseOnCourseLesson  CourseOnCourseLesson[]
   CourseVideo           CourseVideo[]
   LessonOnDocument      LessonOnDocument[]
@@ -44,6 +45,7 @@ model CourseLesson {
   LessonOnDocumentSheet LessonOnDocumentSheet[]
 
   @@index([courseIdLesson], map: "courseId_idx")
+  @@index([courseId], map: "courseId_idx1")
 }
 
 model CourseOnCourseLesson {
@@ -65,6 +67,8 @@ model CourseVideo {
   lessonId      Int
   descriptionId Int?
   name          String?
+  webappVideoId Int
+  playlistName  String?
   CourseLesson  CourseLesson @relation(fields: [lessonId], references: [id])
 
   @@index([lessonId], map: "CourseVideo_lessonId_fkey")
@@ -158,6 +162,7 @@ model Delivery {
 }
 
 model Tutor {
-  id   Int    @id
-  name String @db.VarChar(45)
+  id     Int      @id
+  name   String   @db.VarChar(45)
+  Course Course[]
 }
