@@ -14,21 +14,34 @@ import { Document } from "./document";
 
 export type Course = {
   name: string;
-  status: "noContent" | "hasContent" | "uploadWebapp" | "enterForm";
-  tutor?: string;
+  status: "noContent" | "hasContent" | "uploadWebapp" | "enterForm" | string;
+  tutorLink: string;
   image?: string;
   documents?: Document[];
-  branch: string
+  branch: string | null
   id: number
-  hasFeedback: boolean;
-  isWebApp: boolean;
-  detail?: string
-  clueLink?: string
-  webappPlaylistId?: number
-  price?: number
+  hasFeedback?: boolean;
+  // isWebApp: boolean;
+  detail: string | null
+  clueLink: string | null
+  webappPlaylistId?: number | null
+  webappCourseId?: number | null
+  webappTableOfContentId?: number | null
+  playlist?: string | null
+  price: number
 };
 
 export type CourseByBranch = {
   branch: string;
   courses: Course[];
+}
+
+export type CourseCreate =  {
+  name: string;
+  status: "noContent" | "hasContent" | "uploadWebapp" | "enterForm";
+  tutor: string;
+  detail: string
+  clueLink: string
+  price: number
+  playlist: string
 }

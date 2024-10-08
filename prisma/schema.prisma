@@ -19,10 +19,12 @@ model Course {
   odmCourseId            Int?
   createdAt              DateTime               @default(now())
   updatedAt              DateTime               @default(now())
-  branch                 String                 @db.VarChar(45)
+  branch                 String?                @db.VarChar(45)
   webappCourseId         Int?
   webappTableOfContentId Int?
   webappPlaylistId       Int?
+  playlist               String?
+  CourseLesson           CourseLesson[]
   CourseOnCourseLesson   CourseOnCourseLesson[]
   Delivery               Delivery[]
 
@@ -33,11 +35,15 @@ model CourseLesson {
   id                    Int                     @id @default(autoincrement())
   name                  String
   position              Int
+  courseIdLesson        Int?
+  Course                Course?                 @relation(fields: [courseIdLesson], references: [id], map: "courseIdLesson")
   CourseOnCourseLesson  CourseOnCourseLesson[]
   CourseVideo           CourseVideo[]
   LessonOnDocument      LessonOnDocument[]
   LessonOnDocumentBook  LessonOnDocumentBook[]
   LessonOnDocumentSheet LessonOnDocumentSheet[]
+
+  @@index([courseIdLesson], map: "courseId_idx")
 }
 
 model CourseOnCourseLesson {
@@ -58,6 +64,7 @@ model CourseVideo {
   position      Int
   lessonId      Int
   descriptionId Int?
+  name          String?
   CourseLesson  CourseLesson @relation(fields: [lessonId], references: [id])
 
   @@index([lessonId], map: "CourseVideo_lessonId_fkey")
@@ -148,4 +155,9 @@ model Delivery {
 
   @@index([courseId], map: "courseId_idx")
   @@index([serviceId], map: "trackingServiceId_idx")
+}
+
+model Tutor {
+  id   Int    @id
+  name String @db.VarChar(45)
 }
