@@ -12,28 +12,30 @@ import { LuX } from "react-icons/lu";
 
 const EditAddress = ({
    open,
-   onClose
-}:{
-   open: boolean
-   onClose: () => void,
+   onClose,
+}: {
+   open: boolean;
+   onClose: () => void;
 }) => {
    return (
       <Modal
          //  size={"full"}
-         className=" bg-transparent"
+         className=""
          isOpen={open}
          classNames={{
             base: "top-0 absolute md:relative w-screen m-0 md:w-[428px]",
+            backdrop: " bg-white opacity-85",
          }}
-         backdrop="blur"
+         // backdrop="blur"
          onClose={() => {}}
          scrollBehavior={"inside"}
          closeButton={<></>}
+        
       >
          <ModalContent>
             <ModalBody className={cn("p-0")}>
                <div className="flex flex-col">
-                  <div className=" flex flex-col rounded-xl md:rounded-none   bg-white flex-1 px-4 space-y-2">
+                  <div className=" flex flex-col rounded-xl    bg-white flex-1 px-4 space-y-2">
                      <div className="flex gap-1 justify-center my-3  ">
                         <p className="text-3xl font-semibold">ที่อยู่จัดส่ง</p>
                         <Button
@@ -53,8 +55,8 @@ const EditAddress = ({
 
                      <div id="textarea-wrapper">
                         <Textarea
-                           //    rows={4}
-                           //    minRows={4}
+                                    minRows={1}
+
                            defaultValue="582/47 ซอยรัชดา 3 (แยก 10) ถนนอโศก-ดินแดง แขวงดินแดง
                      เขตดินแดง กทม. 10400 เบอร์โทร 0956628171
                      "
@@ -62,7 +64,10 @@ const EditAddress = ({
                      </div>
                      <div className="py-3">
                         {/* <Button fullWidth color="primary"> */}
-                        <Button fullWidth className="bg-default-foreground text-primary-foreground">
+                        <Button
+                           fullWidth
+                           className="bg-default-foreground text-primary-foreground"
+                        >
                            บันทึก
                         </Button>{" "}
                      </div>

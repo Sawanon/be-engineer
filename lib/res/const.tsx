@@ -43,3 +43,19 @@ export const menuItems = [
         icon: <BookOpen size={24} />,
     },
 ];
+
+export const tableClassnames = {
+    wrapper: ["p-0", "shadow-none", "border-1", "rounded-xl"],
+    th: [
+      "bg-default-100",
+      "border-b-1",
+      "first:rounded-none",
+      "last:rounded-none",
+    ],
+    td: [
+      "first:before:rounded-l-none",
+      "rtl:first:before:rounded-r-none",
+      "last:before:rounded-r-none",
+      "rtl:last:before:rounded-l-none",
+    ],
+  };

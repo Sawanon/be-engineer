@@ -24,27 +24,16 @@ import {
 const TableDocument = ({
    onViewStock,
    onEditBook,
-   onViewUsage
-}:{
-   onViewStock: () => void,
-   onEditBook: () => void,
-   onViewUsage: () => void,
+   onViewUsage,
+}: {
+   onViewStock: () => void;
+   onEditBook: () => void;
+   onViewUsage: () => void;
 }) => {
    return (
       <Table
-         bottomContent={
-            <div className="flex w-full justify-center">
-               <Pagination
-                  showShadow
-                  color="primary"
-                  page={1}
-                  total={10}
-                  // onChange={(page) => setPage(page)}
-               />
-            </div>
-         }
+          
          color={"primary"}
-
       >
          <TableHeader>
             <TableColumn>หนังสือ</TableColumn>
@@ -59,7 +48,7 @@ const TableDocument = ({
                         // width={24}
                         height={44}
                         alt="NextUI hero Image"
-                        src="https://nextui-docs-v2.vercel.app/images/hero-card-complete.jpeg"
+                        src="https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg"
                      />
                      <p>Dynamics midterm 2/2565</p>
                   </div>
@@ -88,7 +77,7 @@ const TableDocument = ({
                         // width={24}
                         height={44}
                         alt="NextUI hero Image"
-                        src="https://nextui-docs-v2.vercel.app/images/hero-card-complete.jpeg"
+                        src="https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg"
                      />
                      <p>Dynamics midterm 2/2565</p>
                   </div>
@@ -117,7 +106,7 @@ const TableDocument = ({
                         // width={24}
                         height={44}
                         alt="NextUI hero Image"
-                        src="https://nextui-docs-v2.vercel.app/images/hero-card-complete.jpeg"
+                        src="https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg"
                      />
                      <p>Dynamics midterm 2/2565</p>
                   </div>

@@ -33,13 +33,14 @@ import {
 
 import thaipost from "../../assets/thaipost.png";
 import Image from "next/image";
+import CustomInput from "../CustomInput";
 
 const EditInventory = ({
    open,
    onClose,
-}:{
-   open: boolean,
-   onClose: () => void,
+}: {
+   open: boolean;
+   onClose: () => void;
 }) => {
    return (
       <Modal
@@ -47,7 +48,7 @@ const EditInventory = ({
          // className=" bg-white"
          isOpen={open}
          classNames={{
-            base: "top-0 p-0 m-0 absolute md:relative w-screen   md:w-[428px] bg-white sm:m-0  max-w-full ",
+            base: "top-0 p-0 m-0 absolute md:relative w-screen   md:w-[428px] bg-white m-0  max-w-full ",
          }}
          backdrop="blur"
          onClose={() => {}}
@@ -92,12 +93,15 @@ const EditInventory = ({
                      <Alert />
 
                      <div className="col-span-2 flex flex-col gap-2">
-                        <Input placeholder="วันที่" />
-                        <Input placeholder="รายการ" />{" "}
-                        <Input type="number" endContent="ชุด" placeholder="จำนวน" />
+                        <CustomInput placeholder="วันที่" />
+                        <CustomInput placeholder="รายการ" />{" "}
+                        <CustomInput
+                           type="number"
+                           endContent="ชุด"
+                           placeholder="จำนวน"
+                        />
                      </div>
                      <div className="py-2 flex gap-2">
-                     
                         <Button fullWidth color="primary">
                            บันทึก
                         </Button>
@@ -111,5 +115,3 @@ const EditInventory = ({
 };
 
 export default EditInventory;
-
-

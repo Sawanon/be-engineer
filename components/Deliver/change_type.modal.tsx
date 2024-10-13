@@ -30,8 +30,10 @@ const ChangeReceiveType = ({ type = "receive" }: { type?: TxtTypeKey }) => {
          classNames={{
             base: "top-0 absolute md:relative w-screen md:w-[428px] bg-white m-0 ",
             body: "p-0",
+            backdrop: `bg-backdrop`,
+
          }}
-         backdrop="blur"
+         // backdrop="blur"
          onClose={() => {}}
          scrollBehavior={"inside"}
          closeButton={<></>}

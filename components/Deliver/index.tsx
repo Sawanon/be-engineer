@@ -1,6 +1,6 @@
 "use client";
 
-import { modalProps } from "@/@type";
+import { deliverProps, modalProps } from "@/@type";
 import FormDeliver from "./form";
 import DeliverModal from "./printing.modal";
 import TableDeliver from "./table";
@@ -10,6 +10,7 @@ import AddTracking, { MuitiTracking } from "./add_tracking.modal";
 import ChangeReceiveType from "./change_type.modal";
 import { Modal, ModalBody, ModalContent } from "@nextui-org/react";
 import { cn } from "@/lib/util";
+import { useDeliver } from "@/lib/query/deliver";
 
 const DeliverComp = () => {
    const [selectState, setSelectState] = useState<modalProps>({
@@ -20,32 +21,44 @@ const DeliverComp = () => {
    const [isEditAddress, setIsEditAddress] = useState(false);
    const [isPrint, setIsPrint] = useState(false);
    const [isMultiTracking, setIsMultiTracking] = useState(false);
-   const [isAddTracking, setIsAddTracking] = useState(false);
-   
+   const [isAddTracking, setIsAddTracking] = useState<modalProps<deliverProps>>(
+      { open: false, data: undefined }
+   );
    const handleOnCloseEditAddress = () => {
-      setIsEditAddress(prev => !prev)
-   }
+      setIsEditAddress((prev) => !prev);
+   };
+
+   const onOpenAddTrack = (data: deliverProps) => {
+      setIsAddTracking({ open: true, data });
+   };
+   const onCloseAddTrack = () => {
+      setIsAddTracking({ open: false });
+   };
+
+   const deliverQuery = useDeliver();
    return (
-      <div className="flex flex-col relative flex-1 ">
+      <div className="flex flex-col pt-6 px-app bg-background relative h-screenDevice bg-default-50">
+         {/*  <div className="flex flex-col relative flex-1 font-IBM-Thai-Looped px-[14px] overflow-y-hidden  bg-default-50 h-screenDevice bg-green-500   "> */}
+         <h1 className="hidden md:block font-IBM-Thai text-[30px] text-default-foreground font-bold leading-9 py-2 ">
+            การจัดส่ง
+         </h1>
          <DeliverModal
             open={isPrint}
             onEdit={handleOnCloseEditAddress}
             onClose={() => setIsPrint(false)}
          />
-         <EditAddress
-            open={isEditAddress}
-            onClose={handleOnCloseEditAddress}
-         />
+         <EditAddress open={isEditAddress} onClose={handleOnCloseEditAddress} />
          <AddTracking
-            open={isAddTracking}
-            onClose={() => setIsAddTracking(false)}
+            data={isAddTracking.data}
+            open={isAddTracking.open}
+            onClose={onCloseAddTrack}
          />
          <Modal
             //  size={"full"}
             // className=" bg-white"
             isOpen={isMultiTracking}
             classNames={{
-               base: "top-0 absolute md:relative w-screen   md:w-[428px] bg-white sm:m-0  max-w-full ",
+               base: "top-0 absolute md:relative w-screen   md:w-[428px] bg-white m-0  max-w-full ",
             }}
             backdrop="blur"
             onClose={() => {}}
@@ -59,17 +72,22 @@ const DeliverComp = () => {
             </ModalContent>
          </Modal>
          {/* <ChangeReceiveType /> */}
-         <FormDeliver
-            state={[selectState, setSelectState]}
-            onAddTrackings={() => setIsMultiTracking(true)}
-            onPrint={() => setIsPrint(true)}
-         />
-         <div className="flex-1 px-2">
+         <div className=" flex flex-col mb-4  overflow-hidden mx-2 max-w-[960px] ">
+            <FormDeliver
+               state={[selectState, setSelectState]}
+               onAddTrackings={() => setIsMultiTracking(true)}
+               onPrint={() => setIsPrint(true)}
+            />
+            {/* <div className=" flex flex-col flex-1"> */}
             <TableDeliver
+               query={deliverQuery}
+               handleOnCloseEditAddress={handleOnCloseEditAddress}
                state={[selectState, setSelectState]}
                onPrint={() => setIsPrint(true)}
-               onAddTrackings={() => setIsAddTracking(true)}
+               onAddTrackings={onOpenAddTrack}
             />
+
+            {/* </div> */}
          </div>
       </div>
    );

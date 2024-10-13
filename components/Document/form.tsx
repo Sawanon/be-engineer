@@ -26,6 +26,7 @@ import {
 } from "react-icons/lu";
 import dayjs from "dayjs";
 import { modalProps, stateProps } from "@/@type";
+import CustomInput from "../CustomInput";
 const FormDocument = ({
    onAddDocument,
 }:{
@@ -33,7 +34,7 @@ const FormDocument = ({
 }) => {
    return (
       <section className="w-screen py-2 px-2 grid grid-cols-12  gap-2  items-center">
-         <Input
+         <CustomInput
             type="text"
             // label="Email"
             placeholder="ชื่อผู้เรียน คอร์สเรียน หรือ ลำดับชื่อหนังสือ midterm/final เทอม ปีการศึกษา"

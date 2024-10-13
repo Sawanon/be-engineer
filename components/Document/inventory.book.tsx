@@ -31,11 +31,11 @@ import {
 const BookInventory = ({
    open,
    onClose,
-   onEditStock
-}:{
-   open: boolean
-   onClose: () => void,
-   onEditStock: () => void,
+   onEditStock,
+}: {
+   open: boolean;
+   onClose: () => void;
+   onEditStock: () => void;
 }) => {
    return (
       <Modal
@@ -48,16 +48,21 @@ const BookInventory = ({
          scrollBehavior={"inside"}
       >
          <ModalContent>
-            <ModalBody className={cn("p-0")}>
-               <div className="flex overflow-y-hidden">
-                  <div className="hidden md:block flex-1"></div>
-                  <div className=" flex flex-col h-screen w-full md:w-[480px] gap-2  bg-white px-4 py-2">
-                     <div className="flex gap-1 items-center  ">
-                        <Button isIconOnly onClick={onClose}>
+            <ModalBody className={cn("p-0 flex flex-col  ")}>
+               <div className="flex flex-1 md:flex-row-reverse overflow-y-hidden">
+                  {/* <div className="hidden md:block flex-1"></div> */}
+                  <div className=" flex flex-col h-full  w-full md:w-[480px] gap-2  bg-white px-4 py-2">
+                     <div className="flex gap-2 items-center  ">
+                        <Button
+                           className="bg-default-100  text-default-foreground"
+                           isIconOnly
+                           onClick={onClose}
+                        >
                            <LuArrowLeft size={24} />
                         </Button>
                         <div className="flex flex-1 gap-2">
                            <Image
+                              className="object-cover rounded-small"
                               width={36}
                               height={52}
                               alt="NextUI hero Image"
@@ -79,28 +84,18 @@ const BookInventory = ({
                            </div>
                         </div>
                      </div>
-                     <Button onClick={onEditStock} className="bg-default-foreground text-primary-foreground">
+                     <Button
+                        onClick={onEditStock}
+                        className="bg-default-foreground text-primary-foreground"
+                     >
                         <LuPlus size={24} /> เพิ่ม/ลด รายการ
                      </Button>
-                     <div className="space-y-2  flex-1 mt-2  overflow-y-auto">
-                        <Table
-                           bottomContent={
-                              <div className="flex w-full justify-center">
-                                 <Pagination
-                                    showShadow
-                                    color="primary"
-                                    page={1}
-                                    total={10}
-                                    // onChange={(page) => setPage(page)}
-                                 />
-                              </div>
-                           }
-                           color={"primary"}
-                        >
+                     <div className="flex flex-col justify-between  flex-1 py-2  ">
+                        <Table color={"primary"}>
                            <TableHeader>
                               <TableColumn>วันที่</TableColumn>
-                              <TableColumn>รายการ</TableColumn>
-                              <TableColumn>จำนวน</TableColumn>
+                              <TableColumn width={227} className="text-start">รายการ</TableColumn>
+                              <TableColumn className="text-end">จำนวน</TableColumn>
                            </TableHeader>
                            <TableBody>
                               <TableRow key="1">
@@ -109,20 +104,31 @@ const BookInventory = ({
                                        <p>1-30 เม.ย. 67</p>
                                     </div>
                                  </TableCell>
-                                 <TableCell className="">
+                                 <TableCell width={227} className="">
                                     <div className="flex gap-2  items-center">
                                        <p className="">คำสั่งซื้อ</p>
                                     </div>
                                  </TableCell>
                                  <TableCell>
-                                    <div className="flex gap-2  items-center">
+                                    <div className="flex gap-2  justify-end items-center">
                                        <p className="">-2</p>
                                     </div>{" "}
                                  </TableCell>
                               </TableRow>
-                    
                            </TableBody>
                         </Table>
+                        <div className="flex w-full justify-center">
+                           <Pagination
+                              classNames={{
+                                 cursor: "bg-default-foreground",
+                              }}
+                              showShadow
+                              color="primary"
+                              page={1}
+                              total={10}
+                              // onChange={(page) => setPage(page)}
+                           />
+                        </div>
                      </div>
                   </div>
                </div>
