@@ -12,8 +12,9 @@ const SidebarApp = () => {
     return pathName === menu.path;
   };
 
+  const isLoginOrMenuPage = pathName === "/login" || pathName === "/"
   return (
-    <div className={`hidden md:flex md:flex-col w-64 min-w-64 h-screenDevice bg-default-100`}>
+    <div className={`${isLoginOrMenuPage ? "hidden": "md:flex"} hidden md:flex-col w-64 min-w-64 h-screenDevice bg-default-100`}>
         <div className={`flex-1 py-3 px-app`}>
             <div className='flex gap-2'>
                 <div className='w-[46.86px] h-8 rounded-lg bg-gray-400'>

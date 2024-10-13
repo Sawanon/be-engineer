@@ -12,27 +12,40 @@ model Course {
   name                 String
   detail               String?
   defaultHours         Int
-  tutorLink            String
+  tutorLink            Int
   clueLink             String
   price                Int
   status               String
   odmCourseId          Int?
   createdAt            DateTime               @default(now())
-  updatedAt            DateTime
+  updatedAt            DateTime               @default(now())
+  branch               String?                @db.VarChar(45)
+  webappCourseId       Int?
+  playlist             String?
+  Tutor                Tutor                  @relation(fields: [tutorLink], references: [id], map: "tutorLink")
+  CourseLesson         CourseLesson[]
   CourseOnCourseLesson CourseOnCourseLesson[]
+  Delivery             Delivery[]
 
   @@index([name])
+  @@index([tutorLink], map: "tutorLink_idx")
 }
 
 model CourseLesson {
   id                    Int                     @id @default(autoincrement())
   name                  String
   position              Int
+  courseIdLesson        Int?
+  courseId              Int
+  Course                Course                  @relation(fields: [courseId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "courseIdLesson")
   CourseOnCourseLesson  CourseOnCourseLesson[]
   CourseVideo           CourseVideo[]
   LessonOnDocument      LessonOnDocument[]
   LessonOnDocumentBook  LessonOnDocumentBook[]
   LessonOnDocumentSheet LessonOnDocumentSheet[]
+
+  @@index([courseIdLesson], map: "courseId_idx")
+  @@index([courseId], map: "courseId_idx1")
 }
 
 model CourseOnCourseLesson {
@@ -53,6 +66,9 @@ model CourseVideo {
   position      Int
   lessonId      Int
   descriptionId Int?
+  name          String?
+  webappVideoId Int
+  playlistName  String?
   CourseLesson  CourseLesson @relation(fields: [lessonId], references: [id])
 
   @@index([lessonId], map: "CourseVideo_lessonId_fkey")
@@ -114,4 +130,39 @@ model LessonOnDocumentSheet {
 
   @@id([lessonId, sheetId])
   @@index([sheetId], map: "LessonOnDocumentSheet_sheetId_fkey")
+}
+
+model DeliverShipService {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(45)
+  imageUrl    String?
+  trackingUrl String?
+  Delivery    Delivery[]
+}
+
+model Delivery {
+  id                 Int                 @id @default(autoincrement())
+  type               String              @db.VarChar(45)
+  status             String              @db.VarChar(45)
+  updatedAddress     String?             @db.VarChar(45)
+  courseId           Int?
+  webappOrderId      Int?
+  webappCourseId     Int?
+  webappAdminId      Int?
+  note               String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @default(now())
+  serviceId          Int?
+  trackingCode       String?
+  Course             Course?             @relation(fields: [courseId], references: [id], onUpdate: NoAction, map: "courseId")
+  DeliverShipService DeliverShipService? @relation(fields: [serviceId], references: [id], onDelete: Restrict, map: "trackingServiceId")
+
+  @@index([courseId], map: "courseId_idx")
+  @@index([serviceId], map: "trackingServiceId_idx")
+}
+
+model Tutor {
+  id     Int      @id
+  name   String   @db.VarChar(45)
+  Course Course[]
 }

@@ -1,4 +1,5 @@
 import { modalProps, stateProps } from "@/@type";
+import { tableClassnames } from "@/lib/res/const";
 import {
    Button,
    Chip,
