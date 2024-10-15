@@ -9,20 +9,6 @@ const ENDPOINT_BE_ENGINEER_URL = process.env.ENDPOINT_BE_ENGINEER_URL;
 const B_API_KEY = process.env.B_API_KEY;
 const prisma = new PrismaClient();
 
-export const searchImageByCourseName = async (courseName: string) => {
-  try {
-    const response = await axios({
-      method: `GET`,
-      url: `${ENDPOINT_BE_ENGINEER_URL}/api/course/image?search=${courseName}`,
-      headers: {
-        "B-API-KEY": `${B_API_KEY}`
-      },
-    })
-    return response.data
-  } catch (error) {
-    console.error(error)
-  }
-}
 
 export const searchImageByCourseName = async (courseName: string) => {
   try {

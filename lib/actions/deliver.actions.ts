@@ -39,6 +39,7 @@ export const getDeliver = async () => {
 };
 export const getInfinityDeliver = async ({ pageParam = 1 }) => {
    try {
+      console.log("url", `${B_END_POINT}/api/deliver?page=${pageParam}`);
       const res = await axios({
          method: "GET",
          url: `${B_END_POINT}/api/deliver?page=${pageParam}`,
@@ -385,7 +386,7 @@ const createDelivery = async (
          relationCourse.push({
             webappOrderId: data.webappOrderId,
             webappCourseId: courseId,
-            Course: course ? { connect: { id: course?.id! } } : undefined,
+            Course: course ? { connect: { id: course?.id } } : undefined,
          });
 
          return course;

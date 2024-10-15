@@ -107,7 +107,13 @@ const TableDocument = ({
                )
             })
          : <TableRow>
-            <TableCell colSpan={3}>
+            <TableCell colSpan={1}>
+               No data
+            </TableCell>
+            <TableCell colSpan={1}>
+               No data
+            </TableCell>
+            <TableCell colSpan={1}>
                No data
             </TableCell>
          </TableRow>}

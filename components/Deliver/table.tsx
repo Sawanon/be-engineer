@@ -60,9 +60,7 @@ const TableDeliver = ({
    const [pageSize, setPageSize] = useState(10);
    const [allPage, setAllPage] = useState(10);
    const [currentPage, setCurrentPage] = useState(1);
-   if (isErrorMessageProps(query.data)) {
-      return <p>Error: {query.data.message}</p>;
-   }
+
    const [loaderRef, scrollerRef] = useInfiniteScroll({
       hasMore: query.hasNextPage,
       onLoadMore: query.fetchNextPage,
@@ -86,27 +84,13 @@ const TableDeliver = ({
       if (query.data?.pages) {
          for (let index = 0; index < query.data?.pages?.length; index++) {
             const page = query.data.pages[index];
-            // const currentPage = index + 1;
-            // console.table({
-            //    maxPage,
-            //    nextPage: page.nextPage,
-            //    length: query.data?.pages?.length,
-            // });
-            // if (maxPage > page.nextPage - 1) {
-            //    console.log("no do");
-            //    maxPage = currentPage + 1;
-            //    continue;
-            // } else {
-            //    console.log("do");
-            //    maxPage = currentPage + 1;
 
-            Object.values(page.data).forEach((deliver) => {
-               // cloneData.push(deliver);
-               // data.push(deliver);
+            // Object.values(page.data).forEach((deliver) => {
+            page.dataArr?.forEach((deliver) => {
                const checkType =
                   deliver.tracking?.type === "pickup" ||
                   (deliver.tracking === undefined &&
-                     deliver.note.includes("รับที่สถาบัน"))
+                     deliver.note?.includes("รับที่สถาบัน"))
                      ? "pickup"
                      : "ship";
                if (
@@ -124,6 +108,9 @@ const TableDeliver = ({
       // setCurrentPage(maxPage);
       setDeliverItem({ data: deliverMap, pickup: disabledKeys });
    }, [query.data?.pages]);
+   if (isErrorMessageProps(query.data)) {
+      return <p>Error: {query.data.message}</p>;
+   }
    return (
       <>
          <div className="py-2 flex flex-col flex-1  overflow-y-hidden">
@@ -140,7 +127,7 @@ const TableDeliver = ({
                   ...tableClassnames,
                   base: "flex-1  overflow-y-hidden",
                   // tbody : "overflow-scroll scrollbar-hide",
-                  table: "min-h-[800px] ",
+                  table: "min-h-[600px] flex-1 ",
                }}
                aria-label="deliver-table"
                selectedKeys={selectKeys.key}
@@ -181,7 +168,7 @@ const TableDeliver = ({
                      const checkType =
                         tracking?.type === "pickup" ||
                         (tracking === undefined &&
-                           deliver.note.includes("รับที่สถาบัน"))
+                           deliver.note?.includes("รับที่สถาบัน"))
                            ? "pickup"
                            : "ship";
 

@@ -37,8 +37,9 @@ const EditAddress = ({
    const updateAddress = useUpdateAddress({
       onError: onError,
       onSuccess: () => {
-         alert("Edit Success");
          refetch();
+         alert("Edit Success");
+         onClose();
       },
    });
    const form = useForm<{ address: string }>();

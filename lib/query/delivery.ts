@@ -53,11 +53,22 @@ export const useInfinityDeliver = ({}) => {
             groupDeliver[deliver.id] = deliver;
             return deliver.id;
          });
+
          const getTracking = await getTrackingByWebappIdArr(idArr);
+         const groupTrack: Record<string, deliveryPrismaProps> = {};
          getTracking?.forEach((track) => {
-            groupDeliver[track.webappOrderId]["tracking"] = track;
+            groupDeliver[track.webappOrderId.toString()]["tracking"] = track;
+            groupTrack[track.webappOrderId.toString()] = track;
          });
-         return { data: groupDeliver, nextPage: masterDeliver.nextPage };
+
+         masterDeliver.data.forEach((delivery) => {
+            delivery["tracking"] = groupTrack[delivery.id];
+         });
+         return {
+            data: groupDeliver,
+            nextPage: masterDeliver.nextPage,
+            dataArr: masterDeliver.data,
+         };
       },
       initialPageParam: 1,
       getNextPageParam: (lastPage, pages) => lastPage.nextPage,
