@@ -9,7 +9,7 @@ import {
   Modal,
   ModalContent,
 } from "@nextui-org/react";
-import React, { Key, useState } from "react";
+import React, { Key, useMemo, useState } from "react";
 import {
   ArrowDownUp,
   ArrowLeft,
@@ -28,14 +28,18 @@ import {
 import { Danger, Video } from "iconsax-react";
 import SortableComponent from "./Sortable";
 import { arrayMove } from "@dnd-kit/sortable";
-import { addLessonToDB } from "@/lib/actions/lesson.actions";
+import { addDocumentToLesson, addLessonToDB } from "@/lib/actions/lesson.actions";
 import { CourseLesson, CourseVideo } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import {
   getDetailPlayList,
   listPlayList,
 } from "@/lib/actions/playlist.actions";
-import { addCourseVideo, deleteCourseVideo } from "@/lib/actions/video.actions";
+import { addCourseVideo, changePositionVideoAction, deleteCourseVideo, swapPositionVideo } from "@/lib/actions/video.actions";
+import ManageContent from "./Course/ManageContent";
+import { UniqueIdentifier } from "@dnd-kit/core";
+import { useCourse } from "./Course/courseHook";
+import { listDocument } from "@/lib/actions/document.action";
 
 // export type CourseLessonAndContent = CourseLesson & {
 //   CourseVideo: CourseVideo,
@@ -45,16 +49,21 @@ const ManageLesson = ({
   courseId,
   lessons,
   onFetch,
+  mode,
+  className,
 }: {
   courseId: number;
   lessons?: any[];
   onFetch?: () => Promise<void>;
+  mode: "tutor" | "admin"
+  className: string
 }) => {
   // const [lessons, setLessons] = useState([
   //   { id: 1, title: "Dynamics - 1.1 Velocity and Acceleration" },
   //   { id: 2, title: "Dynamics - 1.2 Graphical" },
   //   { id: 3, title: "Dynamics - 1.3 X-Y Coordinate" },
   // ]);
+  const [refetchCourse] = useCourse()
   const [isSort, setIsSort] = useState(false);
   const [lessonError, setLessonError] = useState({
     isError: false,
@@ -67,11 +76,13 @@ const ManageLesson = ({
   const [selectedVideoPlaylist, setSelectedVideoPlaylist] = useState<any>();
   const [videoListInLesson, setVideoListInLesson] = useState<any[]>([]);
   const [selectedLesson, setSelectedLesson] = useState<any | undefined>();
-  const { data: playList } = useQuery({
-    queryKey: ["listPlayList"],
-    queryFn: () => listPlayList(),
-  });
-  console.log("lessons", lessons);
+
+  const { data: documentList } = useQuery({
+    queryKey: ['listDocument'],
+    queryFn: () => listDocument()
+  })
+  const [isOpenAddDocument, setIsOpenAddDocument] = useState(false)
+  const [selectedDocument, setSelectedDocument] = useState<number | undefined>()
 
   const handleOnChangeLessonName = (value: string) => {
     setLessonName(value);
@@ -94,71 +105,114 @@ const ManageLesson = ({
     }
   };
 
-  const onChangePlayList = async (playlistId: Key | null) => {
-    if (playlistId == null) return;
-    const response = await getDetailPlayList(playlistId?.toString());
-    console.log(response);
-    setVideoList(response.video_library_onlinevideoplaylistmediaitem);
-    setSelectedVideoPlaylist({
-      name: response.name,
-    });
-  };
-
-  const handleOnSelecteVideo = async (video: any, isSelected: boolean) => {
-    console.log(video);
-    if (isSelected) {
-      // TODO: create to DB
-      const videoRes = await addCourseVideo({
-        courseLessonId: selectedLesson.id,
-        videoLink: video.link,
-        hour: video.hour_length,
-        minute: video.minute_length,
-        position: video.position,
-        webappVideoId: video.id,
-        name: video.name,
-        playlistName: selectedVideoPlaylist.name,
-      });
-      console.log(videoRes);
-      if (videoRes) {
-        setVideoListInLesson((prev) => [...prev, videoRes]);
-        if(onFetch){
-          onFetch()
-        }
-      }
-    } else {
-      // TODO: delete in DB
-      // setVideoListInLesson(prev => {
-      //   const clonePrev = [...prev]
-      //   const index = clonePrev.findIndex(video => video.webappVideoId === video.id)
-      //   clonePrev.splice(index, 1)
-      //   return clonePrev
-      // })
-    }
-  };
-
   const handleOnCloseEditLessonVideo = () => {
     setSelectedLesson(undefined);
     setEditLessonContent(false);
     setVideoListInLesson([])
   };
 
-  const handleDeleteVideo = async (videoInLesson: any, index: number) => {
-    console.log(videoInLesson);
-    const response = await deleteCourseVideo(videoInLesson.id);
-    if (response) {
-      setVideoListInLesson((prev) => {
-        const clonePrev = [...prev];
-        clonePrev.splice(index, 1);
-        return clonePrev;
-      });
-      if(onFetch){
-        onFetch()
-      }
+  const handleClickManageContent = async (lesson: any) => {
+    setSelectedLesson(lesson);
+    setEditLessonContent(true);
+    setVideoListInLesson(lesson.CourseVideo)
+  }
+
+  const changePositionVideo = async (firstVideoId: UniqueIdentifier, secondVideoId: UniqueIdentifier) => {
+    console.table({firstVideoId, secondVideoId})
+      
+    // const firstVideo = selectedLesson.CourseVideo.find((video: any) => video.id === firstVideoId)
+    // const secondVideo = selectedLesson.CourseVideo.find((video: any) => video.id === secondVideoId)
+    // console.table({firstVideo, secondVideo})
+    // const response = await swapPositionVideo(firstVideo, secondVideo)
+    // console.log("swapPositionVideo", response);
+    // await refetchCourse()
+  }
+
+  const submitChangePositionVideo = async () => {
+    for (let i = 0; i < selectedLesson.CourseVideo.length; i++) {
+      const video = selectedLesson.CourseVideo[i];
+      console.log(video.name);
+      const response = await changePositionVideoAction(video.id, i)
+      console.log(response);
     }
-  };
+    await refetchCourse()
+  }
+
+  useMemo(() => {
+    if(!selectedLesson) return
+    setSelectedLesson(lessons?.find(lesson => lesson.id === selectedLesson.id))
+  }, [lessons])
+
+  const handleOnClickAddDocument = (lesson: any) => {
+    setSelectedLesson(lesson)
+    setIsOpenAddDocument(true)
+  }
+
+  const handleOnCloseAddDocument = () => {
+    setSelectedLesson(undefined)
+    setIsOpenAddDocument(false)
+  }
+
+  const handleOnChangeDocument = (key : Key | null) => {
+    if(!key)return
+    setSelectedDocument(parseInt(key.toString()))
+  }
+
+  const submitAddDocumentToLesson = async () => {
+    if(!selectedDocument) return
+    const response = await addDocumentToLesson(selectedDocument, selectedLesson.id)
+    console.log(response)
+    handleOnCloseAddDocument()
+    refetchCourse()
+  }
+
   return (
-    <div className="bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto">
-      {/* <Modal
+    <div className={`bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto ${className}`}>
+      <Modal
+        isOpen={isOpenAddDocument}
+      >
+        <ModalContent className={`p-app`} >
+          <div className={`flex items-center`}>
+            <div className={`flex-1`}></div>
+            <div className={`flex-1 text-center text-3xl font-semibold font-IBM-Thai`}>เอกสาร</div>
+            <div className={`flex-1 flex items-center justify-end`}>
+                <Button onClick={handleOnCloseAddDocument} className={`min-w-0 w-8 max-w-8 max-h-8 bg-primary-foreground`} isIconOnly><X /></Button>
+            </div>
+          </div>
+          <div className={`mt-app`}>
+            {/* <Input
+                placeholder={`ชื่อเอกสาร`}
+                aria-label={`ชื่อเอกสาร`}
+                // onChange={(e) => setDocumentName(e.target.value)}
+            /> */}
+            <Autocomplete
+              onSelectionChange={handleOnChangeDocument}
+            >
+              {
+                documentList?
+              documentList?.map((document, index) => {
+                return (
+                  <AutocompleteItem key={document.id}>
+                    {document.name}
+                  </AutocompleteItem>
+                )
+              })
+            : (
+              <AutocompleteItem key={`loading`}>
+                loading...
+              </AutocompleteItem>
+            )}
+            </Autocomplete>
+          </div>
+          <Button
+            onClick={submitAddDocumentToLesson}
+            className={`mt-[22px] bg-default-foreground text-primary-foreground font-IBM-Thai font-medium text-base`}
+          >
+            บันทึก
+          </Button>
+        </ModalContent>
+      </Modal>
+      <Modal
         isOpen={isSort}
         closeButton={<></>}
         backdrop="blur"
@@ -188,27 +242,49 @@ const ManageLesson = ({
               </div>
               <div className={`mt-[14px] overflow-hidden`}>
                 <SortableComponent
-                  lessons={lessons}
+                  courseVideoList={selectedLesson.CourseVideo}
                   onDragEnd={(event) => {
                     // console.log(`event.collisions`, event.collisions);
+                    const cloneVideo = [...selectedLesson.CourseVideo]
                     const { active, over } = event;
-                    setLessons((lessons) => {
-                      const originalPos = lessons.findIndex(
-                        (lesson) => lesson.id === active.id
-                      );
-                      const newPos = lessons.findIndex(
-                        (lesson) => lesson.id === over!.id
-                      );
-                      return arrayMove(lessons, originalPos, newPos);
-                    });
+                    console.table({ active, over })
+                    const originalPos = cloneVideo.findIndex(
+                      (video: any) => video.id === active.id
+                    );
+                    console.log("🚀 ~ originalPos:", originalPos)
+                    const newPos = cloneVideo.findIndex(
+                      (lesson: any) => lesson.id === over!.id
+                    );
+                    const newPosition = arrayMove(cloneVideo, originalPos, newPos)
+                    console.log(newPosition);
+                    setSelectedLesson((prev: any) => ({
+                      ...prev,
+                      CourseVideo: newPosition,
+                    }))
+                    // if(!over) return
+                    // changePositionVideo(active.id, over.id)
+                    // setLessons((lessons) => {
+                    //   const originalPos = lessons.findIndex(
+                    //     (lesson) => lesson.id === active.id
+                    //   );
+                    //   const newPos = lessons.findIndex(
+                    //     (lesson) => lesson.id === over!.id
+                    //   );
+                    //   return arrayMove(lessons, originalPos, newPos);
+                    // });
                     // setLessons(event.collisions)
                   }}
                 />
               </div>
+              <div className={`mt-app`}>
+                <Button onClick={submitChangePositionVideo} fullWidth className={`bg-default-foreground text-primary-foreground font-medium text-base font-IBM-Thai`}>
+                  ตกลง
+                </Button>
+              </div>
             </div>
           )}
         </ModalContent>
-      </Modal> */}
+      </Modal>
       <Modal
         isOpen={isAddLesson}
         closeButton={<></>}
@@ -252,139 +328,17 @@ const ManageLesson = ({
           )}
         </ModalContent>
       </Modal>
-      <Modal
+      <ManageContent
         isOpen={editLessonContent}
-        size="4xl"
-        closeButton={<></>}
-        backdrop="blur"
-        scrollBehavior="inside"
-        className={`h-full`}
-        classNames={{
-          backdrop: `bg-backdrop`,
+        onConfirm={() => {
+          handleOnCloseEditLessonVideo()
         }}
-      >
-        <ModalContent className={`h-full`}>
-          {() => (
-            <div className="p-app h-full flex flex-col">
-              <div className={`flex`}>
-                <div className="flex-1"></div>
-                <div className="flex-1 text-3xl font-semibold font-IBM-Thai text-center">
-                  แก้ไขเนื้อหา
-                </div>
-                <div
-                  onClick={() => handleOnCloseEditLessonVideo()}
-                  className="cursor-pointer flex-1 flex justify-end items-center"
-                >
-                  <X size={32} />
-                </div>
-              </div>
-              <div className={`mt-3 grid grid-cols-2 h-full`}>
-                <div className={`pr-3 flex flex-col h-full`}>
-                  <Autocomplete
-                    // className="max-w-xs"
-                    placeholder={`Playlist`}
-                    startContent={<Search className={`text-foreground-400`} />}
-                    aria-labelledby="playlist"
-                    onSelectionChange={(key) => onChangePlayList(key)}
-                    // filterOptions={}
-                    // statr with
-                  >
-                    {playList ? (
-                      playList.map((playList) => (
-                        <AutocompleteItem
-                          aria-labelledby={`playlist${playList.id}`}
-                          key={playList.id}
-                          value={playList.id}
-                        >
-                          {playList.name}
-                        </AutocompleteItem>
-                      ))
-                    ) : (
-                      <AutocompleteItem key={"loading"} value={"loading"}>
-                        loading...
-                      </AutocompleteItem>
-                    )}
-                  </Autocomplete>
-                  <div className={`mt-2 h-full relative overflow-auto`}>
-                    <div className={`absolute inset-0`}>
-                      {videoList.map((video: any, index) => {
-                        return (
-                          <div
-                            key={`videoList${index}`}
-                            className={`odd:bg-white even:bg-content2 flex items-center`}
-                          >
-                            <div>
-                              <Checkbox
-                                color="default"
-                                onValueChange={(isSelected) => {
-                                  handleOnSelecteVideo(video, isSelected);
-                                }}
-                              ></Checkbox>
-                            </div>
-                            <div className={`flex-1`}>
-                              <div
-                                className={`text-foreground-400 text-xs font-medium font-IBM-Thai-Looped`}
-                              >
-                                {selectedVideoPlaylist.name}
-                              </div>
-                              <div className={`flex items-center gap-1`}>
-                                <VideoLucide size={16} />
-                                <div
-                                  className={`text-base text-default-foreground font-IBM-Thai-Looped`}
-                                >
-                                  {video.name}
-                                </div>
-                              </div>
-                            </div>
-                            <div
-                              className={`text-foreground-400 font-IBM-Thai-Looped text-sm`}
-                            >
-                              {video.hour_length * 60 + video.minute_length}{" "}
-                              นาที
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-                <div className={`pl-3 space-y-1`}>
-                  {videoListInLesson.map((videoInLesson, index) => {
-                    return (
-                      <div
-                        key={`videoLesson${index}`}
-                        className={`font-IBM-Thai-Looped flex items-center p-2 border-2 border-default-foreground rounded-lg`}
-                      >
-                        <div className={`flex-1`}>
-                          <div className={`text-foreground-400 text-xs`}>
-                            {videoInLesson.playlistName}
-                          </div>
-                          <div className={`flex items-center gap-1`}>
-                            <VideoLucide size={16} />
-                            <div>{videoInLesson.name}</div>
-                          </div>
-                        </div>
-                        <div className={`text-sm text-foreground-400`}>
-                          {videoInLesson.hour * 60 + videoInLesson.minute} นาที
-                        </div>
-                        <div
-                          className={`bg-white w-8 h-8 flex items-center justify-center cursor-pointer`}
-                          onClick={() => {
-                            handleDeleteVideo(videoInLesson, index);
-                          }}
-                        >
-                          <X />
-                        </div>
-                        {/* {JSON.stringify(videoInLesson)} */}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-        </ModalContent>
-      </Modal>
+        onCancel={handleOnCloseEditLessonVideo}
+        lesson={selectedLesson}
+        onSuccess={() => {
+
+        }}
+      />
       <div className="flex items-center gap-3">
         <div className="font-bold text-2xl font-IBM-Thai">หลักสูตร</div>
         <Button size="sm" className="bg-transparent" isIconOnly>
@@ -426,7 +380,7 @@ const ManageLesson = ({
             </div>
             <Divider className="mt-2" />
             <div className=" mt-2 font-IBM-Thai-Looped">
-              {lesson.CourseVideo.map((courseVideo: any, index: number) => {
+              {lesson.CourseVideo.sort((a: any, b: any) => a.position - b.position).map((courseVideo: any, index: number) => {
                 return (
                   <div key={`video${index}`} className="flex p-1 items-center">
                     <div className="w-8 flex">
@@ -459,7 +413,10 @@ const ManageLesson = ({
               {/* manage lesson content */}
               <div className="flex justify-center gap-2">
                 <Button
-                  onClick={() => setIsSort(true)}
+                  onClick={() => {
+                    setSelectedLesson(lesson)
+                    setIsSort(true)
+                  }}
                   className="bg-default-100 font-IBM-Thai font-medium"
                   startContent={<ArrowDownUp size={20} />}
                 >
@@ -468,11 +425,7 @@ const ManageLesson = ({
                 <Button
                   className="bg-default-100 font-IBM-Thai font-medium"
                   startContent={<VideoLucide size={20} />}
-                  onClick={() => {
-                    setSelectedLesson(lesson);
-                    setEditLessonContent(true);
-                    setVideoListInLesson(lesson.CourseVideo)
-                  }}
+                  onClick={() => handleClickManageContent(lesson)}
                 >
                   เพิ่มลด เนื้อหา
                 </Button>
@@ -480,12 +433,27 @@ const ManageLesson = ({
             </div>
             <Divider className="mt-2" />
             <div className="mt-2 flex flex-col gap-2 items-center">
+              {lesson.LessonOnDocumentSheet.length === 0
+              ?
               <div className="text-danger-500 text-sm font-IBM-Thai-Looped text-center">
                 กรุณาใส่เอกสาร
               </div>
+              :
+              lesson.LessonOnDocumentSheet.map((documentSheet: any, index: number) => {
+                return (
+                  <div className={`flex gap-2 font-IBM-Thai-Looped`} key={documentSheet.id}>
+                    <ClipboardSignature size={20} />
+                    <div>
+                      {documentSheet.DocumentSheet.name}
+                    </div>
+                  </div>
+                )
+              })
+              }
               <Button
                 className="bg-default-100 font-IBM-Thai font-medium"
                 startContent={<Book size={20} />}
+                onClick={() => handleOnClickAddDocument(lesson)}
               >
                 เอกสาร
               </Button>

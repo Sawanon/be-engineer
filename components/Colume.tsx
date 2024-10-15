@@ -1,26 +1,24 @@
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import React from 'react'
 import SortItemComponent from './SortItem'
+import { CourseVideo } from '@prisma/client'
 
 const Colume = ({
-    tasks
+    courseVideoList
 }: {
-    tasks: {
-        id: number,
-        title: string,
-    }[]
+    courseVideoList: CourseVideo[]
 }) => {
   return (
     <div className='space-y-1'>
         <SortableContext
-            items={tasks}
+            items={courseVideoList}
             strategy={verticalListSortingStrategy}
           >
-            {tasks.map((task, index) => (
+            {courseVideoList.map((video) => (
                 <SortItemComponent
-                id={task.id}
-                title={task.title}
-                key={task.id}
+                id={video.id}
+                title={video.name!}
+                key={video.id}
             />
                 // <div key={task.id}>
                 //     {task.title}

@@ -22,6 +22,7 @@
       "async": "^3.2.6",
       "axios": "^1.7.7",
       "clsx": "^2.1.1",
+      "copy-to-clipboard": "^3.3.3",
       "dayjs": "^1.11.13",
       "framer-motion": "^11.5.5",
       "iconsax-react": "^0.0.8",

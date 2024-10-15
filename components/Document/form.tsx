@@ -6,6 +6,7 @@ import {
    Select,
    SelectItem,
    SelectItemProps,
+   SharedSelection,
 } from "@nextui-org/react";
 import { CiSearch } from "react-icons/ci";
 import { parseZonedDateTime, parseDate } from "@internationalized/date";
@@ -26,15 +27,18 @@ import {
 } from "react-icons/lu";
 import dayjs from "dayjs";
 import { modalProps, stateProps } from "@/@type";
-import CustomInput from "../CustomInput";
+import { Book, FileSignature, ScrollText } from "lucide-react";
+import { DocumentMode } from ".";
 const FormDocument = ({
    onAddDocument,
+   onChangeMode,
 }:{
    onAddDocument: () => void,
+   onChangeMode: (mode: DocumentMode) => void,
 }) => {
    return (
-      <section className="w-screen py-2 px-2 grid grid-cols-12  gap-2  items-center">
-         <CustomInput
+      <section className="py-2 px-2 grid grid-cols-12  gap-2  items-center">
+         <Input
             type="text"
             // label="Email"
             placeholder="ชื่อผู้เรียน คอร์สเรียน หรือ ลำดับชื่อหนังสือ midterm/final เทอม ปีการศึกษา"
@@ -42,13 +46,22 @@ const FormDocument = ({
             startContent={
                <CiSearch className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
             }
+            aria-label={`search document`}
             className="col-span-12 md:col-span-8 order-1"
          />
 
-         <div className="flex  gap-2 flex-1 order-2 md:col-span-4 col-span-12">
-            <StatusSelect />
-            <Button onClick={onAddDocument} className="flex-1 bg-default-foreground text-primary-foreground" endContent={<LuPlus size={20} />}>
-               เพิ่มเอกสาร
+         <div className="flex gap-2 flex-1 order-2 md:col-span-4 col-span-12">
+            <StatusSelect
+               onChange={(mode) => {
+                  onChangeMode(mode.currentKey as DocumentMode)
+               }}
+            />
+            <Button
+               onClick={onAddDocument}
+               className="max-w-max flex-1 bg-default-foreground text-primary-foreground"
+               endContent={<LuPlus size={20} />}
+            >
+               เพิ่ม
             </Button>
          </div>
       </section>
@@ -57,52 +70,53 @@ const FormDocument = ({
 
 export default FormDocument;
 
-const StatusSelect = () => {
+const StatusSelect = ({
+   onChange,
+}:{
+   onChange: (mode: SharedSelection) => void
+}) => {
    return (
       <Select
          placeholder="หนังสือ"
+         className={`max-w-[116px]`}
+         aria-label={`document`}
          classNames={{
             value: "text-black",
             trigger: cn("flex items-center justify-center  "),
             base: cn("flex-1 "),
          }}
-         selectionMode={"multiple"}
+         selectionMode={"single"}
+         onSelectionChange={onChange}
       >
          <SelectItem
             classNames={{
                base: cn("flex gap-1"),
             }}
-            startContent={<LuTruck />}
-            key={"send"}
+            aria-label={`หนังสือ`}
+            startContent={<Book size={16} />}
+            key={"book"}
          >
-            จัดส่ง
+            หนังสือ
          </SelectItem>
          <SelectItem
             classNames={{
                base: cn("flex gap-1"),
             }}
-            startContent={<LuPackageCheck />}
-            key={"sended"}
+            aria-label={`เอกสาร`}
+            startContent={<ScrollText size={16} />}
+            key={"document"}
          >
-            จัดส่งแล้ว
+            เอกสาร
          </SelectItem>
          <SelectItem
             classNames={{
                base: cn("flex gap-1"),
             }}
-            startContent={<LuHelpingHand />}
-            key={"take"}
+            aria-label={`pre-exam`}
+            startContent={<FileSignature size={16} />}
+            key={"pre-exam"}
          >
-            รับที่สถาบัน
-         </SelectItem>
-         <SelectItem
-            classNames={{
-               base: cn("flex gap-1"),
-            }}
-            startContent={<LuBookOpenCheck />}
-            key={"received"}
-         >
-            รับหนังสือแล้ว
+            Pre-exam
          </SelectItem>
       </Select>
    );

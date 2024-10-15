@@ -23,7 +23,7 @@ export default function Home() {
                   >
                      <div className="flex-1 flex gap-2 items-center">
                         <Box1 variant="Bulk" size={38} />
-                        <div className="text-base font-normal">การจัดส่ง</div>
+                        <div className="text-base font-medium font-IBM-Thai">การจัดส่ง</div>
                      </div>
                      <ArrowRight size={24} />
                   </div>
@@ -36,7 +36,7 @@ export default function Home() {
                   >
                      <div className="flex-1 flex gap-2 items-center">
                         <VideoPlay variant="Bulk" size={38} />
-                        <div className="text-base font-normal">คอร์สเรียน</div>
+                        <div className="text-base font-medium font-IBM-Thai">คอร์สเรียน</div>
                      </div>
                      <ArrowRight size={24} />
                   </div>
@@ -49,7 +49,7 @@ export default function Home() {
                   >
                      <div className="flex-1 flex gap-2 items-center">
                         <BookSaved variant="Bulk" size={38} />
-                        <div className="text-base font-normal">เอกสาร/หนังสือ</div>
+                        <div className="text-base font-medium font-IBM-Thai">เอกสาร/หนังสือ</div>
                      </div>
                      <ArrowRight size={24} />
                   </div>

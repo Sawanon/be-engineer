@@ -20,3 +20,19 @@ export const addLessonToDB = async (courseId: number, lesson: any) => {
     prisma.$disconnect()
   }
 }
+
+export const addDocumentToLesson = async (documentId: number, lessonId: number) => {
+  try {
+    const response = await prisma.lessonOnDocumentSheet.create({
+      data: {
+        lessonId: lessonId,
+        sheetId: documentId,
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+  } finally {
+    prisma.$disconnect()
+  }
+}
