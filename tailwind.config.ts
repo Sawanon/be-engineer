@@ -15,6 +15,7 @@ const config: Config = {
             primary: {
                DEFAULT: "var(--primary)",
                foreground: "#FFFFFF",
+               warning  : "#F5A524"
             },
             secondary: {
                DEFAULT: "var(--secondary)",

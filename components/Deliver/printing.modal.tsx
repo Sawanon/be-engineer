@@ -1,3 +1,4 @@
+import { deliverProps } from "@/@type";
 import { cn } from "@/lib/util";
 import {
    Modal,
@@ -16,52 +17,53 @@ import { LuArrowLeft, LuPenSquare, LuPrinter } from "react-icons/lu";
 
 const DeliverModal = ({
    open,
-   onEdit,
+  onEditAddress,
    onClose,
-}:{
-   open: boolean
-   onEdit: () => void
-   onClose: () => void
+}: {
+   open: boolean;
+  onEditAddress: (data: deliverProps | undefined) => void;
+   onClose: () => void;
 }) => {
    return (
-         <Modal
-            size={"full"}
-            className="rounded-none bg-transparent"
-            closeButton={<></>}
-            isOpen={open}
-            backdrop="blur"
-            onClose={() => {}}
-            scrollBehavior={"inside"}
-         >
-            <ModalContent>
-               <ModalBody className={cn("p-0")}>
-                  <div className="flex overflow-y-hidden">
-                     <div className="hidden md:block flex-1"></div>
-                     <div className=" flex flex-col   bg-gradient-to-b from-[#838388] to-[#9B9BA5] px-4 py-2">
-                        <div className="flex gap-1 justify-between ">
-                           <Button
-                              isIconOnly
-                              onClick={onClose}
-                           >
-                              <LuArrowLeft size={24} />
-                           </Button>
-                           <Button color="primary">
-                              Print <LuPrinter size={24} />
-                           </Button>
-                        </div>
-                        <div className="space-y-2  flex-1 mt-2  overflow-y-auto">
-                           <CardDeliver onEdit={onEdit} />
-                           <CardDeliver onEdit={onEdit} />
-                           <CardDeliver onEdit={onEdit} />
-                           <CardDeliver onEdit={onEdit} />
-                           <CardDeliver onEdit={onEdit} />
-                           <CardDeliver onEdit={onEdit} />
-                        </div>
+      <Modal
+         size={"full"}
+         className="rounded-none bg-transparent"
+         closeButton={<></>}
+         isOpen={open}
+         backdrop="blur"
+         onClose={() => {}}
+         scrollBehavior={"inside"}
+      >
+         <ModalContent>
+            <ModalBody className={cn("p-0")}>
+               <div className="flex overflow-y-hidden">
+                  <div className="hidden md:block flex-1"></div>
+                  <div className=" flex flex-col   bg-gradient-to-b from-[#838388] to-[#9B9BA5] px-4 py-2">
+                     <div className="flex gap-1 justify-between ">
+                        <Button
+                           className="bg-default-100 text-default-foreground"
+                           isIconOnly
+                           onClick={onClose}
+                        >
+                           <LuArrowLeft size={24} />
+                        </Button>
+                        <Button className="bg-default-foreground text-primary-foreground">
+                           Print <LuPrinter size={24} />
+                        </Button>
+                     </div>
+                     <div className="space-y-2  flex-1 mt-2  overflow-y-auto">
+                        <CardDeliver onEdit={onEditAddress} />
+                        <CardDeliver onEdit={onEditAddress} />
+                        <CardDeliver onEdit={onEditAddress} />
+                        <CardDeliver onEdit={onEditAddress} />
+                        <CardDeliver onEdit={onEditAddress} />
+                        <CardDeliver onEdit={onEditAddress} />
                      </div>
                   </div>
-               </ModalBody>
-            </ModalContent>
-         </Modal>
+               </div>
+            </ModalBody>
+         </ModalContent>
+      </Modal>
    );
 };
 
@@ -69,8 +71,8 @@ export default DeliverModal;
 
 const CardDeliver = ({
    onEdit,
-}:{
-   onEdit: () => void,
+}: {
+   onEdit: (data: deliverProps | undefined) => void;
 }) => {
    const myRef = useRef<HTMLDivElement>(null);
 
@@ -114,13 +116,13 @@ const CardDeliver = ({
                         width={24}
                         height={34}
                         alt="NextUI hero Image"
-                        src="https://nextui-docs-v2.vercel.app/images/hero-card-complete.jpeg"
+                        src="https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg"
                      />
                      <Image
                         width={24}
                         height={34}
                         alt="NextUI hero Image"
-                        src="https://nextui-docs-v2.vercel.app/images/hero-card-complete.jpeg"
+                        src="https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg"
                      />
                   </div>
                </div>
@@ -139,7 +141,11 @@ const CardDeliver = ({
             <div className="h-7 flex justify-center mt-3">
                <div ref={myRef} className={cn("hidden", {})}>
                   {/* Your component here */}
-                  <Button onClick={onEdit} size="sm" endContent={<LuPenSquare size={20} />}>
+                  <Button
+                     // onClick={onEdit}
+                     size="sm"
+                     endContent={<LuPenSquare size={20} />}
+                  >
                      แก้ไขที่อยู่
                   </Button>
                </div>

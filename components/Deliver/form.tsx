@@ -3,15 +3,21 @@ import {
    DateInput,
    DateRangePicker,
    Input,
+   RangeValue,
    Select,
    SelectItem,
    SelectItemProps,
 } from "@nextui-org/react";
 import { CiSearch } from "react-icons/ci";
-import { parseZonedDateTime, parseDate } from "@internationalized/date";
+import {
+   parseZonedDateTime,
+   parseDate,
+   CalendarDate,
+   getLocalTimeZone,
+} from "@internationalized/date";
 import { I18nProvider } from "@react-aria/i18n";
 import { CgClose } from "react-icons/cg";
-import { cloneElement, forwardRef } from "react";
+import { cloneElement, forwardRef, useRef, useState } from "react";
 import { cn } from "@/lib/util";
 import { HiOutlineTruck } from "react-icons/hi";
 import {
@@ -25,7 +31,30 @@ import {
 } from "react-icons/lu";
 import dayjs from "dayjs";
 import { modalProps, stateProps } from "@/@type";
-const FormDeliver = ({ state, onAddTrackings, onPrint }: { state: stateProps<modalProps>, onAddTrackings: () => void, onPrint: () => void }) => {
+import CustomInput from "../CustomInput";
+export type DeliverFilter = {
+   input: string | undefined;
+   status: string | undefined;
+   university: string | undefined;
+   startDate: string;
+   endDate: string;
+};
+const FormDeliver = ({
+   state,
+   onAddTrackings,
+   onPrint,
+   searchState,
+   onCloseSelect,
+}: {
+   searchState: stateProps<DeliverFilter | undefined>;
+   state: stateProps<modalProps>;
+   onAddTrackings: () => void;
+   onPrint: () => void;
+   onCloseSelect: () => void;
+}) => {
+   const [search, setSearch] = searchState;
+   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+   console.log(search);
    const [selectState, setSelectState] = state;
    const onOpenSelect = () => {
       setSelectState({
@@ -34,27 +63,80 @@ const FormDeliver = ({ state, onAddTrackings, onPrint }: { state: stateProps<mod
       });
    };
 
-   const onCloseSelect = () => {
-      setSelectState({ open: false });
+   const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      clearTimeout(timeoutRef.current);
+      if (value && value?.length >= 1) {
+         timeoutRef.current = setTimeout(() => {
+            setSearch((prev: DeliverFilter) => ({
+               ...prev,
+               input: value,
+            }));
+         }, 500);
+      } else {
+         setSearch((prev: DeliverFilter) => ({
+            ...prev,
+            input: undefined,
+         }));
+      }
+   };
+
+   const onChangeDate = (data: RangeValue<CalendarDate>) => {
+      setSearch((prev: DeliverFilter) => ({
+         ...prev,
+         startDate: dayjs(data.start.toDate(getLocalTimeZone())).format(
+            "YYYY-MM-DD"
+         ),
+         endDate: dayjs(data.end.toDate(getLocalTimeZone())).format(
+            "YYYY-MM-DD"
+         ),
+      }));
    };
 
    return (
-      <section className="w-screen py-2 px-2 grid grid-cols-12  gap-2  items-center">
-         <Input
-            type="text"
-            // label="Email"
-            placeholder="ชื่อผู้เรียน คอร์สเรียน หรือ ลำดับ"
-            // labelPlacement="outside"
-            startContent={
-               <CiSearch className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
-            }
-            className="col-span-12 md:col-span-8 order-1"
-         />
+      <section className=" py-2  grid grid-cols-12  gap-2  items-center">
+         <div className="col-span-12 md:col-span-8 order-1">
+            <CustomInput
+               classNames={{
+                  input: "bg-default-foreground rounded-[12px] ",
+                  // base: "",
+               }}
+               onChange={handleChangeSearch}
+               type="text"
+               placeholder="ชื่อผู้เรียน คอร์สเรียน หรือ ลำดับ"
+               startContent={
+                  <CiSearch className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
+               }
+            />
+         </div>
          <div className="flex gap-2 order-2 col-span-12 md:order-4 md:col-span-5 ">
             <I18nProvider locale="en-GB">
                <DateRangePicker
+                  onChange={onChangeDate}
                   classNames={{
+                     calendarContent: cn("w-[280px]  "),
+                     calendar: cn("w-[280px] "),
                      input: cn("text-black"),
+                  }}
+                  calendarProps={{
+                     classNames: {
+                        cellButton: [
+                           // default text color
+                           // "text-red-300",
+                           // selected case
+
+                           "data-[selectionStart=true]:bg-red-500",
+                           // "data-[selection-end=true]:bg-red-500",
+                           // "data-[selected=true]:bg-default-foreground",
+                           // "data-[selected=true]:text-default-foreground",
+                           // hover case
+                           // "data-[hover=true]:bg-secondary-50",
+                           // "data-[hover=true]:text-secondary-400",
+                           // selected and hover case
+                           // "data-[selected=true]:data-[hover=true]:bg-secondary",
+                           // "data-[selected=true]:data-[hover=true]:text-secondary-foreground",
+                        ],
+                     },
                   }}
                   defaultValue={{
                      start: parseDate(dayjs().format("YYYY-MM-DD")),
@@ -63,22 +145,22 @@ const FormDeliver = ({ state, onAddTrackings, onPrint }: { state: stateProps<mod
                      ),
                   }}
                   CalendarBottomContent={
-                     <div className=" text-center flex gap-2 py-2 justify-center">
-                        <Button size="sm" color={"secondary"}>
+                     <div className=" text-center flex gap-2 py-2 justify-center font-medium">
+                        <Button size="sm" className="bg-default-100">
                            1 day
                         </Button>
-                        <Button size="sm" color={"secondary"}>
+                        <Button size="sm" className="bg-default-100">
                            2 days
                         </Button>
-                        <Button size="sm" color={"secondary"}>
+                        <Button size="sm" className="bg-default-100">
                            30 days
                         </Button>
                      </div>
                   }
                />
             </I18nProvider>
-            <Button className="bg-[#F4F4F5]" isIconOnly>
-               <CgClose className="text-[#A1A1AA] h-6 w-6" />
+            <Button className="bg-default-100" isIconOnly>
+               <LuX className="text-[#A1A1AA] h-6 w-6" />
             </Button>
          </div>
 
@@ -90,61 +172,65 @@ const FormDeliver = ({ state, onAddTrackings, onPrint }: { state: stateProps<mod
                }
             )}
          >
-            <>
+            <Button
+               className={cn(" w-full  md:hidden bg-default-100", {
+                  hidden: selectState.open,
+               })}
+               isIconOnly
+               onClick={onOpenSelect}
+            >
+               <LuCopyCheck className="text-black h-6 w-6 block md:hidden" />{" "}
+            </Button>
+            <Button
+               className={cn("bg-default-100 hidden md:flex", {
+                  "hidden md:hidden": selectState.open,
+               })}
+               onClick={onOpenSelect}
+            >
+               <p className="font-IBM-Thai font-medium">เลือก</p>
+            </Button>
+            <div
+               className={cn("flex gap-2 flex-1 md:flex-grow-0", {
+                  hidden: !selectState.open,
+               })}
+            >
                <Button
-               color="secondary"
-                  className={cn(" w-full  md:hidden", {
-                     hidden: selectState.open,
+                  className={cn("bg-default-100 hidden font-IBM-Thai", {
+                     "md:flex  ": selectState.open,
                   })}
-                  isIconOnly
-                  onClick={onOpenSelect}
+                  onClick={onCloseSelect}
                >
-                  <LuCopyCheck className="text-black h-6 w-6 block md:hidden" />{" "}
+                  <p className="md:block hidden">ยกเลิก</p>
                </Button>
-               <Button
-                  className={cn("bg-[#F4F4F5] hidden md:flex", {
-                     "hidden md:hidden": selectState.open,
-                  })}
-                  onClick={onOpenSelect}
-               >
-                  <p className="">เลือก</p>
-               </Button>
-            </>
-            <div className={cn("flex gap-2 flex-1 md:flex-grow-0", { hidden: !selectState.open })}>
-               <>
-                  <Button
-                     className={cn("bg-[#F4F4F5] hidden", {
-                        "md:flex  ": selectState.open,
-                     })}
-                     onClick={onCloseSelect}
-                  >
-                     <p className="md:block hidden">ยกเลิก</p>
-                  </Button>
-                  <Button
-                     color="secondary"
-                     className={cn("bg-[#F4F4F5] md:hidden font-medium", {
-                        "flex  ": selectState.open,
-                     })}
-                     isIconOnly
-                     onClick={onCloseSelect}
-                  >
-                     <LuX className="text-black h-6 w-6 block md:hidden" />{" "}
-                  </Button>
-               </>
                <Button
                   color="secondary"
-                  className={cn("font-medium w-full", {})}
+                  className={cn("bg-default-100  md:hidden font-medium", {
+                     "flex  ": selectState.open,
+                  })}
+                  isIconOnly
+                  onClick={onCloseSelect}
+               >
+                  <LuX className="text-danger h-6 w-6 block md:hidden" />{" "}
+               </Button>
+               <Button
+                  className={cn(
+                     "font-medium flex-1 bg-default-100 font-IBM-Thai",
+                     {}
+                  )}
                   onClick={onAddTrackings}
                >
-                  <LuTruck />
+                  <LuTruck size={24} />
                   <p className="">ใส่เลข Track</p>
                </Button>
                <Button
                   // color={"primary"}
-                  className={cn("font-medium w-full bg-default-foreground text-primary-foreground", {})}
+                  className={cn(
+                     "font-medium flex-1 bg-default-foreground text-primary-foreground font-IBM-Thai",
+                     {}
+                  )}
                   onClick={onPrint}
                >
-                  <LuPrinter />
+                  <LuPrinter size={24} />
                   <p className="flex  ">
                      <span className="md:block hidden">พิมพ์</span>
                      <span className="">ใบปะหน้า</span>
@@ -176,12 +262,13 @@ const StatusSelect = () => {
    return (
       <Select
          placeholder="สถานะ"
-         className="w-[18dvh]"
+         // className="w-[18dvh]"
          classNames={{
-            value: "text-black",
-            trigger: cn("flex items-center justify-center  "),
-            base: cn("flex-1 "),
+            value: "text-black font-IBM-Thai",
+            trigger: cn("flex items-center justify-center    "),
+            base: cn("flex-1  rounded-[12px]"),
          }}
+         renderValue={(items) => <div>สถานะ</div>}
          selectionMode={"multiple"}
       >
          <SelectItem
@@ -228,11 +315,11 @@ const StatusInstitution = () => {
    return (
       <Select
          placeholder={`สถาบัน`}
-         className="w-[18dvh]"
+         className="w-[18dvh] font-IBM-Thai"
          classNames={{
             value: "text-black",
             trigger: cn("flex items-center justify-center  "),
-            base: cn("flex-1 "),
+            base: cn("flex-1 rounded-[12px]"),
          }}
          // selectionMode={"multiple"}
       >

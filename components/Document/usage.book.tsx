@@ -49,7 +49,7 @@ const BookUsage = ({
          // className=" bg-white"
          isOpen={open}
          classNames={{
-            base: "top-0 p-0 m-0 absolute md:relative w-screen   md:w-[428px] bg-white sm:m-0  max-w-full ",
+            base: "top-0 p-0 m-0 absolute md:relative w-screen   md:w-[428px] bg-white m-0  max-w-full ",
          }}
          backdrop="blur"
          onClose={() => {}}

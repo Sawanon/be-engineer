@@ -764,10 +764,10 @@ const ManageCourse = ({
         >
           <div className={`text-2xl font-bold font-IBM-Thai`}>สารบัญ</div>
           <div className={`mt-2 bg-content1 p-2 rounded-lg shadow`}>
-            {selectedCourse?.CourseLesson.map((lesson: any, index) => {
+            {selectedCourse?.CourseLesson.map((lesson, index) => {
               // selectedCourse?.CourseLesson.length
               return (
-                <Popover placement="top">
+                <Popover key={lesson.id} placement="top">
                   <PopoverTrigger className={`cursor-pointer`}>
                     <div
                       tabIndex={0}

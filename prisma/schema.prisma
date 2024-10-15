@@ -173,11 +173,13 @@ model Tutor {
 }
 
 model Delivery_Course {
-  id         Int       @id
-  deliveryId Int?
-  courseId   Int?
-  Course     Course?   @relation(fields: [courseId], references: [id], onUpdate: SetNull, map: "middleCourseId")
-  Delivery   Delivery? @relation(fields: [deliveryId], references: [id], onUpdate: SetNull, map: "middleDeliveryId")
+  id             Int       @id @default(autoincrement())
+  deliveryId     Int?
+  courseId       Int?
+  webappOrderId  Int?
+  webappCourseId Int?
+  Course         Course?   @relation(fields: [courseId], references: [id], onUpdate: SetNull, map: "middleCourseId")
+  Delivery       Delivery? @relation(fields: [deliveryId], references: [id], onUpdate: SetNull, map: "middleDeliveryId")
 
   @@index([courseId], map: "middleCourseId_idx")
   @@index([deliveryId], map: "middleDeliveryId_idx")

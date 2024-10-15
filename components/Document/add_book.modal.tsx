@@ -27,15 +27,16 @@ import {
 
 import thaipost from "../../assets/thaipost.png";
 import Image from "next/image";
+import CustomInput from "../CustomInput";
 
 const AddBook = ({
    open,
    onClose,
-   onDelete
+   onDelete,
 }: {
-   open: boolean,
-   onClose: () => void,
-   onDelete: () => void,
+   open: boolean;
+   onClose: () => void;
+   onDelete: () => void;
 }) => {
    return (
       <Modal
@@ -46,8 +47,8 @@ const AddBook = ({
          // z-50 backdrop-blur-md backdrop-saturate-150 w-screen h-screen fixed inset-0 bg-transparent
          isOpen={open}
          classNames={{
-            base: "top-0 absolute md:relative w-screen   md:w-[428px] bg-white sm:m-0  max-w-full ",
-            backdrop: "bg-backdrop"
+            base: "top-0 absolute md:relative w-screen   md:w-[428px] bg-white m-0  max-w-full ",
+            backdrop: "bg-backdrop",
          }}
          backdrop="blur"
          onClose={() => {}}
@@ -70,21 +71,21 @@ const AddBook = ({
                         </Button>
                      </div>
                      <Alert />
-                     <Input placeholder="ชื่อวิชา" />
+                     <CustomInput placeholder="ชื่อวิชา" />
                      <div className="grid grid-cols-3 gap-2">
                         <div className="rounded-lg flex items-center justify-center h-full bg-[#F4F4F5]">
                            <LuImage className="text-[#A1A1AA] h-24 w-24" />
                         </div>
                         <div className="col-span-2 flex flex-col gap-2">
-                           <Input placeholder="ชื่อวิชา" />
-                           <Input placeholder="ชื่อวิชา" />{" "}
-                           <Input placeholder="ชื่อวิชา" />
+                           <CustomInput placeholder="ชื่อวิชา" />
+                           <CustomInput placeholder="ชื่อวิชา" />{" "}
+                           <CustomInput placeholder="ชื่อวิชา" />
                         </div>
                      </div>
-                     <div className="py-2 flex gap-2">
+                     <div className="py-2 flex md:flex-row flex-col gap-2 ">
                         <Button
                            color="secondary"
-                           className="text-[#F31260] "
+                           className="text-danger  order-2 md:order-1 "
                            onClick={onDelete}
                         >
                            ลบ
@@ -92,7 +93,7 @@ const AddBook = ({
                         <Button
                            fullWidth
                            // color="primary"
-                           className="bg-default-foreground text-primary-foreground"
+                           className="bg-default-foreground text-primary-foreground md:order-2 order-1"
                         >
                            บันทึก
                         </Button>
@@ -123,7 +124,7 @@ const SingleTrack = () => {
             </div>
             <Alert />
             <Alert label="กรุณากรอกข้อมูลให้ครบ" />
-            <Input
+            <CustomInput
                isInvalid={true}
                color={"danger"}
                placeholder="เลข Tracking"
@@ -179,8 +180,7 @@ const SingleTrack = () => {
             <div id="textarea-wrapper">
                <Textarea
                   placeholder="หมายเหตุ(ถ้ามี)"
-                  //    rows={4}
-                  //    minRows={4}
+                  minRows={1}
                   defaultValue="ได้ Calculus ไปแล้ว ขาด Physics กัับ Chemistry จะส่งให้วันพฤหัสที่ 8 ธ.ค. นะครับ
          "
                />
@@ -270,7 +270,10 @@ const muitiTracking = () => {
                   ไปรษณีย์ไทย
                </SelectItem>
             </Select>
-            <Input startContent={<LuSearch />} placeholder="ชื่อผู้เรียน" />
+            <CustomInput
+               startContent={<LuSearch />}
+               placeholder="ชื่อผู้เรียน"
+            />
 
             <div className="grid grid-cols-2 gap-1 py-2 ">
                <Popover
