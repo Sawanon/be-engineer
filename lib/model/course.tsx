@@ -16,7 +16,7 @@ import { Document } from "./document";
 export type Course = {
   name: string;
   status: "noContent" | "hasContent" | "uploadWebapp" | "enterForm" | string;
-  tutorLink: number;
+  tutorLink: string | null;
   image?: string;
   documents?: Document[];
   branch: string | null
@@ -30,7 +30,7 @@ export type Course = {
   webappTableOfContentId?: number | null
   playlist?: string | null
   price: number,
-  Tutor: Tutor,
+  Tutor: Tutor | null,
   CourseLesson: CourseLesson[]
 };
 
@@ -47,4 +47,5 @@ export type CourseCreate =  {
   clueLink: string
   price: number
   playlist: string
+  tutorLink?: string
 }

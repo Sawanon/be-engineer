@@ -2,15 +2,13 @@ import { closestCorners, DndContext, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import React, { useState } from 'react'
 import Colume from './Colume'
+import { CourseVideo } from '@prisma/client'
 
 const SortableComponent = ({
-  lessons,
+  courseVideoList,
   onDragEnd,
 }:{
-  lessons: {
-    id: number,
-    title: string,
-  }[]
+  courseVideoList: CourseVideo[]
   onDragEnd?: (event: DragEndEvent) => void,
 }) => {
   // const [lessons, setLesson] = useState([
@@ -26,7 +24,7 @@ const SortableComponent = ({
         onDragEnd={onDragEnd}
       >
         <div className={`bg-default-100 p-1 rounded-md`}>
-          <Colume tasks={lessons} />
+          <Colume courseVideoList={courseVideoList} />
           {/* {lessons.map((lesson, index) => {
             return (
               <div

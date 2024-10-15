@@ -30,7 +30,7 @@ const SidebarApp = () => {
                             <div
                               className={`flex gap-2 items-center rounded-lg w-max p-1 ${
                                   isMenuActive(item)
-                                  ? "text-default-foreground shadow-neutral-sm-app font-semibold"
+                                  ? "text-default-foreground bg-default-50 shadow-neutral-sm-app font-semibold"
                                   : "text-default-600"
                               }`}
                               >

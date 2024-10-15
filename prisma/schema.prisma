@@ -12,7 +12,7 @@ model Course {
   name                 String
   detail               String?
   defaultHours         Int
-  tutorLink            Int
+  tutorLink            String?
   clueLink             String
   price                Int
   status               String
@@ -22,13 +22,16 @@ model Course {
   branch               String?                @db.VarChar(45)
   webappCourseId       Int?
   playlist             String?
-  Tutor                Tutor                  @relation(fields: [tutorLink], references: [id], map: "tutorLink")
+  tutorId              Int?
+  Tutor                Tutor?                 @relation(fields: [tutorId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tutorId")
   CourseLesson         CourseLesson[]
   CourseOnCourseLesson CourseOnCourseLesson[]
   Delivery             Delivery[]
+  Delivery_Course      Delivery_Course[]
 
   @@index([name])
   @@index([tutorLink], map: "tutorLink_idx")
+  @@index([tutorId], map: "tutorId_idx")
 }
 
 model CourseLesson {
@@ -60,7 +63,7 @@ model CourseOnCourseLesson {
 
 model CourseVideo {
   id            Int          @id @default(autoincrement())
-  videoLink     String
+  videoLink     String       @db.VarChar(255)
   hour          Int
   minute        Int
   position      Int
@@ -68,7 +71,8 @@ model CourseVideo {
   descriptionId Int?
   name          String?
   webappVideoId Int
-  playlistName  String?
+  playlistName  String?      @db.VarChar(255)
+  contentName   String?
   CourseLesson  CourseLesson @relation(fields: [lessonId], references: [id])
 
   @@index([lessonId], map: "CourseVideo_lessonId_fkey")
@@ -144,10 +148,10 @@ model Delivery {
   id                 Int                 @id @default(autoincrement())
   type               String              @db.VarChar(45)
   status             String              @db.VarChar(45)
-  updatedAddress     String?             @db.VarChar(45)
+  updatedAddress     String?             @db.VarChar(255)
   courseId           Int?
-  webappOrderId      Int?
-  webappCourseId     Int?
+  webappOrderId      Int
+  webappCourseId     String?             @db.VarChar(255)
   webappAdminId      Int?
   note               String?
   createdAt          DateTime            @default(now())
@@ -156,6 +160,7 @@ model Delivery {
   trackingCode       String?
   Course             Course?             @relation(fields: [courseId], references: [id], onUpdate: NoAction, map: "courseId")
   DeliverShipService DeliverShipService? @relation(fields: [serviceId], references: [id], onDelete: Restrict, map: "trackingServiceId")
+  Delivery_Course    Delivery_Course[]
 
   @@index([courseId], map: "courseId_idx")
   @@index([serviceId], map: "trackingServiceId_idx")
@@ -165,4 +170,15 @@ model Tutor {
   id     Int      @id
   name   String   @db.VarChar(45)
   Course Course[]
+}
+
+model Delivery_Course {
+  id         Int       @id
+  deliveryId Int?
+  courseId   Int?
+  Course     Course?   @relation(fields: [courseId], references: [id], onUpdate: SetNull, map: "middleCourseId")
+  Delivery   Delivery? @relation(fields: [deliveryId], references: [id], onUpdate: SetNull, map: "middleDeliveryId")
+
+  @@index([courseId], map: "middleCourseId_idx")
+  @@index([deliveryId], map: "middleDeliveryId_idx")
 }
