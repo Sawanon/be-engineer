@@ -3,15 +3,21 @@ import {
    DateInput,
    DateRangePicker,
    Input,
+   RangeValue,
    Select,
    SelectItem,
    SelectItemProps,
 } from "@nextui-org/react";
 import { CiSearch } from "react-icons/ci";
-import { parseZonedDateTime, parseDate } from "@internationalized/date";
+import {
+   parseZonedDateTime,
+   parseDate,
+   CalendarDate,
+   getLocalTimeZone,
+} from "@internationalized/date";
 import { I18nProvider } from "@react-aria/i18n";
 import { CgClose } from "react-icons/cg";
-import { cloneElement, forwardRef } from "react";
+import { cloneElement, forwardRef, useRef, useState } from "react";
 import { cn } from "@/lib/util";
 import { HiOutlineTruck } from "react-icons/hi";
 import {
@@ -26,15 +32,29 @@ import {
 import dayjs from "dayjs";
 import { modalProps, stateProps } from "@/@type";
 import CustomInput from "../CustomInput";
+export type DeliverFilter = {
+   input: string | undefined;
+   status: string | undefined;
+   university: string | undefined;
+   startDate: string;
+   endDate: string;
+};
 const FormDeliver = ({
    state,
    onAddTrackings,
    onPrint,
+   searchState,
+   onCloseSelect,
 }: {
+   searchState: stateProps<DeliverFilter | undefined>;
    state: stateProps<modalProps>;
    onAddTrackings: () => void;
    onPrint: () => void;
+   onCloseSelect: () => void;
 }) => {
+   const [search, setSearch] = searchState;
+   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+   console.log(search);
    const [selectState, setSelectState] = state;
    const onOpenSelect = () => {
       setSelectState({
@@ -43,8 +63,34 @@ const FormDeliver = ({
       });
    };
 
-   const onCloseSelect = () => {
-      setSelectState({ open: false });
+   const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      clearTimeout(timeoutRef.current);
+      if (value && value?.length >= 1) {
+         timeoutRef.current = setTimeout(() => {
+            setSearch((prev: DeliverFilter) => ({
+               ...prev,
+               input: value,
+            }));
+         }, 500);
+      } else {
+         setSearch((prev: DeliverFilter) => ({
+            ...prev,
+            input: undefined,
+         }));
+      }
+   };
+
+   const onChangeDate = (data: RangeValue<CalendarDate>) => {
+      setSearch((prev: DeliverFilter) => ({
+         ...prev,
+         startDate: dayjs(data.start.toDate(getLocalTimeZone())).format(
+            "YYYY-MM-DD"
+         ),
+         endDate: dayjs(data.end.toDate(getLocalTimeZone())).format(
+            "YYYY-MM-DD"
+         ),
+      }));
    };
 
    return (
@@ -55,6 +101,7 @@ const FormDeliver = ({
                   input: "bg-default-foreground rounded-[12px] ",
                   // base: "",
                }}
+               onChange={handleChangeSearch}
                type="text"
                placeholder="ชื่อผู้เรียน คอร์สเรียน หรือ ลำดับ"
                startContent={
@@ -65,18 +112,19 @@ const FormDeliver = ({
          <div className="flex gap-2 order-2 col-span-12 md:order-4 md:col-span-5 ">
             <I18nProvider locale="en-GB">
                <DateRangePicker
+                  onChange={onChangeDate}
                   classNames={{
                      calendarContent: cn("w-[280px]  "),
                      calendar: cn("w-[280px] "),
                      input: cn("text-black"),
                   }}
                   calendarProps={{
-                     classNames  : {
+                     classNames: {
                         cellButton: [
                            // default text color
                            // "text-red-300",
                            // selected case
-                           
+
                            "data-[selectionStart=true]:bg-red-500",
                            // "data-[selection-end=true]:bg-red-500",
                            // "data-[selected=true]:bg-default-foreground",
@@ -87,8 +135,8 @@ const FormDeliver = ({
                            // selected and hover case
                            // "data-[selected=true]:data-[hover=true]:bg-secondary",
                            // "data-[selected=true]:data-[hover=true]:text-secondary-foreground",
-                         ]
-                     }
+                        ],
+                     },
                   }}
                   defaultValue={{
                      start: parseDate(dayjs().format("YYYY-MM-DD")),
@@ -165,10 +213,13 @@ const FormDeliver = ({
                   <LuX className="text-danger h-6 w-6 block md:hidden" />{" "}
                </Button>
                <Button
-                  className={cn("font-medium flex-1 bg-default-100 font-IBM-Thai", {})}
+                  className={cn(
+                     "font-medium flex-1 bg-default-100 font-IBM-Thai",
+                     {}
+                  )}
                   onClick={onAddTrackings}
                >
-                  <LuTruck size={24}/>
+                  <LuTruck size={24} />
                   <p className="">ใส่เลข Track</p>
                </Button>
                <Button

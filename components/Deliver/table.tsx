@@ -1,10 +1,20 @@
-import { deliverProps, modalProps, QueryProps, stateProps } from "@/@type";
+import {
+   deliverProps,
+   deliveryTypeProps,
+   modalProps,
+   QueryProps,
+   stateProps,
+} from "@/@type";
+import { deliveryPrismaProps } from "@/lib/actions/deliver.actions";
+import { useInfinityDeliver } from "@/lib/query/delivery";
 import { tableClassnames } from "@/lib/res/const";
 import { isErrorMessageProps } from "@/lib/typeGuard";
 import {
    Button,
    Chip,
    Pagination,
+   Selection,
+   Spinner,
    Table,
    TableBody,
    TableCell,
@@ -12,8 +22,10 @@ import {
    TableHeader,
    TableRow,
 } from "@nextui-org/react";
+import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import dayjs from "dayjs";
-import { useMemo, useState } from "react";
+import _ from "lodash";
+import { useMemo, useRef, useState } from "react";
 import { HiOutlineTruck } from "react-icons/hi";
 import { LuFileSignature, LuPackage, LuPrinter } from "react-icons/lu";
 
@@ -22,48 +34,127 @@ const TableDeliver = ({
    state,
    onPrint,
    onAddTrackings,
-   handleOnCloseEditAddress,
+   onEditAddress,
+   tableSelect,
 }: {
-   query: QueryProps<deliverProps[]>;
+   tableSelect: stateProps<{
+      key: Set<number>;
+      data?: Record<string, deliverProps>;
+   }>;
+   query: ReturnType<typeof useInfinityDeliver>;
    state: stateProps<modalProps>;
    onPrint: () => void;
-   onAddTrackings: (data: deliverProps) => void;
-   handleOnCloseEditAddress: () => void;
+   onAddTrackings: (data: deliverProps, type: deliveryTypeProps) => void;
+   onEditAddress: (data: deliverProps | undefined) => void;
 }) => {
+   const [deliverItem, setDeliverItem] = useState<{
+      data: Record<string, deliverProps>;
+      pickup: Record<string, deliverProps>;
+   }>({
+      data: {},
+      pickup: {},
+   });
    const [selectState, setSelectState] = state;
+   const [selectKeys, setSelectKeys] = tableSelect;
    const [page, setPage] = useState(1);
    const [pageSize, setPageSize] = useState(10);
-   const [allPage, setAllPage] = useState(0);
+   const [allPage, setAllPage] = useState(10);
+   const [currentPage, setCurrentPage] = useState(1);
    if (isErrorMessageProps(query.data)) {
       return <p>Error: {query.data.message}</p>;
    }
-   // const deliveries = query.data ?? [];
-   const deliverItem = useMemo(() => {
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const deliveries = isErrorMessageProps(query.data)
-         ? []
-         : query.data ?? [];
-      const currentDeliveries = deliveries?.slice(startIndex, endIndex);
-      if (deliveries) {
-         setAllPage(Math.ceil(deliveries.length / pageSize));
+   const [loaderRef, scrollerRef] = useInfiniteScroll({
+      hasMore: query.hasNextPage,
+      onLoadMore: query.fetchNextPage,
+   });
+
+   const onSelectRow = (key: Selection) => {
+      const data: Record<string, deliverProps> = {};
+      Array.from(key).forEach((id) => {
+         const delivery = deliverItem.data[id];
+         data[id] = delivery;
+      });
+      setSelectKeys({ key, data });
+   };
+
+   useMemo(() => {
+      // const cloneData = _.cloneDeep(deliverItem);
+      // const data: deliverProps[] = [];
+      const deliverMap: Record<string, deliverProps> = {};
+      const disabledKeys: Record<string, deliverProps> = {};
+      // let maxPage = _.clone(currentPage);
+      if (query.data?.pages) {
+         for (let index = 0; index < query.data?.pages?.length; index++) {
+            const page = query.data.pages[index];
+            // const currentPage = index + 1;
+            // console.table({
+            //    maxPage,
+            //    nextPage: page.nextPage,
+            //    length: query.data?.pages?.length,
+            // });
+            // if (maxPage > page.nextPage - 1) {
+            //    console.log("no do");
+            //    maxPage = currentPage + 1;
+            //    continue;
+            // } else {
+            //    console.log("do");
+            //    maxPage = currentPage + 1;
+
+            Object.values(page.data).forEach((deliver) => {
+               // cloneData.push(deliver);
+               // data.push(deliver);
+               const checkType =
+                  deliver.tracking?.type === "pickup" ||
+                  (deliver.tracking === undefined &&
+                     deliver.note.includes("รับที่สถาบัน"))
+                     ? "pickup"
+                     : "ship";
+               if (
+                  checkType === "pickup" ||
+                  deliver.tracking?.status === "success"
+               ) {
+                  disabledKeys[deliver.id] = deliver;
+               }
+               deliverMap[deliver.id] = deliver;
+            });
+            // }
+         }
       }
-      return currentDeliveries;
-   }, [page, query.data, query.isLoading]);
+      // console.log("data.length", data.length);
+      // setCurrentPage(maxPage);
+      setDeliverItem({ data: deliverMap, pickup: disabledKeys });
+   }, [query.data?.pages]);
    return (
       <>
-         <div className=" flex flex-col flex-1 scrollbar-hide overflow-y-auto">
+         <div className="py-2 flex flex-col flex-1  overflow-y-hidden">
             <Table
+               disabledKeys={
+                  selectState.open ? Object.keys(deliverItem.pickup) : ""
+               }
+               // layout="fixed"
                isStriped
                isHeaderSticky
                // color={"primary"}
                selectionMode={selectState.open ? "multiple" : "none"}
-               classNames={tableClassnames}
+               classNames={{
+                  ...tableClassnames,
+                  base: "flex-1  overflow-y-hidden",
+                  // tbody : "overflow-scroll scrollbar-hide",
+                  table: "min-h-[800px] ",
+               }}
                aria-label="deliver-table"
-               //  selectedKeys={selectedKeys}
-               //  onSelectionChange={setSelectedKeys}
+               selectedKeys={selectKeys.key}
+               onSelectionChange={onSelectRow}
                //  defaultSelectedKeys={["2", "3"]}
                //  aria-label="Example static collection table"
+               baseRef={scrollerRef}
+               bottomContent={
+                  query.hasNextPage ? (
+                     <div className="flex w-full justify-center">
+                        <Spinner ref={loaderRef} color="success" />
+                     </div>
+                  ) : null
+               }
             >
                <TableHeader>
                   <TableColumn>ลำดับ</TableColumn>
@@ -75,171 +166,95 @@ const TableDeliver = ({
                </TableHeader>
 
                <TableBody
-                  items={deliverItem}
-                  isLoading={query.isLoading}
+                  emptyContent={"No rows to display."}
+                  items={Object.values(deliverItem.data)}
+                  isLoading={query.isFetching}
+                  loadingContent={<div>loading...</div>}
                   className=""
                >
-                  {
-                     (deliver) => {
-                        const courses = deliver.courses;
-                        console.log("course.lenght", deliver.courses.length);
-                        return (
-                           <TableRow key={deliver.id}>
-                              <TableCell>
-                                 <p>{deliver.id}</p>
-                              </TableCell>
-                              <TableCell>
-                                 <p className="whitespace-nowrap">
-                                    {deliver.member}
-                                 </p>
-                              </TableCell>
-                              <TableCell>
-                                 {courses.map((course) => {
-                                    return (
-                                       <div key={course.id}>
-                                          <p>
-                                             - {course.course} ({deliver.branch}
-                                             )
-                                          </p>
-                                          <p className="whitespace-nowrap">
-                                             {/* midterm(midterm-b 1/2567) */}
-                                             {course.term}
-                                          </p>
-                                       </div>
-                                    );
-                                 })}
-                              </TableCell>
-                              <TableCell>
-                                 <button
-                                    className="text-left"
-                                    onClick={handleOnCloseEditAddress}
-                                 >
-                                    <p className="w-[300px]">{deliver.note}</p>
-                                 </button>
-                              </TableCell>
-                              <TableCell>
-                                 {dayjs(deliver.last_updated).format(
-                                    "MMM-DD HH:mm"
-                                 )}
-                              </TableCell>
-                              <TableCell className="space-y-2 md:space-x-2 flex items-center flex-col">
-                                 {deliver.note.includes("รับที่สถาบัน") ? (
-                                    <Button
-                                       color="secondary"
-                                       startContent={
-                                          <LuFileSignature size={20} />
-                                       }
-                                    >
-                                       รับที่สถาบัน
-                                    </Button>
-                                 ) : (
-                                    <>
-                                       {" "}
-                                       <Button
-                                          className="bg-default-100"
-                                          startContent={<LuPackage size={20} />}
-                                          onClick={() =>
-                                             onAddTrackings(deliver)
-                                          }
-                                       >
-                                          เพิ่ม Track no.
-                                       </Button>
-                                       <Button
-                                          className="bg-default-100"
-                                          startContent={<LuPrinter size={20} />}
-                                          onClick={onPrint}
-                                       >
-                                          พิมพ์ใบปะหน้า
-                                       </Button>
-                                    </>
-                                 )}
-                              </TableCell>
-                           </TableRow>
-                        );
-                     }
-                     /* <TableRow key="1">
-              
-            </TableRow>
-            <TableRow key="2" className="even:bg-[#F4F4F5]">
-               <TableCell>
-                  <p>24323</p>
-               </TableCell>
-               <TableCell>
-                  <p className="whitespace-nowrap">ธีร์ธนรัชต์ นื่มทวัฒน์</p>
-               </TableCell>
-               <TableCell>
-                  <p>- Physic 1 (CU)</p>
-                  <p className="whitespace-nowrap">midterm(midterm-b 1/2567)</p>
-               </TableCell>
-               <TableCell>
-                  <button
-                     className="text-left"
-                     onClick={handleOnCloseEditAddress}
-                  >
-                     <p className="w-[300px]">
-                        582/47 ซอยรัชดา 3 (แยก 10) ถนนอโศก-ดินแดง แขวงดินแดง
-                        เขตดินแดง กทม. 10400 เบอร์โทร 0956628171
-                     </p>
-                  </button>
-               </TableCell>
-               <TableCell>
-                  <p>AUG-28 10:35</p>
-               </TableCell>
-               <TableCell className="">
-                  <p className="text-secondary-fade text-xs">
-                     ส่งวันที่ 10 ก.ค. 2567
-                  </p>
-                  <div className="flex gap-2 items-center text-secondary font-semibold">
-                     <p>TH38015VCMPJ6A0</p>
+                  {(deliver) => {
+                     const courses = deliver.courses;
+                     const tracking = deliver.tracking;
+                     const newAddress = _.isEmpty(tracking?.updatedAddress)
+                        ? deliver.note
+                        : tracking?.updatedAddress;
+                     const checkType =
+                        tracking?.type === "pickup" ||
+                        (tracking === undefined &&
+                           deliver.note.includes("รับที่สถาบัน"))
+                           ? "pickup"
+                           : "ship";
 
-                     <Button isIconOnly className="bg-default-100">
-                        <HiOutlineTruck size={24} />
-                     </Button>
-                  </div>
-                  <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning ">
-                     หมายเหตุ (ถ้ามี)
-                  </p>
-               </TableCell>
-            </TableRow>
-            <TableRow key="3" className="even:bg-[#F4F4F5]">
-               <TableCell>
-                  <p>24323</p>
-               </TableCell>
-               <TableCell>
-                  <p className="whitespace-nowrap">ธีร์ธนรัชต์ นื่มทวัฒน์</p>
-               </TableCell>
-               <TableCell>
-                  <p>- Physic 1 (CU)</p>
-                  <p className="whitespace-nowrap">midterm(midterm-b 1/2567)</p>
-               </TableCell>
-               <TableCell>
-                  <button
-                     className="text-left"
-                     onClick={handleOnCloseEditAddress}
-                  >
-                     <p className="w-[300px]">
-                        582/47 ซอยรัชดา 3 (แยก 10) ถนนอโศก-ดินแดง แขวงดินแดง
-                        เขตดินแดง กทม. 10400 เบอร์โทร 0956628171
-                     </p>
-                  </button>
-               </TableCell>
-               <TableCell>
-                  <p>AUG-28 10:35</p>
-               </TableCell>
-               <TableCell className="">
-                  <Button
-                     color="secondary"
-                     startContent={<LuFileSignature size={20} />}
-                  >
-                     รับที่สถาบัน
-                  </Button>
-               </TableCell>
-            </TableRow> */
-                  }
+                     const status = tracking?.status ?? "waiting";
+                     // console.log(courses);
+                     return (
+                        <TableRow key={deliver.id}>
+                           <TableCell>
+                              <p>{deliver.id}</p>
+                           </TableCell>
+                           <TableCell>
+                              <p className="whitespace-nowrap">
+                                 {deliver.member}
+                              </p>
+                           </TableCell>
+                           <TableCell>
+                              {courses.map((course) => {
+                                 return (
+                                    <div key={course.id}>
+                                       <p>
+                                          - {course.course} ({deliver.branch})
+                                       </p>
+                                       <p className="whitespace-nowrap">
+                                          {/* midterm(midterm-b 1/2567) */}
+                                          {course.term}
+                                       </p>
+                                    </div>
+                                 );
+                              })}
+                           </TableCell>
+                           <TableCell>
+                              <button
+                                 className="text-left"
+                                 onClick={() => {
+                                    if (
+                                       status === "success" ||
+                                       checkType === "pickup"
+                                    )
+                                       return;
+                                    onEditAddress(deliver);
+                                 }}
+                              >
+                                 <p className="w-[300px]">{newAddress}</p>
+                              </button>
+                           </TableCell>
+                           <TableCell>
+                              {dayjs(deliver.last_updated).format(
+                                 "MMM-DD HH:mm"
+                              )}
+                              {checkType}
+                           </TableCell>
+                           <TableCell className=" ">
+                              {status === "success" ? (
+                                 <TrackingDetail
+                                    checkType={checkType}
+                                    tracking={tracking}
+                                 />
+                              ) : (
+                                 <AddTrackDetail
+                                    deliveryType={checkType}
+                                    deliver={deliver}
+                                    onAddTrackings={onAddTrackings}
+                                    onPrint={onPrint}
+                                 />
+                              )}
+                           </TableCell>
+                        </TableRow>
+                     );
+                  }}
                </TableBody>
             </Table>
          </div>
-         <div className="py-2 flex justify-center">
+         {/* <div className="py-2 flex justify-center">
             <Pagination
                total={allPage}
                initialPage={page}
@@ -249,9 +264,103 @@ const TableDeliver = ({
                }}
                onChange={(page) => setPage(page)}
             />
-         </div>{" "}
+         </div>{" "} */}
       </>
    );
 };
 
 export default TableDeliver;
+
+const TrackingDetail = ({
+   tracking,
+   checkType,
+}: {
+   checkType: deliveryTypeProps;
+   tracking?: deliveryPrismaProps;
+}) => {
+   return (
+      <>
+         {checkType === "ship" && (
+            <>
+               <p className="text-secondary-fade text-xs">
+                  ส่งวันที่ {dayjs(tracking?.createdAt).format("DD MM YYYY")}
+               </p>
+               <div className="flex gap-2 items-center text-secondary font-semibold">
+                  <p>{tracking?.trackingCode}</p>
+
+                  <Button isIconOnly className="bg-default-100">
+                     <HiOutlineTruck size={24} />
+                  </Button>
+               </div>
+               <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning ">
+                  {tracking?.note !== ""
+                     ? tracking?.note
+                     : "หมายเหตุ​​ (ถ้ามี)"}
+               </p>
+            </>
+         )}
+         {checkType === "pickup" && (
+            <>
+               <p className="text-secondary-fade text-xs">
+                  {dayjs(tracking?.createdAt).format("HH:mm น.")} โดย ...
+               </p>
+               <p className="text-secondary font-semibold ">
+                  รับวันที่ {dayjs(tracking?.createdAt).format("DD MMMM YYYY")}
+               </p>
+
+               <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning ">
+                  {tracking?.note !== ""
+                     ? tracking?.note
+                     : "หมายเหตุ​​ (ถ้ามี)"}
+               </p>
+            </>
+         )}
+      </>
+   );
+};
+
+const AddTrackDetail = ({
+   onAddTrackings,
+   deliver,
+   onPrint,
+   deliveryType,
+}: {
+   deliveryType: deliveryTypeProps;
+   onAddTrackings: (data: deliverProps, type: deliveryTypeProps) => void;
+   deliver: deliverProps;
+   onPrint: () => void;
+}) => {
+   return (
+      <div className="space-y-2">
+         {deliveryType === "ship" && (
+            <>
+               <Button
+                  className="bg-default-100"
+                  startContent={<LuPackage size={20} />}
+                  onClick={() => onAddTrackings(deliver, deliveryType)}
+               >
+                  เพิ่ม Track no.
+               </Button>
+               <Button
+                  className="bg-default-100"
+                  startContent={<LuPrinter size={20} />}
+                  onClick={onPrint}
+               >
+                  พิมพ์ใบปะหน้า
+               </Button>
+            </>
+         )}
+         {deliveryType === "pickup" && (
+            <>
+               <Button
+                  className="bg-default-100"
+                  startContent={<LuFileSignature size={20} />}
+                  onClick={() => onAddTrackings(deliver, deliveryType)}
+               >
+                  รับที่สถาบัน
+               </Button>
+            </>
+         )}
+      </div>
+   );
+};

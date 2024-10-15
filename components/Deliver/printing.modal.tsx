@@ -1,3 +1,4 @@
+import { deliverProps } from "@/@type";
 import { cn } from "@/lib/util";
 import {
    Modal,
@@ -16,11 +17,11 @@ import { LuArrowLeft, LuPenSquare, LuPrinter } from "react-icons/lu";
 
 const DeliverModal = ({
    open,
-   onEdit,
+  onEditAddress,
    onClose,
 }: {
    open: boolean;
-   onEdit: () => void;
+  onEditAddress: (data: deliverProps | undefined) => void;
    onClose: () => void;
 }) => {
    return (
@@ -51,12 +52,12 @@ const DeliverModal = ({
                         </Button>
                      </div>
                      <div className="space-y-2  flex-1 mt-2  overflow-y-auto">
-                        <CardDeliver onEdit={onEdit} />
-                        <CardDeliver onEdit={onEdit} />
-                        <CardDeliver onEdit={onEdit} />
-                        <CardDeliver onEdit={onEdit} />
-                        <CardDeliver onEdit={onEdit} />
-                        <CardDeliver onEdit={onEdit} />
+                        <CardDeliver onEdit={onEditAddress} />
+                        <CardDeliver onEdit={onEditAddress} />
+                        <CardDeliver onEdit={onEditAddress} />
+                        <CardDeliver onEdit={onEditAddress} />
+                        <CardDeliver onEdit={onEditAddress} />
+                        <CardDeliver onEdit={onEditAddress} />
                      </div>
                   </div>
                </div>
@@ -68,7 +69,11 @@ const DeliverModal = ({
 
 export default DeliverModal;
 
-const CardDeliver = ({ onEdit }: { onEdit: () => void }) => {
+const CardDeliver = ({
+   onEdit,
+}: {
+   onEdit: (data: deliverProps | undefined) => void;
+}) => {
    const myRef = useRef<HTMLDivElement>(null);
 
    const handleMouseOver = () => {
@@ -137,7 +142,7 @@ const CardDeliver = ({ onEdit }: { onEdit: () => void }) => {
                <div ref={myRef} className={cn("hidden", {})}>
                   {/* Your component here */}
                   <Button
-                     onClick={onEdit}
+                     // onClick={onEdit}
                      size="sm"
                      endContent={<LuPenSquare size={20} />}
                   >

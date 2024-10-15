@@ -7,7 +7,7 @@ import { AxiosError } from "axios";
 import { Course } from "./model/course";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+   return twMerge(clsx(inputs));
 }
 export const parseStringify = <T>(value: T): T =>
    JSON.parse(JSON.stringify(value));
@@ -16,7 +16,7 @@ export const handleError = (error: unknown): ErrorMessageProps => {
    let errDetails: Record<string, any> = {
       isError: true,
       code: 404,
-      message: `unknown error ${JSON.stringify(error)}`,
+      message: JSON.stringify(error),
    };
    if (isErrorMessageProps(error)) {
       return parseStringify({
@@ -57,7 +57,6 @@ export const handleError = (error: unknown): ErrorMessageProps => {
    } else {
       console.error("Unexpected error type:", error);
    }
-
 
    if (error instanceof CustomError) {
       errDetails = {
@@ -140,10 +139,10 @@ export const handleError = (error: unknown): ErrorMessageProps => {
 //     }
 //   );
 //   console.log(courseListInNewDB);
-  
+
 //   courseListInNewDB.forEach(courseInNewDB => {
 //     courseListObj[courseInNewDB.webappCourseId].name = courseInNewDB.name
 //   })
-  
+
 //   return Object.values(courseListObj);
 // };
