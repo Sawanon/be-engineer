@@ -13,6 +13,15 @@ export const addLessonToDB = async (courseId: number, lesson: any) => {
       }
     })
     console.log("Lesson added to DB");
+    await prisma.course.update({
+      where: {
+        id: courseId,
+      },
+      data: {
+        status: `hasContent`,
+      }
+    })
+    console.log(`CourseId: ${courseId} update status to hasContent`);
     return response
   } catch (error) {
     console.error(error);

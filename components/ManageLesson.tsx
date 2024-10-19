@@ -95,10 +95,14 @@ const ManageLesson = ({
       return;
     }
     const position = lessons ? lessons.length + 1 : 1;
-    await addLessonToDB(courseId, {
+    const res = await addLessonToDB(courseId, {
       name: lessonName,
       position: position,
     });
+    if(!res) {
+      return alert(`response is empty please view log on server`)
+    }
+    setLessonName(undefined)
     setIsAddLesson(false);
     if(onFetch){
       onFetch()
@@ -355,21 +359,10 @@ const ManageLesson = ({
           </div>
         </div>
       )}
-      {/* add lesson */}
-      {lessons?.length === 0 &&
-        <div className={`flex justify-center mt-2`}>
-          <Button
-            startContent={<Plus />}
-            className={`bg-default-foreground text-primary-foreground font-IBM-Thai text-base font-medium`}
-            onClick={() => setIsAddLesson(true)}
-          >
-            บทเรียน
-          </Button>
-        </div>
-      }
       {lessons?.map((lesson, index) => {
+        const hasDocument = lesson.LessonOnDocumentSheet.length > 0 || lesson.LessonOnDocument.length > 0 || lesson.LessonOnDocumentBook.length > 0
         return (
-          <div key={`lesson${index}`} className="mt-2 bg-content1 rounded-lg p-2 border-2 border-danger-500">
+          <div key={`lesson${index}`} className={`mt-2 bg-content1 rounded-lg p-2 ${hasDocument ? '' : 'border-2 border-danger-500'}`}>
             <div className="flex justify-between items-center">
               <div className="text-lg font-IBM-Thai-Looped font-medium">
                 {lesson.name}
@@ -441,7 +434,7 @@ const ManageLesson = ({
               :
               lesson.LessonOnDocumentSheet.map((documentSheet: any, index: number) => {
                 return (
-                  <div className={`flex gap-2 font-IBM-Thai-Looped`} key={documentSheet.id}>
+                  <div className={`flex gap-2 font-IBM-Thai-Looped`} key={`documentSheet${documentSheet.id}${lesson.id}`}>
                     <ClipboardSignature size={20} />
                     <div>
                       {documentSheet.DocumentSheet.name}
@@ -461,6 +454,16 @@ const ManageLesson = ({
           </div>
         );
       })}
+      {/* add lesson */}
+      <div className={`flex justify-center mt-2`}>
+        <Button
+          startContent={<Plus />}
+          className={`bg-default-foreground text-primary-foreground font-IBM-Thai text-base font-medium`}
+          onClick={() => setIsAddLesson(true)}
+        >
+          บทเรียน
+        </Button>
+      </div>
 
       <div className="hidden mt-2 bg-content1 rounded-lg p-2">
         <div className="flex justify-between items-center">
