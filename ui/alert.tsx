@@ -21,8 +21,8 @@ const Alert = ({
 }) => {
    const checkIcon = icon ? icon : alertIcon[type];
    return (
-      <div className={cn("bg-[#F31260] mb-3  pl-1 rounded-l-md rounded-r-lg  md:text-base text-xs")}>
-         <div className="pl-4 flex gap-2 text-[#F31260] bg-[#FEE7EF] py-1 items-center rounded-[4px]">
+      <div className={cn("bg-danger-400 mb-3  pl-1 rounded-l-md rounded-r-lg  md:text-base text-xs")}>
+         <div className="pl-4 flex gap-2 text-danger-400 bg-danger-50 py-1 items-center rounded">
             {icon !== false && checkIcon} {label}
          </div>
       </div>

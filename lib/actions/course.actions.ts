@@ -3,6 +3,7 @@
 import axios from "axios";
 import { Course, CourseCreate } from '../model/course'
 import { PrismaClient, Course as CoursePrisma, Prisma } from "@prisma/client";
+import { handleError, parseStringify } from "../util";
 
 const ENDPOINT_BE_ENGINEER_URL = process.env.ENDPOINT_BE_ENGINEER_URL;
 const B_API_KEY = process.env.B_API_KEY;
@@ -30,6 +31,9 @@ export const listCourseAction = async ()  => {
       include: {
         Tutor: true,
         CourseLesson: {
+          orderBy: {
+            position: 'asc',
+          },
           include: {
             CourseVideo: true,
             LessonOnDocumentSheet: {
@@ -58,6 +62,31 @@ export const listCourseAction = async ()  => {
     prisma.$disconnect()
   }
 }
+
+export const getCourseByWebappId = async (webappId: number[]) => {
+  try {
+     const res = await prisma.course.findMany({
+        where: {
+           webappCourseId: { in: webappId },
+        },
+        include: {
+           Tutor: true,
+           CourseLesson: {
+              include: {
+                 CourseVideo: true,
+              },
+           },
+        },
+     });
+     return parseStringify(res);
+  } catch (error) {
+     console.error(error);
+     throw handleError(error);
+     return [];
+  } finally {
+     prisma.$disconnect();
+  }
+};
 
 export const addCourse = async (courseData: CourseCreate) : Promise<CoursePrisma | undefined> => {
   try {
@@ -100,13 +129,6 @@ export const updateCourse = async (courseId: number , payload: any) => {
 
 function isJsonObject(val: any): val is Prisma.JsonObject {
   return val && typeof val === 'object' && !Array.isArray(val)
-}
-
-const ya = async () => {
-  const test =  await prisma.testjson.findMany()
-  if(test[0].json && isJsonObject(test[0].json)){
-    const ya = test[0].json.df
-  }
 }
 
 export const deleteCourse = async (courseId: number) => {

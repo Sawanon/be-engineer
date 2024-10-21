@@ -45,3 +45,37 @@ export const addDocumentToLesson = async (documentId: number, lessonId: number) 
     prisma.$disconnect()
   }
 }
+
+export const addBookToLessonAction = async (bookId: number, lessonId: number) => {
+  try {
+    const response = await prisma.lessonOnDocumentBook.create({
+      data: {
+        lessonId: lessonId,
+        bookId: bookId,
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const changePositionLesson = async (lessonId: number, newPosition: number) => {
+  try {
+    const response = await prisma.courseLesson.update({
+      where: {
+        id: lessonId,
+      },
+      data: {
+        position: newPosition,
+      },
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+  } finally {
+    prisma.$disconnect()
+  }
+}

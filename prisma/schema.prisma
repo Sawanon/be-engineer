@@ -83,6 +83,9 @@ model DocumentBook {
   image                String?
   inStock              Int?
   name                 String
+  term                 String?                @db.VarChar(45)
+  year                 String?                @db.VarChar(10)
+  BookTransactions     BookTransactions[]
   LessonOnDocumentBook LessonOnDocumentBook[]
 
   @@index([name])
@@ -145,25 +148,27 @@ model DeliverShipService {
 }
 
 model Delivery {
-  id                 Int                 @id @default(autoincrement())
-  type               String              @db.VarChar(45)
-  status             String              @db.VarChar(45)
-  updatedAddress     String?             @db.VarChar(255)
-  courseId           Int?
-  webappOrderId      Int
-  webappCourseId     String?             @db.VarChar(255)
-  webappAdminId      Int?
-  note               String?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @default(now())
-  serviceId          Int?
-  trackingCode       String?
-  member             String?             @db.VarChar(255)
-  branch             String?             @db.VarChar(45)
-  mobile             String?             @db.VarChar(20)
-  Course             Course?             @relation(fields: [courseId], references: [id], onUpdate: NoAction, map: "courseId")
-  DeliverShipService DeliverShipService? @relation(fields: [serviceId], references: [id], onDelete: Restrict, map: "trackingServiceId")
-  Delivery_Course    Delivery_Course[]
+  id                    Int                     @id @default(autoincrement())
+  type                  String                  @db.VarChar(45)
+  status                String                  @db.VarChar(45)
+  updatedAddress        String?                 @db.VarChar(255)
+  courseId              Int?
+  webappOrderId         Int                     @unique(map: "webappOrderId_UNIQUE")
+  webappCourseId        String?                 @db.VarChar(255)
+  webappAdminId         Int?
+  note                  String?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @default(now())
+  serviceId             Int?
+  trackingCode          String?
+  member                String?                 @db.VarChar(255)
+  branch                String?                 @db.VarChar(45)
+  mobile                String?                 @db.VarChar(20)
+  approved              DateTime?               @db.DateTime(0)
+  Course                Course?                 @relation(fields: [courseId], references: [id], onUpdate: NoAction, map: "courseId")
+  DeliverShipService    DeliverShipService?     @relation(fields: [serviceId], references: [id], onDelete: Restrict, map: "trackingServiceId")
+  Delivery_Course       Delivery_Course[]
+  Delivery_WebappCourse Delivery_WebappCourse[]
 
   @@index([courseId], map: "courseId_idx")
   @@index([serviceId], map: "trackingServiceId_idx")
@@ -190,7 +195,34 @@ model Delivery_Course {
   @@index([deliveryId], map: "middleDeliveryId_idx")
 }
 
-model testjson {
-  id   Int   @id
-  json Json?
+model Delivery_WebappCourse {
+  deliverId      Int?
+  webappCourseId Int?
+  id             Int           @id @default(autoincrement())
+  Delivery       Delivery?     @relation(fields: [deliverId], references: [id], onUpdate: SetNull, map: "middleDeliver")
+  WebappCourse   WebappCourse? @relation(fields: [webappCourseId], references: [webappCourseId], onDelete: NoAction, onUpdate: NoAction, map: "middleWebappCourse")
+
+  @@index([deliverId], map: "middleDeliver")
+  @@index([webappCourseId], map: "middleWebappCourse_idx")
+}
+
+model WebappCourse {
+  id                    Int                     @id @default(autoincrement())
+  name                  String?                 @db.VarChar(255)
+  term                  String?                 @db.VarChar(255)
+  webappCourseId        Int?                    @unique(map: "webappCourseId_UNIQUE")
+  Delivery_WebappCourse Delivery_WebappCourse[]
+}
+
+model BookTransactions {
+  id           Int          @id @default(autoincrement())
+  startDate    DateTime     @db.DateTime(0)
+  endDate      DateTime     @db.DateTime(0)
+  detail       String       @db.VarChar(100)
+  qty          Int
+  createdAt    DateTime     @default(now())
+  bookId       Int
+  DocumentBook DocumentBook @relation(fields: [bookId], references: [id], onDelete: Cascade, map: "bookId")
+
+  @@index([bookId], map: "bookId_idx")
 }

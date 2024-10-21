@@ -2,7 +2,7 @@
 import { DocumentSheet, PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
-export const addDocumentAction = async (name: string, url: string) => {
+export const addSheetAction = async (name: string, url: string) => {
   try {
     const response = await prisma.documentSheet.create({
       data: {
@@ -18,7 +18,7 @@ export const addDocumentAction = async (name: string, url: string) => {
   }
 }
 
-export const listDocument = async ():Promise<DocumentSheet[] | undefined> => {
+export const listSheetsAction = async ():Promise<DocumentSheet[] | undefined> => {
   try {
     const response = await prisma.documentSheet.findMany()
     return response

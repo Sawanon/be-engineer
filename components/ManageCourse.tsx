@@ -65,7 +65,7 @@ import copy from "copy-to-clipboard";
 import { useQuery } from "@tanstack/react-query";
 import { Key } from "@react-types/shared";
 import StatusIcon from "./Course/StatusIcon";
-import { DocumentBook, DocumentPreExam, DocumentSheet } from "@prisma/client";
+import { CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet } from "@prisma/client";
 
 const ManageCourse = ({
   isOpenDrawer,
@@ -98,6 +98,7 @@ const ManageCourse = ({
   const sheets = (selectedCourse as any)?.uniqueSheets as any[] ?? []
   const preExam = (selectedCourse as any)?.uniquePreExam as any[] ?? []
   const books = (selectedCourse as any)?.uniqueBooks as any[] ?? []
+  const documentNumber = sheets.length + preExam.length + books.length
   const [refetchCourse] = useCourse();
   const [isAdd, setIsAdd] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
@@ -116,7 +117,7 @@ const ManageCourse = ({
   const [mode, setMode] = useState<"tutor" | "admin">("tutor");
   const [courseImageList, setCourseImageList] = useState<string[]>([]);
   const [webappCourseList, setWebappCourseList] = useState<
-    | { id: number; name: string; image: string; hasFeedback: boolean }[]
+    | { id: number; name: string; image: string; hasFeedback: boolean; term: string; }[]
     | undefined
   >();
 
@@ -126,6 +127,10 @@ const ManageCourse = ({
   };
 
   useMemo(() => {
+    if(!selectedCourse){
+      setMode("tutor")
+      setCourseImageList([])
+    }
     setIsAdd(selectedCourse === undefined);
     if (selectedCourse) {
       listImageCourse(selectedCourse.name);
@@ -306,6 +311,53 @@ const ManageCourse = ({
     refetchCourse()
   };
 
+  const renderWebappImage = (webappCourseId: number | null | undefined) => {
+    if(!webappCourseId) return <div></div>
+    if(!webappCourseList) return <div></div>
+    const imageUrl = webappCourseList.find(course => course.id === webappCourseId)
+    if(!imageUrl) return <div></div>
+    return (
+      <Image className={`min-w-6 rounded`} width={24} height={24} src={`${imageUrl.image}`} />
+    )
+  }
+
+  const renderHourCourse = () => {
+    if(!selectedCourse) return {hour: 0, minute: 0, totalHour: 0}
+    let totalMinute = 0
+    selectedCourse.CourseLesson.forEach((lesson:any) => {
+      const courseVideoList: CourseVideo[] = lesson.CourseVideo
+      courseVideoList.forEach(courseVideo => {
+        totalMinute += (courseVideo.hour*60) + (courseVideo.minute)
+      })
+    })
+    console.log("🚀 ~ renderHourCourse ~ totalMinute:", totalMinute)
+    const hour = Math.floor(totalMinute / 60)
+    const minute = totalMinute % 60
+    let totalHour = 0
+    if(hour < 20){
+      totalHour = Math.round(hour + (minute / 60)) * 1.5
+    }else if(hour >= 20) {
+      totalHour = Math.round(hour + (minute / 60)) + 10
+    }
+    return {
+      hour,
+      minute,
+      totalHour,
+    }
+  }
+  const {hour, minute, totalHour} = renderHourCourse()
+
+  const renderLessonTime = (lesson: any) => {
+    const courseVideoList: CourseVideo[] = lesson.CourseVideo
+    console.log(courseVideoList);
+    let totalTime = 0
+    courseVideoList.forEach(courseVideo => {
+      totalTime += (courseVideo.hour * 60) + (courseVideo.minute)
+    })
+    const hour = Math.floor(totalTime / 60)
+    const minute = totalTime % 60
+    return `(${hour} ชม. ${minute} นาที)`
+  }
   return (
     <CustomDrawer
       isOpen={isOpenDrawer}
@@ -433,10 +485,10 @@ const ManageCourse = ({
                       tabIndex={0}
                       className={`px-1 bg-default-50 rounded-lg`}
                       onClick={() => {
-                        copy("30");
+                        copy(`${totalHour}`);
                       }}
                     >
-                      {30}
+                      {totalHour}
                     </div>
                   </PopoverTrigger>
                   <PopoverContent>
@@ -522,6 +574,7 @@ const ManageCourse = ({
                       ? ""
                       : selectedCourse?.webappCourseId?.toString()
                   }
+                  startContent={renderWebappImage(selectedCourse?.webappCourseId)}
                 >
                   {webappCourseList ? (
                     webappCourseList?.map((webappCourse, index) => {
@@ -530,8 +583,15 @@ const ManageCourse = ({
                           aria-labelledby={`webappcourse${index}`}
                           key={webappCourse.id}
                           value={webappCourse.id}
+                          textValue={webappCourse.name}
+                          startContent={<Image width={40} height={40} src={`${webappCourse.image}`} />}
                         >
-                          {webappCourse.name}
+                          <div className={`font-IBM-Thai-Looped text-default-foreground`}>
+                            {webappCourse.name}
+                          </div>
+                          <div className={`text-xs font-IBM-Thai-Looped text-default-500`}>
+                            {webappCourse.term}
+                          </div>
                         </AutocompleteItem>
                       );
                     })
@@ -803,7 +863,7 @@ const ManageCourse = ({
           </div>
           <div className={`mt-3 font-IBM-Thai space-x-1`}>
             <span className={`font-bold text-2xl`}>เนื้อหา</span>
-            <span>(00 ชม 00 นาที)</span>
+            <span>({hour} ชม {minute} นาที)</span>
           </div>
           <div className={`mt-2`}>
             {!selectedCourse ? (
@@ -821,7 +881,7 @@ const ManageCourse = ({
                             {lesson.name}
                           </span>
                           <span>
-                            (4 ชม. 3 นาที)
+                            {renderLessonTime(lesson)}
                           </span>
                         </div>
                       )}
@@ -921,7 +981,7 @@ const ManageCourse = ({
                 เอกสาร
               </div>
               <div className={`text-base font-normal`}>
-                (2 ชิ้น)
+                ({documentNumber} ชิ้น)
               </div>
             </div>
             <div className={`mt-2 bg-content1 shadow-neutral-base rounded-lg p-2 font-IBM-Thai-Looped`}>
@@ -1000,151 +1060,3 @@ const ManageCourse = ({
 };
 
 export default ManageCourse;
-
-const test = (
-  <div className="hidden bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto">
-    <div className="flex items-center gap-3">
-      <div className="font-bold text-2xl font-IBM-Thai">หลักสูตร</div>
-      <Button size="sm" className="bg-transparent" isIconOnly>
-        <ChevronDown size={24} />
-      </Button>
-    </div>
-    <div className="mt-2 rounded-lg bg-danger-50 text-danger-500 border-l-4 border-danger-500 flex items-center gap-2 py-2 px-[14px]">
-      <Danger variant="Bold" />
-      <div className="font-IBM-Thai-Looped font-normal">
-        กรุณาใส่เอกสารในเนื้อหา
-      </div>
-    </div>
-    <div className="mt-2 bg-content1 rounded-lg p-2 border-2 border-danger-500">
-      <div className="flex justify-between items-center">
-        <div className="text-lg font-IBM-Thai-Looped font-medium">
-          1. Kinematics of Particles
-        </div>
-        <Button size="sm" isIconOnly className="bg-transparent">
-          <MoreHorizontal size={24} />
-        </Button>
-      </div>
-      <Divider className="mt-2" />
-      <div className="mt-2 font-IBM-Thai-Looped">
-        <div className="flex p-1 items-center">
-          <div className="w-8 flex">
-            <Video className="text-foreground-400" size={16} />
-            <FileText className="text-foreground-400" size={16} />
-          </div>
-          <div className="ml-1 flex-1">
-            Dynamics - 1.1 Velocity and Acceleration
-          </div>
-          <div className="text-sm text-foreground-400">99 นาที</div>
-        </div>
-        <div className="flex p-1 items-center">
-          <div className="w-8 flex">
-            <Video className="text-foreground-400" size={16} />
-            <FileText className="text-foreground-400" size={16} />
-          </div>
-          <div className="ml-1 flex-1">Dynamics - 1.2 Graphical</div>
-          <div className="text-sm text-foreground-400">59 นาที</div>
-        </div>
-        <div className="flex p-1 items-center">
-          <div className="w-8 flex">
-            <Video className="text-foreground-400" size={16} />
-            {/* <FileText className="text-foreground-400" size={16} /> */}
-          </div>
-          <div className="ml-1 flex-1">Dynamics - 1.3 X-Y Coordinate</div>
-          <div className="text-sm text-foreground-400">74 นาที</div>
-        </div>
-        <div className="flex justify-center gap-2">
-          <Button
-            // onClick={() => setIsSort(true)}
-            className="bg-default-100 font-IBM-Thai font-medium"
-            startContent={<ArrowDownUp size={20} />}
-          >
-            จัดเรียง
-          </Button>
-          <Button
-            className="bg-default-100 font-IBM-Thai font-medium"
-            startContent={<VideoLucide size={20} />}
-          >
-            เพิ่มลด เนื้อหา
-          </Button>
-        </div>
-      </div>
-      <Divider className="mt-2" />
-      <div className="mt-2 flex flex-col gap-2 items-center">
-        <div className="text-danger-500 text-sm font-IBM-Thai-Looped text-center">
-          กรุณาใส่เอกสาร
-        </div>
-        <Button
-          className="bg-default-100 font-IBM-Thai font-medium"
-          startContent={<Book size={20} />}
-        >
-          เอกสาร
-        </Button>
-      </div>
-    </div>
-    <div className="mt-2 bg-content1 rounded-lg p-2">
-      <div className="flex justify-between items-center">
-        <div className="text-lg font-IBM-Thai-Looped font-medium">
-          2. Force and Acceleration
-        </div>
-        <Button size="sm" isIconOnly className="bg-transparent">
-          <MoreHorizontal size={24} />
-        </Button>
-      </div>
-      <Divider className="mt-2" />
-      <div className="mt-2 font-IBM-Thai-Looped">
-        <div className="flex p-1 items-center">
-          <div className="w-8 flex">
-            <Video className="text-foreground-400" size={16} />
-            <FileText className="text-foreground-400" size={16} />
-          </div>
-          <div className="ml-1 flex-1">
-            Dynamics - 2.1 Force and Acceleration
-          </div>
-          <div className="text-sm text-foreground-400">99 นาที</div>
-        </div>
-        <div className="flex p-1 items-center">
-          <div className="w-8 flex">
-            <Video className="text-foreground-400" size={16} />
-            <FileText className="text-foreground-400" size={16} />
-          </div>
-          <div className="ml-1 flex-1">Dynamics - 2.2 Friction</div>
-          <div className="text-sm text-foreground-400">59 นาที</div>
-        </div>
-        <div className="flex p-1 items-center">
-          <div className="w-8 flex">
-            <Video className="text-foreground-400" size={16} />
-            {/* <FileText className="text-foreground-400" size={16} /> */}
-          </div>
-          <div className="ml-1 flex-1">Dynamics - 2.3 Friction Pt2</div>
-          <div className="text-sm text-foreground-400">74 นาที</div>
-        </div>
-        <div className="flex justify-center gap-2">
-          <Button
-            className="bg-default-100 font-IBM-Thai font-medium"
-            startContent={<ArrowDownUp size={20} />}
-          >
-            จัดเรียง
-          </Button>
-          <Button
-            className="bg-default-100 font-IBM-Thai font-medium"
-            startContent={<VideoLucide size={20} />}
-          >
-            เพิ่มลด เนื้อหา
-          </Button>
-        </div>
-      </div>
-      <Divider className="mt-2" />
-      <div className="mt-2 flex flex-col gap-2 items-center">
-        <div className="text-danger-500 text-sm font-IBM-Thai-Looped text-center">
-          กรุณาใส่เอกสาร
-        </div>
-        <Button
-          className="bg-default-100 font-IBM-Thai font-medium"
-          startContent={<Book size={20} />}
-        >
-          เอกสาร
-        </Button>
-      </div>
-    </div>
-  </div>
-);

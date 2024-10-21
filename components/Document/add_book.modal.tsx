@@ -28,6 +28,11 @@ import {
 import thaipost from "../../assets/thaipost.png";
 import Image from "next/image";
 import CustomInput from "../CustomInput";
+import { useUploadThing } from "@/lib/uploadthing";
+import { useDropzone } from "@uploadthing/react";
+import { generateClientDropzoneAccept, generatePermittedFileTypes } from 'uploadthing/client'
+import { useCallback, useState } from "react";
+import { addBookAction } from "@/lib/actions/book.actions";
 
 const AddBook = ({
    open,
@@ -38,6 +43,113 @@ const AddBook = ({
    onClose: () => void;
    onDelete: () => void;
 }) => {
+   const [files, setFiles] = useState<File[]>([]);
+   const [imagePreview, setImagePreview] = useState<string | ArrayBuffer | null | undefined>()
+   const [name, setName] = useState<string | undefined>()
+   const [term, setTerm] = useState<string | undefined>()
+   const [year, setYear] = useState<string | undefined>()
+   const [volume, setVolume] = useState<number | undefined>()
+   const [errorAddBook, setErrorAddBook] = useState({
+      isError: false,
+      message: ``,
+   })
+
+   const handleOnClose = () => {
+      setFiles([])
+      setImagePreview(undefined)
+      setName(undefined)
+      setTerm(undefined)
+      setYear(undefined)
+      setVolume(undefined)
+      onClose()
+   }
+
+   const onDrop = useCallback((acceptedFiles: File[]) => {
+      setFiles(acceptedFiles);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+         setImagePreview(e.target?.result); // อัพเดต URL ของรูปภาพใน state
+      };
+      reader.readAsDataURL(acceptedFiles[0]);
+   }, []);
+
+   const {startUpload, routeConfig } = useUploadThing("imageUploader", {
+      onClientUploadComplete: () => {
+         console.log('uploaded successfully!')
+      },
+      onUploadError: () => {
+         alert("error occurred while uploading");
+      },
+      onUploadBegin: (file) => {
+         console.log("upload has begun for", file);
+      },
+      onUploadProgress: (process) => {
+         console.log(process);
+      },
+   })
+
+   const { getRootProps, getInputProps } = useDropzone({
+      onDrop,
+      accept: generateClientDropzoneAccept(
+        generatePermittedFileTypes(routeConfig).fileTypes,
+      ),
+   });
+
+   const validateForm = () => {
+      console.table({
+         name,
+         term,
+         year,
+         volume,
+         fileLength: files.length,
+      })
+      if(!name || name === "" ||
+         !term || term === "" ||
+         !year || year === "" ||
+         !volume ||
+         files.length === 0
+      ){
+         return false
+      }
+      return true
+   }
+
+   const submitAddBook = async () => {
+      if(!validateForm()){
+         return setErrorAddBook({
+            isError: true,
+            message: `กรุณากรอกข้อมูลให้ครบ`,
+         })
+      }
+      const responseUploadFile = await startUpload(files)
+      if(!responseUploadFile){
+         return setErrorAddBook({
+            isError: true,
+            message: `เกิดข้อผิดพลาดบางอย่าง ดูเพิ่มเติมใน Console`,
+         })
+      }
+      const response = await addBookAction({
+         name: name!,
+         image: responseUploadFile![0].url,
+         inStock: volume,
+         term: term,
+         year: year,
+      })
+      console.log("🚀 ~ submitAddBook ~ response:", response)
+      if(!response){
+         console.error(`reponse from backend undefined please check log in backend`)
+         return setErrorAddBook({
+            isError: true,
+            message: `เกิดข้อผิดพลาดบางอย่าง ดูเพิ่มเติมใน Console`,
+         })
+      }
+      setErrorAddBook({
+         isError: false,
+         message: ``,
+      })
+      handleOnClose()
+   }
+
    return (
       <Modal
          //  size={"full"}
@@ -65,21 +177,29 @@ const AddBook = ({
                            variant="flat"
                            isIconOnly
                            className="bg-transparent text-black absolute right-1 top-1"
-                           onClick={onClose}
+                           onClick={handleOnClose}
                         >
                            <LuX size={24} />
                         </Button>
                      </div>
-                     <Alert />
-                     <CustomInput placeholder="ชื่อวิชา" />
+                     {errorAddBook.isError &&
+                        <Alert label={errorAddBook.message} />
+                     }
+                     <CustomInput onChange={(e) => setName(e.target.value)} placeholder="ชื่อวิชา" />
                      <div className="grid grid-cols-3 gap-2">
-                        <div className="rounded-lg flex items-center justify-center h-full bg-[#F4F4F5]">
+                        <div className="rounded-lg flex items-center justify-center h-full bg-[#F4F4F5]" {...getRootProps()}>
+                           <input {...getInputProps()} multiple={false} />
+                           {imagePreview
+                           ?
+                           <Image width={96} height={96} src={`${imagePreview}`} alt="book image" />
+                           :
                            <LuImage className="text-[#A1A1AA] h-24 w-24" />
+                           }
                         </div>
                         <div className="col-span-2 flex flex-col gap-2">
-                           <CustomInput placeholder="ชื่อวิชา" />
-                           <CustomInput placeholder="ชื่อวิชา" />{" "}
-                           <CustomInput placeholder="ชื่อวิชา" />
+                           <CustomInput onChange={(e) => setTerm(e.target.value)} placeholder="midterm/final" />
+                           <CustomInput onChange={(e) => setYear(e.target.value)} placeholder="ปีการศึกษา" />{" "}
+                           <CustomInput type="number" onChange={(e) => setVolume(parseInt(e.target.value))} placeholder="volume" />
                         </div>
                      </div>
                      <div className="py-2 flex md:flex-row flex-col gap-2 ">
@@ -94,6 +214,7 @@ const AddBook = ({
                            fullWidth
                            // color="primary"
                            className="bg-default-foreground text-primary-foreground md:order-2 order-1"
+                           onClick={submitAddBook}
                         >
                            บันทึก
                         </Button>

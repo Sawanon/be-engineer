@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useMemo, useState } from "react";
+import React, { Key, useMemo, useState } from "react";
 // import { useTheme } from "next-themes";
 import {
    Button,
@@ -15,15 +15,12 @@ import {
    TableHeader,
    TableRow,
 } from "@nextui-org/react";
-import { ClipboardSignature, Plus, ScrollText, Search } from "lucide-react";
+import { Plus, ScrollText, Search } from "lucide-react";
 import { courseStatus, tableClassnames } from "../../lib/res/const";
 import { Course as CourseT } from "@/lib/model/course";
-import { Document } from "@/lib/model/document";
 import {
-   addCourse,
    deleteCourse,
    listCourseAction,
-   listCourseWebapp,
 } from "@/lib/actions/course.actions";
 import { useQuery } from "@tanstack/react-query";
 import { listTutor } from "@/lib/actions/tutor.actions";
@@ -34,6 +31,7 @@ import ManageCourse from "@/components/ManageCourse";
 import ErrorBox from "@/components/ErrorBox";
 import DeleteCourseDialog from "@/components/Course/DeleteCourseDialog";
 import CourseContext from "./provider";
+import {CourseLesson, Course as CoursePrisma, DocumentBook, DocumentPreExam, DocumentSheet, LessonOnDocument, LessonOnDocumentBook, LessonOnDocumentSheet} from '@prisma/client'
 
 const Status = ({ course }: { course: CourseT }) => {
    let textColor = "";
@@ -63,35 +61,6 @@ const Status = ({ course }: { course: CourseT }) => {
    );
 };
 
-const DocumentComponent = ({ document }: { document: Document }) => {
-   let icon = <></>;
-   switch (document.type) {
-      case "book":
-         icon = (
-            <Image
-               className="rounded-sm"
-               width={16}
-               src={`${document.imageUrl}`}
-            />
-         );
-         break;
-      case "sheet":
-         icon = <ScrollText size={16} />;
-         break;
-      case "pre-exam":
-         icon = <ClipboardSignature size={16} />;
-         break;
-      default:
-         break;
-   }
-   return (
-      <div className="flex items-center gap-2">
-         {icon}
-         <div>{document.name}</div>
-      </div>
-   );
-};
-
 const Course = () => {
    const [selectedCourse, setSelectedCourse] = useState<CourseT | undefined>();
    const [isOpenDrawer, setIsOpenDrawer] = useState(false);
@@ -103,6 +72,9 @@ const Course = () => {
       isError: false,
       message: "ลบไม่สำเร็จ ดูเพิ่มเติมใน Console",
    });
+   const [searchCourse, setSearchCourse] = useState("")
+   const [filterStatusCourse, setFilterStatusCourse] = useState<Key[] | undefined>()
+   const [searchCourseByTutorId, setSearchCourseByTutorId] = useState<any | undefined>()
 
    const rowsPerPage = 5;
    const {
@@ -127,6 +99,43 @@ const Course = () => {
       queryFn: () => listPlayList(),
    });
 
+   const findUniqueDocument = (course: any) => {
+    const uniqueSheets = Array.from(
+      new Map(course.CourseLesson.flatMap((lesson: CourseLesson & {
+        LessonOnDocumentSheet: LessonOnDocumentSheet &{
+          DocumentSheet: DocumentSheet,
+        }[]
+      }) => 
+         lesson.LessonOnDocumentSheet.map(sheet => [sheet.DocumentSheet.id, sheet.DocumentSheet])
+      )).values()
+    )
+    const uniquePreExam = Array.from(
+      new Map(course.CourseLesson.flatMap((lesson: CourseLesson & {
+        LessonOnDocument: LessonOnDocument & {
+          DocumentPreExam: DocumentPreExam,
+        }[]
+      }) => 
+         lesson.LessonOnDocument.map(sheet => [sheet.DocumentPreExam.id, sheet.DocumentPreExam])
+      )).values()
+    )
+    const uniqueBooks = Array.from(
+      new Map(course.CourseLesson.flatMap((lesson: CourseLesson & {
+        LessonOnDocumentBook: LessonOnDocumentBook &{
+          DocumentBook: DocumentBook,
+        }[]
+      }) => 
+         lesson.LessonOnDocumentBook.map(sheet => [sheet.DocumentBook.id, sheet.DocumentBook])
+      )).values()
+    )
+    
+    return {
+      ...course,
+      uniqueSheets,
+      uniquePreExam,
+      uniqueBooks,
+    }
+   }
+
    useMemo(() => {
       if (!isRefetching) {
          if (selectedCourse) {
@@ -135,7 +144,8 @@ const Course = () => {
                (course) => course.id === selectedCourse.id
             );
             if (findCourse) {
-               setSelectedCourse(findCourse);
+              const courseWithUniqueDocuments = findUniqueDocument(findCourse)
+              setSelectedCourse(courseWithUniqueDocuments);
             }
          }
       }
@@ -144,7 +154,6 @@ const Course = () => {
   const courseItem = useMemo(() => {
     const startIndex = (page - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-    console.table({ startIndex, endIndex });
 
     const courseWithUniqueBooks = courses?.map(course => {
       const uniqueSheets = Array.from(
@@ -171,13 +180,23 @@ const Course = () => {
       }
     })
     const currentCourses = courseWithUniqueBooks?.slice(startIndex, endIndex);
-    console.log("🚀 ~ courseItem ~ currentCourses:", currentCourses)
     
     if (courses) {
       setPageSize(Math.ceil(courses.length / rowsPerPage));
     }
-    return currentCourses;
-  }, [page, courses, isLoading]);
+    let courseFromSearch = currentCourses
+    if(searchCourse !== ""){
+      courseFromSearch = courseFromSearch?.filter(course => course.name.toLowerCase().startsWith(searchCourse))
+    }
+    if(filterStatusCourse && filterStatusCourse.length > 0){
+      courseFromSearch = courseFromSearch?.filter(course => filterStatusCourse.includes(course.status))
+    }
+    
+    if(searchCourseByTutorId && searchCourseByTutorId.size > 0) {
+      courseFromSearch = courseFromSearch?.filter(course => course.Tutor?.id === parseInt(searchCourseByTutorId.currentKey))
+    }
+    return courseFromSearch;
+  }, [page, courses, isLoading, searchCourse, filterStatusCourse, searchCourseByTutorId]);
 
   const handleCloseManageCourse = () => {
     setIsOpenDrawer(false);
@@ -280,6 +299,7 @@ const Course = () => {
             placeholder="ค้นหา...คอร์สเรียน"
             startContent={<Search className="text-foreground-400" />}
             fullWidth
+            onChange={e => setSearchCourse(e.target.value)}
           />
           <div className="flex gap-2 mt-2 md:mt-0">
             <Select
@@ -292,30 +312,37 @@ const Course = () => {
                 popoverContent: [`w-max right-0 absolute`],
               }}
               renderValue={(items) => <div>สถานะ</div>}
+              onSelectionChange={(key) => {
+                setFilterStatusCourse(Array.from(key))
+              }}
             >
               {Object.keys(courseStatus).map((key, index) => {
                 return (
-                  <SelectItem key={`selectStatus${index}`} startContent={courseStatus[key].icon}>
+                  <SelectItem key={`${key}`} startContent={courseStatus[key].icon}>
                     {courseStatus[key].name}
                   </SelectItem>
                 );
               })}
             </Select>
             <Select
-              selectionMode="multiple"
+              selectionMode="single"
               placeholder={`ติวเตอร์`}
               aria-label="ติวเตอร์"
               className="font-IBM-Thai md:w-[113px]"
               classNames={{
                 value: ["font-bold"],
               }}
-              renderValue={(items) => <div>ติวเตอร์</div>}
+              // renderValue={(items) => <div>ติวเตอร์</div>}
               disabled={tutorList === undefined}
+              onSelectionChange={(key) => {
+                console.log("onchange tutor", key);
+                setSearchCourseByTutorId(key)
+              }}
             >
               {tutorList ? (
                 tutorList.map((tutor, index) => {
                   return (
-                    <SelectItem aria-label={`${tutor.name}`} key={`tutor${index}`}>
+                    <SelectItem aria-label={`${tutor.name}`} key={`${tutor.id}`}>
                       {tutor.name}
                     </SelectItem>
                   );
