@@ -500,7 +500,7 @@ const ManageLesson = ({
                   )
                 }else{
                   return (
-                    <div>pre exam</div>
+                    <div key={`documentSheet${document.id}${lesson.id}`}>pre exam</div>
                   )
                 }
               })}
