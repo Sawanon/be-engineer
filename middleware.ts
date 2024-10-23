@@ -20,7 +20,7 @@ function middleware(request: NextRequest) {
       console.log("middleware");
       const requestHeaders = new Headers(request.headers);
       requestHeaders.set("x-pathname", request.nextUrl.pathname);
-      NextResponse.next({
+      return NextResponse.next({
          request: {
             headers: requestHeaders,
          },
