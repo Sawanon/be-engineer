@@ -1,8 +1,8 @@
 "use server";
 
 import axios from "axios";
-import { Course, CourseCreate } from "../model/course";
-import { PrismaClient, Course as CoursePrisma } from "@prisma/client";
+import { Course, CourseCreate } from '../model/course'
+import { PrismaClient, Course as CoursePrisma, Prisma } from "@prisma/client";
 import { handleError, parseStringify } from "../util";
 
 const ENDPOINT_BE_ENGINEER_URL = process.env.ENDPOINT_BE_ENGINEER_URL;
@@ -25,99 +25,68 @@ export const searchImageByCourseName = async (courseName: string) => {
   }
 }
 
-export const listCourseAction = async (): Promise<Course[] | undefined> => {
-   try {
-      // const response = await axios({
-      //   url: `${ENDPOINT_BE_ENGINEER_URL}/api/course/course`,
-      //   method: "GET",
-      //   headers: {
-      //     "B-API-KEY": `${B_API_KEY}`
-      //   }
-      // })
-      const course: Course[] = [];
-      const courseListInNewDB = await listCourseInNewDB();
-      // return courseListOnWebApp
-      // courseListInNewDB.forEach(_course => {
-      //   course.push({
-      //     name: _course.name,
-      //     status: _course.status,
-      //     tutorLink: _course.tutorLink,
-      //     branch: _course.branch,
-      //     id: _course.id,
-      //     detail: _course.detail,
-      //     clueLink: _course.clueLink,
-      //     webappPlaylistId:  _course.webappPlaylistId,
-      //     webappCourseId:  _course.webappCourseId,
-      //     webappTableOfContentId:  _course.webappTableOfContentId,
-      //     playlist:  _course.playlist,
-      //     price: _course.price,
-      //     Tutor: _course.Tutor,
-      //   })
-      // })
-      return courseListInNewDB;
-   } catch (error) {
-      console.error(error);
-      return;
-   }
-};
-
-const listCourseInNewDB = async () => {
-   try {
-      const res = await prisma.course.findMany({
-         include: {
-            Tutor: true,
-            CourseLesson: {
-               include: {
-                  CourseVideo: true,
-               },
+export const listCourseAction = async ()  => {
+  try {
+    const res = await prisma.course.findMany({
+      include: {
+        Tutor: true,
+        CourseLesson: {
+          orderBy: {
+            position: 'asc',
+          },
+          include: {
+            CourseVideo: true,
+            LessonOnDocumentSheet: {
+              include: {
+                DocumentSheet: true,
+              }
             },
-         },
-      });
-      // console.log("res", res[0]);
-      // res.forEach(res => {
-      //   // console.table({
-      //   //   ...res,
-      //   // })
-      //   // console.log(res.createdAt)
-      // })
-      return res;
-   } catch (error) {
-      console.error(error);
-      return [];
-   } finally {
-      prisma.$disconnect();
-   }
-};
-
-
+            LessonOnDocument: {
+              include: {
+                DocumentPreExam: true,
+              },
+            },
+            LessonOnDocumentBook: {
+              include: {
+                DocumentBook: true,
+              },
+            },
+          },
+        },
+      },
+    })
+    return res
+  } catch (error) {
+    console.error(error);
+  } finally {
+    prisma.$disconnect()
+  }
+}
 
 export const getCourseByWebappId = async (webappId: number[]) => {
-   try {
-      const res = await prisma.course.findMany({
-         where: {
-            webappCourseId: { in: webappId },
-         },
-         include: {
-            Tutor: true,
-            CourseLesson: {
-               include: {
-                  CourseVideo: true,
-               },
-            },
-         },
-      });
-      return parseStringify(res);
-   } catch (error) {
-      console.error(error);
-      throw handleError(error);
-      return [];
-   } finally {
-      prisma.$disconnect();
-   }
+  try {
+     const res = await prisma.course.findMany({
+        where: {
+           webappCourseId: { in: webappId },
+        },
+        include: {
+           Tutor: true,
+           CourseLesson: {
+              include: {
+                 CourseVideo: true,
+              },
+           },
+        },
+     });
+     return parseStringify(res);
+  } catch (error) {
+     console.error(error);
+     throw handleError(error);
+     return [];
+  } finally {
+     prisma.$disconnect();
+  }
 };
-
-
-
 
 export const addCourse = async (courseData: CourseCreate) : Promise<CoursePrisma | undefined> => {
   try {
@@ -156,6 +125,10 @@ export const updateCourse = async (courseId: number , payload: any) => {
   } finally {
     prisma.$disconnect()
   }
+}
+
+function isJsonObject(val: any): val is Prisma.JsonObject {
+  return val && typeof val === 'object' && !Array.isArray(val)
 }
 
 export const deleteCourse = async (courseId: number) => {

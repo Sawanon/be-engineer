@@ -12,8 +12,8 @@ import {
    TableHeader,
    TableRow,
 } from "@nextui-org/react";
-import { DocumentSheet } from "@prisma/client";
-import { ExternalLink, ScrollText } from "lucide-react";
+import { DocumentBook, DocumentSheet } from "@prisma/client";
+import { ClipboardList, ExternalLink, ScrollText } from "lucide-react";
 import { HiOutlineTruck } from "react-icons/hi";
 import {
    LuClipboard,
@@ -24,17 +24,21 @@ import {
    LuPrinter,
 } from "react-icons/lu";
 
-const TableDocument = ({
-   documentList,
+const TableBooks = ({
+   booksList,
    onViewStock,
    onEditBook,
    onViewUsage
 }:{
-   documentList? :DocumentSheet[],
-   onViewStock: () => void,
+   booksList? :DocumentBook[],
+   onViewStock: (book: DocumentBook) => void,
    onEditBook: () => void,
-   onViewUsage: () => void,
+   onViewUsage: (book: DocumentBook) => void,
 }) => {
+
+  const handleOnViewStock = (book: DocumentBook) => {
+    onViewStock(book)
+  }
    return (
       <Table
          classNames={tableClassnames}
@@ -57,48 +61,41 @@ const TableDocument = ({
       >
          <TableHeader>
             <TableColumn className={`font-IBM-Thai`}>หนังสือ</TableColumn>
-            <TableColumn className={`font-IBM-Thai`}>เปิดดู</TableColumn>
+            <TableColumn className={`font-IBM-Thai`}>Stock</TableColumn>
             <TableColumn className={`font-IBM-Thai`}>คอร์สที่ใช้งาน</TableColumn>
          </TableHeader>
          <TableBody>
             {
-               documentList ?
-            documentList?.map((document, index) => {
+               booksList ?
+               booksList?.map((book, index) => {
                return (
                   <TableRow key={`documentRow${index}`}>
                      <TableCell>
-                        <div onClick={onEditBook} className="flex gap-2 items-center">
-                           {/* <Image
-                              // width={24}
-                              height={44}
-                              alt="NextUI hero Image"
-                              src="https://nextui-docs-v2.vercel.app/images/hero-card-complete.jpeg"
-                           /> */}
-                           <ScrollText size={24} />
-                           <p>{document.name}</p>
+                        <div onClick={onEditBook} className="flex gap-2 items-center font-IBM-Thai-Looped text-default-foreground">
+                           <Image
+                            className={`max-w-10 h-10 rounded`}
+                            // width={40}
+                            // height={40}
+                            alt="NextUI hero Image"
+                            src={book.image!}
+                           />
+                           <p>{book.name}</p>
                         </div>
                      </TableCell>
-                     <TableCell className="">
-                        <Button
-                           isIconOnly
-                           className={`min-w-0 max-w-8 max-h-8 rounded-lg bg-default-100`}
-                           onClick={() => {
-                              window.open(document.url, '_blank')
-                           }}
-                        >
-                           <ExternalLink size={24} />
-                        </Button>
-                        {/* <div className="flex gap-2  items-center">
-                           <p className="text-sm">12</p>
-                           <Button onClick={onViewStock} isIconOnly color="secondary">
-                              <LuClipboardList size={24} />
-                           </Button>
-                        </div> */}
+                     <TableCell className={`flex items-center gap-2`}>
+                      <p className={`text-sm font-IBM-Thai-Looped`}>{book.inStock}</p>
+                      <Button
+                          isIconOnly
+                          className={`min-w-0 max-w-8 max-h-8 rounded-lg bg-default-100 text-default-foreground`}
+                          onClick={() => handleOnViewStock(book)}
+                      >
+                          <ClipboardList size={24} />
+                      </Button>
                      </TableCell>
                      <TableCell>
                         <div className="flex gap-2  items-center">
                            <p className="text-sm">1</p>
-                           <Button onClick={onViewUsage} isIconOnly color="secondary">
+                           <Button onClick={() => onViewUsage(book)} isIconOnly color="secondary">
                               <LuListTree size={24} />
                            </Button>
                         </div>{" "}
@@ -122,4 +119,4 @@ const TableDocument = ({
    );
 };
 
-export default TableDocument;
+export default TableBooks;

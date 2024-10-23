@@ -35,14 +35,32 @@ import {
 
 import thaipost from "../../assets/thaipost.png";
 import BulletPoint from "@/ui/bullet_point";
+import { DocumentBook } from "@prisma/client";
+import { useQuery } from "@tanstack/react-query";
+import { getCourseUsageBook } from "@/lib/actions/book.actions";
 
 const BookUsage = ({
    open,
    onClose,
+   book,
 }:{
    open: boolean,
    onClose: () => void,
+   book?: DocumentBook,
 }) => {
+   const {data: bookList} =  useQuery({
+      queryKey: ["getCourseUsageBook", book?.id],
+      queryFn: () => getCourseUsageBook(book!.id),
+      enabled: book !== undefined
+   })
+
+   const courseList = bookList?.LessonOnDocumentBook.map(lessOnBook => {
+      lessOnBook.CourseLesson.Course
+      return {
+         name: lessOnBook.CourseLesson.Course.name,
+      }
+   })
+   
    return (
       <Modal
          //  size={"full"}
@@ -50,6 +68,7 @@ const BookUsage = ({
          isOpen={open}
          classNames={{
             base: "top-0 p-0 m-0 absolute md:relative w-screen   md:w-[428px] bg-white m-0  max-w-full ",
+            backdrop: 'bg-backdrop',
          }}
          backdrop="blur"
          onClose={() => {}}
@@ -66,11 +85,14 @@ const BookUsage = ({
                               width={36}
                               height={52}
                               alt="NextUI hero Image"
-                              src="https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg"
+                              className={`rounded-lg`}
+                              // src="https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg"
+                              src={`${book?.image}`}
                            />
                            <div className="flex flex-1 items-center">
                               <p className="text-lg font-semibold">
-                                 หนังสือ Dynamics midterm vol.1 - 2/2566{" "}
+                                 {/* หนังสือ Dynamics midterm vol.1 - 2/2566{" "} */}
+                                 {book?.name}{" "}
                               </p>
                               <div className="flex-1 whitespace-nowrap "></div>
                            </div>
@@ -91,7 +113,14 @@ const BookUsage = ({
                            รายการคอร์สที่ใช้งาน
                         </p>
                         <div className="ml-4   ">
-                           <div className="flex items-center">
+                           {courseList?.map((course, index) => (
+                              <div key={`courseUsage${index}`} className="flex items-center">
+                                 <BulletPoint />
+                                 <p>{course.name}</p>
+                                 <LuArrowUpRight className="self-start" />
+                              </div>
+                           ))}
+                           {/* <div className="flex items-center">
                               <BulletPoint />
                               <p> Dynamics midterm 2/2565</p>
                               <LuArrowUpRight className="self-start" />
@@ -100,7 +129,7 @@ const BookUsage = ({
                               <BulletPoint />
                               <p> Dynamics (CU) midterm</p>
                               <LuArrowUpRight className="self-start" />
-                           </div>
+                           </div> */}
                         </div>
                      </div>
                   </div>

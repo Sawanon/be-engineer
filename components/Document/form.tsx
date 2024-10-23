@@ -84,6 +84,7 @@ const StatusSelect = ({
             value: "text-black",
             trigger: cn("flex items-center justify-center  "),
             base: cn("flex-1 "),
+            popoverContent: [`w-max right-0 absolute`],
          }}
          selectionMode={"single"}
          onSelectionChange={onChange}
@@ -104,7 +105,7 @@ const StatusSelect = ({
             }}
             aria-label={`เอกสาร`}
             startContent={<ScrollText size={16} />}
-            key={"document"}
+            key={"sheet"}
          >
             เอกสาร
          </SelectItem>

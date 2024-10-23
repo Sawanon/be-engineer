@@ -8,7 +8,7 @@ import {
 } from "@/lib/actions/course.actions";
 import { PlayList } from "@/lib/model/playlist";
 import { Course } from "@/lib/model/course";
-import { useMemo, useState } from "react";
+import React , { useMemo, useState } from "react";
 import CustomDrawer from "./Drawer";
 import {
   ArrowDownUp,
@@ -20,6 +20,7 @@ import {
   ClipboardSignature,
   Copy,
   ExternalLink,
+  FileSignature,
   FileText,
   MoreHorizontal,
   Plus,
@@ -63,6 +64,8 @@ import { div } from "framer-motion/client";
 import copy from "copy-to-clipboard";
 import { useQuery } from "@tanstack/react-query";
 import { Key } from "@react-types/shared";
+import StatusIcon from "./Course/StatusIcon";
+import { CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet } from "@prisma/client";
 
 const ManageCourse = ({
   isOpenDrawer,
@@ -92,16 +95,15 @@ const ManageCourse = ({
     queryKey: [`listCourseWebapp`],
     queryFn: () => listCourseWebapp(),
   });
+  const sheets = (selectedCourse as any)?.uniqueSheets as any[] ?? []
+  const preExam = (selectedCourse as any)?.uniquePreExam as any[] ?? []
+  const books = (selectedCourse as any)?.uniqueBooks as any[] ?? []
+  const documentNumber = sheets.length + preExam.length + books.length
   const [refetchCourse] = useCourse();
   const [isAdd, setIsAdd] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [isDelete, setIsDelete] = useState(false);
   const [isSort, setIsSort] = useState(false);
-  const [lessons, setLessons] = useState([
-    { id: 1, title: "Dynamics - 1.1 Velocity and Acceleration" },
-    { id: 2, title: "Dynamics - 1.2 Graphical" },
-    { id: 3, title: "Dynamics - 1.3 X-Y Coordinate" },
-  ]);
   const [courseName, setCourseName] = useState<string | undefined>();
   const [courseDetail, setCourseDetail] = useState<string | undefined>();
   const [courseTutorId, setCourseTutorId] = useState<number | undefined>();
@@ -115,7 +117,7 @@ const ManageCourse = ({
   const [mode, setMode] = useState<"tutor" | "admin">("tutor");
   const [courseImageList, setCourseImageList] = useState<string[]>([]);
   const [webappCourseList, setWebappCourseList] = useState<
-    | { id: number; name: string; image: string; hasFeedback: boolean }[]
+    | { id: number; name: string; image: string; hasFeedback: boolean; term: string; }[]
     | undefined
   >();
 
@@ -125,6 +127,10 @@ const ManageCourse = ({
   };
 
   useMemo(() => {
+    if(!selectedCourse){
+      setMode("tutor")
+      setCourseImageList([])
+    }
     setIsAdd(selectedCourse === undefined);
     if (selectedCourse) {
       listImageCourse(selectedCourse.name);
@@ -134,7 +140,6 @@ const ManageCourse = ({
   useMemo(() => {
     if (!selectedCourse) return;
     if (!webappBranchCourseList) return;
-    console.error("boo");
     console.log(webappBranchCourseList);
     const webappCourseList = webappBranchCourseList.find(
       (webappBranch) => webappBranch.branch === selectedCourse.branch
@@ -204,6 +209,11 @@ const ManageCourse = ({
           message: error.message,
         });
       }
+    } finally {
+      setAddCourseError({
+        isError: false,
+        message: "",
+      })
     }
   };
 
@@ -218,14 +228,6 @@ const ManageCourse = ({
     ) {
       throw Error(`กรุณากรอกข้อมูลให้ครบ`);
     }
-    console.table({
-      courseName,
-      courseDetail,
-      courseTutorId,
-      clueLink,
-      webappPlaylistId: playlist,
-      price,
-    });
     const res = await addCourse({
       name: courseName,
       detail: courseDetail,
@@ -300,12 +302,62 @@ const ManageCourse = ({
   const handleOnChangeWebapp = async (key: Key | null) => {
     console.log(key);
     if (!key || !selectedCourse) return;
+    const webappCourse = webappCourseList?.find((course) => `${course.id}` === `${key}`)
     const response = await updateCourse(selectedCourse?.id, {
       webappCourseId: parseInt(key.toString()),
+      status: webappCourse!.hasFeedback ? 'enterForm' : 'uploadWebapp'
     });
     console.log("🚀 ~ handleOnChangeWebapp ~ response:", response);
+    refetchCourse()
   };
 
+  const renderWebappImage = (webappCourseId: number | null | undefined) => {
+    if(!webappCourseId) return <div></div>
+    if(!webappCourseList) return <div></div>
+    const imageUrl = webappCourseList.find(course => course.id === webappCourseId)
+    if(!imageUrl) return <div></div>
+    return (
+      <Image className={`min-w-6 rounded`} width={24} height={24} src={`${imageUrl.image}`} />
+    )
+  }
+
+  const renderHourCourse = () => {
+    if(!selectedCourse) return {hour: 0, minute: 0, totalHour: 0}
+    let totalMinute = 0
+    selectedCourse.CourseLesson.forEach((lesson:any) => {
+      const courseVideoList: CourseVideo[] = lesson.CourseVideo
+      courseVideoList.forEach(courseVideo => {
+        totalMinute += (courseVideo.hour*60) + (courseVideo.minute)
+      })
+    })
+    console.log("🚀 ~ renderHourCourse ~ totalMinute:", totalMinute)
+    const hour = Math.floor(totalMinute / 60)
+    const minute = totalMinute % 60
+    let totalHour = 0
+    if(hour < 20){
+      totalHour = Math.round(hour + (minute / 60)) * 1.5
+    }else if(hour >= 20) {
+      totalHour = Math.round(hour + (minute / 60)) + 10
+    }
+    return {
+      hour,
+      minute,
+      totalHour,
+    }
+  }
+  const {hour, minute, totalHour} = renderHourCourse()
+
+  const renderLessonTime = (lesson: any) => {
+    const courseVideoList: CourseVideo[] = lesson.CourseVideo
+    console.log(courseVideoList);
+    let totalTime = 0
+    courseVideoList.forEach(courseVideo => {
+      totalTime += (courseVideo.hour * 60) + (courseVideo.minute)
+    })
+    const hour = Math.floor(totalTime / 60)
+    const minute = totalTime % 60
+    return `(${hour} ชม. ${minute} นาที)`
+  }
   return (
     <CustomDrawer
       isOpen={isOpenDrawer}
@@ -343,14 +395,21 @@ const ManageCourse = ({
             // TODO: admin mode
             <div className={`mt-app`}>
               <div className={`flex gap-1 items-center`}>
-                <div className={`text-success-500`}>
-                  <PlayCircle size={20} variant="Bold" />
-                </div>
-                <div
-                  className={`rounded-lg px-1 bg-default-50 text-lg font-bold font-IBM-Thai-Looped text-content4-foreground`}
-                >
-                  {selectedCourse?.name}
-                </div>
+                <StatusIcon status={selectedCourse?.status!} />
+                <Popover placement="top">
+                  <PopoverTrigger className={`cursor-pointer`}>
+                    <div
+                      className={`rounded-lg px-1 bg-default-50 text-lg font-bold font-IBM-Thai-Looped text-content4-foreground`}
+                      tabIndex={0}
+                      onClick={() => copy(selectedCourse?.name ?? "")}
+                    >
+                      {selectedCourse?.name}
+                    </div>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <div className="px-1 py-2">Copied</div>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className={`mt-2 flex gap-2 overflow-auto scrollbar-hide`}>
                 {courseImageList.map((imageUrl, index) => {
@@ -369,11 +428,19 @@ const ManageCourse = ({
                   );
                 })}
               </div>
-              <div
-                className={`mt-2 px-1 rounded-lg bg-default-50 text-base font-normal font-IBM-Thai-Looped`}
-              >
-                {selectedCourse?.detail}
-              </div>
+              <Popover placement="top">
+                <PopoverTrigger className={`cursor-pointer`}>
+                  <div
+                    className={`mt-2 px-1 rounded-lg bg-default-50 text-base font-normal font-IBM-Thai-Looped`}
+                    onClick={() => copy(selectedCourse?.detail ?? "")}
+                  >
+                    {selectedCourse?.detail}
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <div className="px-1 py-2">Copied</div>
+                </PopoverContent>
+              </Popover>
               <div className={`mt-2 flex gap-2 items-center`}>
                 <div
                   className={`font-IBM-Thai-Looped text-base font-normal text-default-foreground`}
@@ -418,10 +485,10 @@ const ManageCourse = ({
                       tabIndex={0}
                       className={`px-1 bg-default-50 rounded-lg`}
                       onClick={() => {
-                        copy("30");
+                        copy(`${totalHour}`);
                       }}
                     >
-                      {30}
+                      {totalHour}
                     </div>
                   </PopoverTrigger>
                   <PopoverContent>
@@ -507,6 +574,7 @@ const ManageCourse = ({
                       ? ""
                       : selectedCourse?.webappCourseId?.toString()
                   }
+                  startContent={renderWebappImage(selectedCourse?.webappCourseId)}
                 >
                   {webappCourseList ? (
                     webappCourseList?.map((webappCourse, index) => {
@@ -515,8 +583,15 @@ const ManageCourse = ({
                           aria-labelledby={`webappcourse${index}`}
                           key={webappCourse.id}
                           value={webappCourse.id}
+                          textValue={webappCourse.name}
+                          startContent={<Image width={40} height={40} src={`${webappCourse.image}`} />}
                         >
-                          {webappCourse.name}
+                          <div className={`font-IBM-Thai-Looped text-default-foreground`}>
+                            {webappCourse.name}
+                          </div>
+                          <div className={`text-xs font-IBM-Thai-Looped text-default-500`}>
+                            {webappCourse.term}
+                          </div>
                         </AutocompleteItem>
                       );
                     })
@@ -763,11 +838,14 @@ const ManageCourse = ({
           } bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto`}
         >
           <div className={`text-2xl font-bold font-IBM-Thai`}>สารบัญ</div>
-          <div className={`mt-2 bg-content1 p-2 rounded-lg shadow`}>
+          <div className={`mt-2 bg-content1 p-2 rounded-lg shadow space-y-2`}>
             {selectedCourse?.CourseLesson.map((lesson, index) => {
               // selectedCourse?.CourseLesson.length
+              if(lesson.name.toLowerCase().includes(`pre-exam`)){
+                return <React.Fragment key={`sarabun${index}`}></React.Fragment>
+              }
               return (
-                <Popover key={lesson.id} placement="top">
+                <Popover key={`sarabun${index}`} placement="top">
                   <PopoverTrigger className={`cursor-pointer`}>
                     <div
                       tabIndex={0}
@@ -785,7 +863,7 @@ const ManageCourse = ({
           </div>
           <div className={`mt-3 font-IBM-Thai space-x-1`}>
             <span className={`font-bold text-2xl`}>เนื้อหา</span>
-            <span>(00 ชม 00 นาที)</span>
+            <span>({hour} ชม {minute} นาที)</span>
           </div>
           <div className={`mt-2`}>
             {!selectedCourse ? (
@@ -795,7 +873,7 @@ const ManageCourse = ({
                 {selectedCourse?.CourseLesson.map((lesson: any, index) => {
                   return (
                     <AccordionItem
-                      key="1"
+                      key={`lessonAccord${lesson.id}`}
                       aria-label={`${lesson.name}`}
                       title={(
                         <div className={`text-default-foreground text-sm font-IBM-Thai-Looped space-x-1`}>
@@ -803,7 +881,7 @@ const ManageCourse = ({
                             {lesson.name}
                           </span>
                           <span>
-                            (4 ชม. 3 นาที)
+                            {renderLessonTime(lesson)}
                           </span>
                         </div>
                       )}
@@ -897,6 +975,84 @@ const ManageCourse = ({
               </Accordion>
             )}
           </div>
+          <div className={`mt-3`}>
+            <div className={`font-IBM-Thai flex items-center gap-2`}>
+              <div className={`text-2xl font-bold`}>
+                เอกสาร
+              </div>
+              <div className={`text-base font-normal`}>
+                ({documentNumber} ชิ้น)
+              </div>
+            </div>
+            <div className={`mt-2 bg-content1 shadow-neutral-base rounded-lg p-2 font-IBM-Thai-Looped`}>
+              {books.length > 0 &&
+                <div>
+                  <div className={`text-sm font-bold text-foreground-400`}>
+                    หนังสือ
+                  </div>
+                  <div className={`space-y-1 mt-2`}>
+                    {books.map((book, index) => (
+                      <div key={`bookadmin${index}`}>
+                        {book.name}
+                      </div> 
+                    ))}
+                  </div>
+                </div>
+              }
+              {sheets.length > 0 &&
+                <div>
+                  <div className={`text-sm font-bold text-foreground-400`}>
+                    เอกสาร
+                  </div>
+                  <div className={`space-y-1 mt-2`}>
+                    {sheets.map((sheet, index) => (
+                      <div className={`flex items-center gap-2`} key={`sheetadmin${index}`}>
+                        <ScrollText size={20} className={`text-default-foreground`} />
+                        <div>
+                          {sheet.name}
+                        </div>
+                        <Button
+                          onClick={() => {
+                            window.open(sheet.url, '_blank')
+                          }}
+                          isIconOnly
+                          className={`min-w-0 w-8 h-8 rounded-lg bg-default-100`}
+                        >
+                          <ExternalLink size={24} className={`text-default-foreground`} />
+                        </Button>
+                      </div> 
+                    ))}
+                  </div>
+                </div>
+              }
+              {preExam.length > 0 &&
+                <div>
+                  <div className={`text-sm font-bold text-foreground-400`}>
+                    Pre-Exam
+                  </div>
+                  <div className={`space-y-1 mt-2`}>
+                    {preExam.map((preExam, index) => (
+                      <div className={`flex items-center gap-2`} key={`preExamadmin${index}`}>
+                        <ScrollText size={20} className={`text-default-foreground`} />
+                        <div>
+                          {preExam.name}
+                        </div>
+                        <Button
+                          onClick={() => {
+                            window.open(preExam.url, '_blank')
+                          }}
+                          isIconOnly
+                          className={`min-w-0 w-8 h-8 rounded-lg bg-default-100`}
+                        >
+                          <FileSignature size={24} className={`text-default-foreground`} />
+                        </Button>
+                      </div> 
+                    ))}
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
         </div>
       </div>
     </CustomDrawer>
@@ -904,151 +1060,3 @@ const ManageCourse = ({
 };
 
 export default ManageCourse;
-
-const test = (
-  <div className="hidden bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto">
-    <div className="flex items-center gap-3">
-      <div className="font-bold text-2xl font-IBM-Thai">หลักสูตร</div>
-      <Button size="sm" className="bg-transparent" isIconOnly>
-        <ChevronDown size={24} />
-      </Button>
-    </div>
-    <div className="mt-2 rounded-lg bg-danger-50 text-danger-500 border-l-4 border-danger-500 flex items-center gap-2 py-2 px-[14px]">
-      <Danger variant="Bold" />
-      <div className="font-IBM-Thai-Looped font-normal">
-        กรุณาใส่เอกสารในเนื้อหา
-      </div>
-    </div>
-    <div className="mt-2 bg-content1 rounded-lg p-2 border-2 border-danger-500">
-      <div className="flex justify-between items-center">
-        <div className="text-lg font-IBM-Thai-Looped font-medium">
-          1. Kinematics of Particles
-        </div>
-        <Button size="sm" isIconOnly className="bg-transparent">
-          <MoreHorizontal size={24} />
-        </Button>
-      </div>
-      <Divider className="mt-2" />
-      <div className="mt-2 font-IBM-Thai-Looped">
-        <div className="flex p-1 items-center">
-          <div className="w-8 flex">
-            <Video className="text-foreground-400" size={16} />
-            <FileText className="text-foreground-400" size={16} />
-          </div>
-          <div className="ml-1 flex-1">
-            Dynamics - 1.1 Velocity and Acceleration
-          </div>
-          <div className="text-sm text-foreground-400">99 นาที</div>
-        </div>
-        <div className="flex p-1 items-center">
-          <div className="w-8 flex">
-            <Video className="text-foreground-400" size={16} />
-            <FileText className="text-foreground-400" size={16} />
-          </div>
-          <div className="ml-1 flex-1">Dynamics - 1.2 Graphical</div>
-          <div className="text-sm text-foreground-400">59 นาที</div>
-        </div>
-        <div className="flex p-1 items-center">
-          <div className="w-8 flex">
-            <Video className="text-foreground-400" size={16} />
-            {/* <FileText className="text-foreground-400" size={16} /> */}
-          </div>
-          <div className="ml-1 flex-1">Dynamics - 1.3 X-Y Coordinate</div>
-          <div className="text-sm text-foreground-400">74 นาที</div>
-        </div>
-        <div className="flex justify-center gap-2">
-          <Button
-            // onClick={() => setIsSort(true)}
-            className="bg-default-100 font-IBM-Thai font-medium"
-            startContent={<ArrowDownUp size={20} />}
-          >
-            จัดเรียง
-          </Button>
-          <Button
-            className="bg-default-100 font-IBM-Thai font-medium"
-            startContent={<VideoLucide size={20} />}
-          >
-            เพิ่มลด เนื้อหา
-          </Button>
-        </div>
-      </div>
-      <Divider className="mt-2" />
-      <div className="mt-2 flex flex-col gap-2 items-center">
-        <div className="text-danger-500 text-sm font-IBM-Thai-Looped text-center">
-          กรุณาใส่เอกสาร
-        </div>
-        <Button
-          className="bg-default-100 font-IBM-Thai font-medium"
-          startContent={<Book size={20} />}
-        >
-          เอกสาร
-        </Button>
-      </div>
-    </div>
-    <div className="mt-2 bg-content1 rounded-lg p-2">
-      <div className="flex justify-between items-center">
-        <div className="text-lg font-IBM-Thai-Looped font-medium">
-          2. Force and Acceleration
-        </div>
-        <Button size="sm" isIconOnly className="bg-transparent">
-          <MoreHorizontal size={24} />
-        </Button>
-      </div>
-      <Divider className="mt-2" />
-      <div className="mt-2 font-IBM-Thai-Looped">
-        <div className="flex p-1 items-center">
-          <div className="w-8 flex">
-            <Video className="text-foreground-400" size={16} />
-            <FileText className="text-foreground-400" size={16} />
-          </div>
-          <div className="ml-1 flex-1">
-            Dynamics - 2.1 Force and Acceleration
-          </div>
-          <div className="text-sm text-foreground-400">99 นาที</div>
-        </div>
-        <div className="flex p-1 items-center">
-          <div className="w-8 flex">
-            <Video className="text-foreground-400" size={16} />
-            <FileText className="text-foreground-400" size={16} />
-          </div>
-          <div className="ml-1 flex-1">Dynamics - 2.2 Friction</div>
-          <div className="text-sm text-foreground-400">59 นาที</div>
-        </div>
-        <div className="flex p-1 items-center">
-          <div className="w-8 flex">
-            <Video className="text-foreground-400" size={16} />
-            {/* <FileText className="text-foreground-400" size={16} /> */}
-          </div>
-          <div className="ml-1 flex-1">Dynamics - 2.3 Friction Pt2</div>
-          <div className="text-sm text-foreground-400">74 นาที</div>
-        </div>
-        <div className="flex justify-center gap-2">
-          <Button
-            className="bg-default-100 font-IBM-Thai font-medium"
-            startContent={<ArrowDownUp size={20} />}
-          >
-            จัดเรียง
-          </Button>
-          <Button
-            className="bg-default-100 font-IBM-Thai font-medium"
-            startContent={<VideoLucide size={20} />}
-          >
-            เพิ่มลด เนื้อหา
-          </Button>
-        </div>
-      </div>
-      <Divider className="mt-2" />
-      <div className="mt-2 flex flex-col gap-2 items-center">
-        <div className="text-danger-500 text-sm font-IBM-Thai-Looped text-center">
-          กรุณาใส่เอกสาร
-        </div>
-        <Button
-          className="bg-default-100 font-IBM-Thai font-medium"
-          startContent={<Book size={20} />}
-        >
-          เอกสาร
-        </Button>
-      </div>
-    </div>
-  </div>
-);
