@@ -1,4 +1,8 @@
-import { deliverProps } from "@/@type";
+import {
+   DeliverRes,
+   deliveryPrismaProps,
+   getDeliverByIds,
+} from "@/lib/actions/deliver.actions";
 import { cn } from "@/lib/util";
 import {
    Modal,
@@ -12,137 +16,290 @@ import {
    Divider,
    Image,
 } from "@nextui-org/react";
-import { useRef } from "react";
+import { ReactNode, useMemo, useRef, useState } from "react";
 import { LuArrowLeft, LuPenSquare, LuPrinter } from "react-icons/lu";
+import { useReactToPrint } from "react-to-print";
+import PrintPdf, { PDFDocument } from "./printPdf";
+import Alert from "@/ui/alert";
+import { modalProps, stateProps } from "@/@type";
+import { BlobProvider, PDFDownloadLink } from "@react-pdf/renderer";
+import { formatCourse, useDeliverByIds } from "@/lib/query/delivery";
 
-const DeliverModal = ({
-   open,
-  onEditAddress,
+const PrintModal = ({
+   onEditAddress,
    onClose,
+   dialogState,
 }: {
-   open: boolean;
-  onEditAddress: (data: deliverProps | undefined) => void;
+   dialogState: stateProps<modalProps<DeliverRes["data"]>>;
+   onEditAddress: (data: DeliverRes["data"][0], refetch: () => void) => void;
    onClose: () => void;
 }) => {
+   const [pdfState, setPdfState] = useState(false);
+   const contentRef = useRef<HTMLDivElement>(null);
+   const reactToPrintFn = useReactToPrint({
+      contentRef,
+      fonts: [
+         {
+            family: "IBM Plex Sans Thai Looped",
+            source:
+               "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai+Looped:wght@100;200;300;400;500;600;700&family=IBM+Plex+Sans+Thai:wght@100;200;300;400;500;600;700&display=swap",
+         },
+      ],
+      bodyClass: `background : red`,
+      pageStyle: `@media print {
+         @page {
+           size: 99mm 74.5mm;
+           margin: 0;
+         }
+       }`,
+   });
+   const [dialog, setDialog] = dialogState;
+   const { open, data } = dialog;
+   const queryData = useDeliverByIds(data?.map((d) => d.id));
+
+   const PDFDoc = useMemo(() => {
+      return <PDFDocument data={queryData.data!} />;
+   }, [queryData.data]);
+
+   const downloadBlobToFile = (blob: Blob, filename: string) => {
+      // Step 1: Create a URL for the Blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Step 2: Create a temporary anchor (<a>) element
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename; // Set the desired file name
+
+      // Step 3: Append the anchor to the document
+      document.body.appendChild(a);
+
+      // Step 4: Programmatically click the anchor to trigger the download
+      a.click();
+
+      // Step 5: Remove the anchor from the DOM after the click
+      document.body.removeChild(a);
+
+      // Step 6: Release the object URL
+      window.URL.revokeObjectURL(url);
+   };
+
    return (
-      <Modal
-         size={"full"}
-         className="rounded-none bg-transparent"
-         closeButton={<></>}
-         isOpen={open}
-         backdrop="blur"
-         onClose={() => {}}
-         scrollBehavior={"inside"}
-      >
-         <ModalContent>
-            <ModalBody className={cn("p-0")}>
-               <div className="flex overflow-y-hidden">
-                  <div className="hidden md:block flex-1"></div>
-                  <div className=" flex flex-col   bg-gradient-to-b from-[#838388] to-[#9B9BA5] px-4 py-2">
-                     <div className="flex gap-1 justify-between ">
-                        <Button
-                           className="bg-default-100 text-default-foreground"
-                           isIconOnly
-                           onClick={onClose}
+      <>
+         <PrintPdf
+            open={pdfState}
+            data={queryData.data}
+            PDFDoc={PDFDoc}
+            onClose={() => setPdfState(false)}
+         />
+
+         <Modal
+            size={"full"}
+            className="rounded-none bg-transparent"
+            closeButton={<></>}
+            isOpen={open}
+            backdrop="blur"
+            onClose={() => {}}
+            scrollBehavior={"inside"}
+         >
+            <ModalContent>
+               <ModalBody className={cn("p-0 font-IBM-Thai-Looped")}>
+                  <div className="flex flex-1  overflow-y-hidden">
+                     <div className="hidden md:block flex-1"></div>
+                     {/* TODO: check width in mobile */}
+                     <div className=" md:w-[460px] flex flex-col   bg-gradient-to-b from-[#838388] to-[#9B9BA5] px-4 py-2">
+                        <div className="flex gap-1 justify-between ">
+                           <Button
+                              className="bg-default-100 text-default-foreground"
+                              isIconOnly
+                              onClick={onClose}
+                           >
+                              <LuArrowLeft size={24} />
+                           </Button>
+
+                           {queryData.data && (
+                              <BlobProvider document={PDFDoc}>
+                                 {({ blob, url, loading, error }) => {
+                                    // Do whatever you need with blob here
+                                    if (loading) {
+                                       return <div>Loading...</div>;
+                                    }
+                                    return (
+                                       <Button
+                                          onClick={() => {
+                                             downloadBlobToFile(
+                                                blob!,
+                                                "Print Track.pdf"
+                                             );
+                                          }}
+                                          className="flex md:hidden bg-default-foreground text-primary-foreground"
+                                       >
+                                          Print <LuPrinter size={24} />
+                                       </Button>
+                                    );
+                                 }}
+                              </BlobProvider>
+                           )}
+                           <Button
+                              style={{ display: "contents" }}
+                              onClick={() => setPdfState(true)}
+                              // onClick={() => reactToPrintFn()}
+                              className="hidden md:flex  bg-default-foreground text-primary-foreground"
+                           >
+                              Print <LuPrinter size={24} />
+                           </Button>
+                        </div>
+                        <div
+                           ref={contentRef}
+                           className="space-y-2  flex-1 mt-2  overflow-y-auto"
                         >
-                           <LuArrowLeft size={24} />
-                        </Button>
-                        <Button className="bg-default-foreground text-primary-foreground">
-                           Print <LuPrinter size={24} />
-                        </Button>
-                     </div>
-                     <div className="space-y-2  flex-1 mt-2  overflow-y-auto">
-                        <CardDeliver onEdit={onEditAddress} />
-                        <CardDeliver onEdit={onEditAddress} />
-                        <CardDeliver onEdit={onEditAddress} />
-                        <CardDeliver onEdit={onEditAddress} />
-                        <CardDeliver onEdit={onEditAddress} />
-                        <CardDeliver onEdit={onEditAddress} />
+                           {queryData.data?.map((delivery) => {
+                              return (
+                                 <CardDeliver
+                                    refetch={() => queryData.refetch()}
+                                    key={delivery?.id.toString()}
+                                    delivery={delivery}
+                                    onEdit={onEditAddress}
+                                 />
+                              );
+                           })}
+                        </div>
                      </div>
                   </div>
-               </div>
-            </ModalBody>
-         </ModalContent>
-      </Modal>
+               </ModalBody>
+            </ModalContent>
+         </Modal>
+      </>
    );
 };
 
-export default DeliverModal;
+export default PrintModal;
 
 const CardDeliver = ({
    onEdit,
+   delivery,
+   refetch,
 }: {
-   onEdit: (data: deliverProps | undefined) => void;
+   refetch: () => void;
+   delivery: NonNullable<Awaited<ReturnType<typeof getDeliverByIds>>[0]>;
+   onEdit: (data: DeliverRes["data"][0], refetch: () => void) => void;
 }) => {
    const myRef = useRef<HTMLDivElement>(null);
-
    const handleMouseOver = () => {
       if (myRef.current) {
-         myRef.current.className = "block";
+         myRef.current.className = "block mt-3";
       }
    };
 
    const handleMouseOut = () => {
       if (myRef.current) {
-         myRef.current.className = "hidden";
+         myRef.current.className = "hidden mt-0";
       }
    };
+
+   const checkCourse = useMemo(() => {
+      return formatCourse(delivery);
+   }, [delivery]);
+
    return (
       <Card
-         className="rounded-none md:w-[440px] hover:bg-black hover:bg-opacity-15  shadow-md  "
+         className="break-after-page flex-1  rounded-none  hover:bg-black hover:bg-opacity-15  shadow-md  "
          onMouseOver={handleMouseOver}
          onMouseOut={handleMouseOut}
       >
          <CardBody>
-            <p className=" text-[10px] md:text-[10px]">24323</p>
-            <p className="px-2 mt-1 leading-[17.4px] text-[14px] md:text-[16px]">
-               ธีร์ธนรัชต์ นื่มทวัฒน์ <br />
-               582/47 ซอยรัชดา 3 (แยก 10) ถนนอโศก-ดินแดง แขวงดินแดง เขตดินแดง
-               กทม. 10400 <br />
-               เบอร์โทร 0956628171
+            <p className=" text-[10px] md:text-[10px]">{delivery?.id}</p>
+            <p className="px-2 mt-1 leading-[19.6px] text-[14px] md:text-[16px]">
+               {delivery?.member} <br />
+               {delivery?.updatedAddress} <br />
+               เบอร์โทร {delivery?.mobile}
             </p>
             <Divider className="my-2 bg-[#A1A1AA]" />
-            <div className="flex gap-2">
-               <p className=" text-[8px] md:text-[10px] text-[#A1A1AA]">
-                  หนังสือ
-               </p>
-               <div className="space-y-1">
-                  <div className="list-disc list-outside text-[10px] md:text-[12px]">
-                     <li>Dynamics midterm 2/2565</li>
-                     <li>StaticsME module1 vol.1 2/2565</li>
-                  </div>
-                  <div className="flex gap-1 ">
-                     <Image
-                        width={24}
-                        height={34}
-                        alt="NextUI hero Image"
-                        src="https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg"
-                     />
-                     <Image
-                        width={24}
-                        height={34}
-                        alt="NextUI hero Image"
-                        src="https://app.odm-engineer.com/media/images/course/course_1726923815_ea6cb7ae-1c1e-43a5-93e7-4bfb6d9ff7fa.jpg"
-                     />
-                  </div>
-               </div>
-            </div>
-            <div className="flex gap-2 mt-1">
-               <p className=" text-[8px] md:text-[10px] text-[#A1A1AA]">
-                  เอกสาร
-               </p>
-               <div className="space-y-1">
-                  <div className="list-disc list-outside text-[10px] md:text-[12px]">
-                     <li>Dynamics - 5. Plane Motion of Rigid Body</li>
-                     <li>Dynamics - 6. Plane Force And Acceleration</li>
-                  </div>
-               </div>
-            </div>
-            <div className="h-7 flex justify-center mt-3">
-               <div ref={myRef} className={cn("hidden", {})}>
+            {!delivery?.Delivery_Course.some(
+               (course) => course.Course?.id !== undefined
+            ) ? (
+               <Alert
+                  label={`
+                  ไม่มีข้อมูลคอร์ส ${delivery?.Delivery_WebappCourse[0].WebappCourse?.name}`}
+               />
+            ) : (
+               <>
+                  {checkCourse.bookLesson.length > 0 && (
+                     <div className="flex gap-2">
+                        <p className=" text-[8px] md:text-[10px] text-[#A1A1AA]">
+                           หนังสือ
+                        </p>
+                        <div className="space-y-1">
+                           <div className="list-disc list-outside text-[10px] md:text-[12px]">
+                              {checkCourse.bookLesson.map((d) => {
+                                 return (
+                                    <li key={d.DocumentBook.id}>
+                                       {d.DocumentBook.name}
+                                    </li>
+                                 );
+                              })}
+                           </div>
+                           <div className="flex gap-1 ">
+                              {checkCourse.bookLesson.map((d) => {
+                                 return d.DocumentBook.image ? (
+                                    <Image
+                                       key={d.DocumentBook.id}
+                                       width={24}
+                                       height={34}
+                                       alt="NextUI hero Image"
+                                       src={d.DocumentBook.image}
+                                    />
+                                 ) : (
+                                    <></>
+                                 );
+                              })}
+                           </div>
+                        </div>
+                     </div>
+                  )}
+                  {checkCourse.sheetLesson.length > 0 && (
+                     <div className="flex gap-2">
+                        <p className=" text-[8px] md:text-[10px] text-[#A1A1AA]">
+                           เอกสาร
+                        </p>
+                        <div className="space-y-1">
+                           <div className="list-disc list-outside text-[10px] md:text-[12px]">
+                              {checkCourse.sheetLesson.map((d) => {
+                                 return (
+                                    <li key={d.DocumentSheet.id}>
+                                       {d.DocumentSheet.name}
+                                    </li>
+                                 );
+                              })}
+                           </div>
+                        </div>
+                     </div>
+                  )}
+
+                  {checkCourse.preExamLesson.length > 0 && (
+                     <div className="flex gap-2">
+                        <p className=" text-[8px] md:text-[10px] text-[#A1A1AA]">
+                           ข้อสอบ
+                        </p>
+                        <div className="space-y-1">
+                           <div className="list-disc list-outside text-[10px] md:text-[12px]">
+                              {checkCourse.preExamLesson.map((d) => {
+                                 return (
+                                    <li key={d.DocumentPreExam.id}>
+                                       {d.DocumentPreExam.name}
+                                    </li>
+                                 );
+                              })}
+                           </div>
+                        </div>
+                     </div>
+                  )}
+               </>
+            )}
+            <div className="flex justify-center ">
+               <div ref={myRef} className={cn("hidden ", {})}>
                   {/* Your component here */}
                   <Button
-                     // onClick={onEdit}
+                     onClick={() => onEdit(delivery, refetch)}
                      size="sm"
                      endContent={<LuPenSquare size={20} />}
                   >

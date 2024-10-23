@@ -1,4 +1,9 @@
-import { deliverProps } from "@/@type";
+import { modalProps, stateProps } from "@/@type";
+import {
+   DeliverRes,
+   deliveryPrismaProps,
+   updateAddress,
+} from "@/lib/actions/deliver.actions";
 import { useUpdateAddress } from "@/lib/query/delivery";
 import { cn } from "@/lib/util";
 import Alert from "@/ui/alert";
@@ -10,34 +15,46 @@ import {
    Textarea,
 } from "@nextui-org/react";
 import { Danger } from "iconsax-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { LuX } from "react-icons/lu";
 
 const EditAddress = ({
-   open,
    onEditAddress,
-   data,
+   dialogState,
+   updatePrintModal,
    refetch,
 }: {
-   refetch: () => void;
-   data?: deliverProps;
-   open: boolean;
-   onEditAddress: (data: deliverProps | undefined) => void;
+   updatePrintModal: (data: Awaited<ReturnType<typeof updateAddress>>) => void;
+   refetch?: () => void;
+   dialogState: stateProps<modalProps<DeliverRes["data"][0]>>;
+
+   onEditAddress: (data: DeliverRes["data"][0] | undefined) => void;
 }) => {
+   const [dialog, setDialog] = dialogState;
+   const { open, data } = dialog;
+   const router = useRouter();
+
    const onClose = () => {
       onEditAddress(undefined);
    };
+
    const [isError, setIsError] = useState(false);
 
    const onError = (error: Error) => {
       console.error(error);
       setIsError(true);
    };
-   const updateAddress = useUpdateAddress({
+   const mutationUpdateAddress = useUpdateAddress({
       onError: onError,
-      onSuccess: () => {
-         refetch();
+      onSuccess: (data: Awaited<ReturnType<typeof updateAddress>>) => {
+         console.log('refetch', refetch)
+         if (refetch) {
+            refetch();
+         }
+         router.refresh();
+         updatePrintModal(data);
          alert("Edit Success");
          onClose();
       },
@@ -46,18 +63,18 @@ const EditAddress = ({
 
    const onSubmit = ({ address }: { address: string }) => {
       // console.log(address);
-      updateAddress.mutate({
-         webappOrderId: data?.id!,
+      mutationUpdateAddress.mutate({
+         id: data?.id!,
          updateAddress: address,
-         courseId: data?.courses.map((d) => d.id.toString())!,
+         // courseId: data?.courses.map((d) => d.id.toString())!,
       });
    };
 
    useEffect(() => {
       if (data) {
-         form.setValue("address", data.note);
+         form.setValue("address", data?.updatedAddress!);
       }
-   }, [data]);
+   }, [data, open]);
    return (
       <Modal
          //  size={"full"}
@@ -101,6 +118,7 @@ const EditAddress = ({
                               isInvalid={form.formState.errors?.address && true}
                               color={form.formState.errors?.address && "danger"}
                               {...form.register("address", { required: true })}
+                              value={form.watch("address")}
                               minRows={1}
                               // defaultValue={data?.note}
                               //       defaultValue="582/47 ซอยรัชดา 3 (แยก 10) ถนนอโศก-ดินแดง แขวงดินแดง

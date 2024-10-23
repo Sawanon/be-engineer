@@ -32,29 +32,32 @@ import {
 import dayjs from "dayjs";
 import { modalProps, stateProps } from "@/@type";
 import CustomInput from "../CustomInput";
+import { multiTrackDialog } from ".";
+import { DeliverRes, deliveryPrismaProps } from "@/lib/actions/deliver.actions";
 export type DeliverFilter = {
-   input: string | undefined;
-   status: string | undefined;
-   university: string | undefined;
-   startDate: string;
-   endDate: string;
+   input?: string | undefined;
+   status?: string | undefined;
+   university?: string | undefined;
+   startDate?: string;
+   endDate?: string;
 };
 const FormDeliver = ({
    state,
    onAddTrackings,
-   onPrint,
    searchState,
    onCloseSelect,
+   onPrintTrackings,
+   selectData,
 }: {
-   searchState: stateProps<DeliverFilter | undefined>;
+   selectData: multiTrackDialog;
+   searchState: stateProps<DeliverFilter>;
    state: stateProps<modalProps>;
    onAddTrackings: () => void;
-   onPrint: () => void;
+   onPrintTrackings: (data: DeliverRes["data"]) => void;
    onCloseSelect: () => void;
 }) => {
    const [search, setSearch] = searchState;
    const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-   console.log(search);
    const [selectState, setSelectState] = state;
    const onOpenSelect = () => {
       setSelectState({
@@ -81,16 +84,36 @@ const FormDeliver = ({
       }
    };
 
-   const onChangeDate = (data: RangeValue<CalendarDate>) => {
+   const onClickButtonCalendar = (subDate: number) => {
       setSearch((prev: DeliverFilter) => ({
          ...prev,
-         startDate: dayjs(data.start.toDate(getLocalTimeZone())).format(
-            "YYYY-MM-DD"
-         ),
-         endDate: dayjs(data.end.toDate(getLocalTimeZone())).format(
-            "YYYY-MM-DD"
-         ),
+         startDate: dayjs().format("YYYY-MM-DD"),
+         endDate: dayjs().subtract(subDate).format("YYYY-MM-DD"),
       }));
+   };
+
+   const onChangeDate = (data: RangeValue<CalendarDate>) => {
+      if (data.start) {
+         setSearch((prev: DeliverFilter) => ({
+            ...prev,
+            startDate: dayjs(data?.start.toDate(getLocalTimeZone())).format(
+               "YYYY-MM-DD"
+            ),
+            endDate: dayjs(data?.end.toDate(getLocalTimeZone())).format(
+               "YYYY-MM-DD"
+            ),
+         }));
+      } else {
+         setSearch((prev: DeliverFilter) => ({
+            ...prev,
+            startDate: undefined,
+            endDate: undefined,
+         }));
+      }
+   };
+
+   const onChangeSearch = (key: keyof DeliverFilter, value: string) => {
+      setSearch((prev: DeliverFilter) => ({ ...prev, [key]: value }));
    };
 
    return (
@@ -118,6 +141,15 @@ const FormDeliver = ({
                      calendar: cn("w-[280px] "),
                      input: cn("text-black"),
                   }}
+                  value={
+                     search.startDate && search.endDate
+                        ? {
+                             start: parseDate(search.startDate),
+
+                             end: parseDate(search.endDate),
+                          }
+                        : null
+                  }
                   calendarProps={{
                      classNames: {
                         cellButton: [
@@ -138,28 +170,50 @@ const FormDeliver = ({
                         ],
                      },
                   }}
-                  defaultValue={{
-                     start: parseDate(dayjs().format("YYYY-MM-DD")),
-                     end: parseDate(
-                        dayjs().add(1, "days").format("YYYY-MM-DD")
-                     ),
-                  }}
                   CalendarBottomContent={
                      <div className=" text-center flex gap-2 py-2 justify-center font-medium">
-                        <Button size="sm" className="bg-default-100">
-                           1 day
+                        <Button
+                           onClick={() => {
+                              onClickButtonCalendar(0);
+                           }}
+                           size="sm"
+                           className="bg-default-100"
+                        >
+                           Today
                         </Button>
-                        <Button size="sm" className="bg-default-100">
+                        <Button
+                           onClick={() => {
+                              onClickButtonCalendar(2);
+                           }}
+                           size="sm"
+                           className="bg-default-100"
+                        >
                            2 days
                         </Button>
-                        <Button size="sm" className="bg-default-100">
+                        <Button
+                           onClick={() => {
+                              onClickButtonCalendar(30);
+                           }}
+                           size="sm"
+                           className="bg-default-100"
+                        >
                            30 days
                         </Button>
                      </div>
                   }
                />
             </I18nProvider>
-            <Button className="bg-default-100" isIconOnly>
+            <Button
+               onClick={() => {
+                  setSearch((prev: DeliverFilter) => ({
+                     ...prev,
+                     startDate: undefined,
+                     endDate: undefined,
+                  }));
+               }}
+               className="bg-default-100"
+               isIconOnly
+            >
                <LuX className="text-[#A1A1AA] h-6 w-6" />
             </Button>
          </div>
@@ -228,7 +282,11 @@ const FormDeliver = ({
                      "font-medium flex-1 bg-default-foreground text-primary-foreground font-IBM-Thai",
                      {}
                   )}
-                  onClick={onPrint}
+                  onClick={() => {
+                     onPrintTrackings(
+                        selectData.data ? Object.values(selectData.data) : []
+                     );
+                  }}
                >
                   <LuPrinter size={24} />
                   <p className="flex  ">
@@ -248,8 +306,8 @@ const FormDeliver = ({
             )}
          >
             <div className="flex  gap-2 flex-1 ">
-               <StatusSelect />
-               <StatusInstitution />
+               <StatusSelect value={search.status} onChange={onChangeSearch} />
+               <StatusInstitution onChange={onChangeSearch} />
             </div>
          </div>
       </section>
@@ -258,7 +316,13 @@ const FormDeliver = ({
 
 export default FormDeliver;
 
-const StatusSelect = () => {
+const StatusSelect = ({
+   onChange,
+   value,
+}: {
+   value?: string;
+   onChange: (key: keyof DeliverFilter, value: string) => void;
+}) => {
    return (
       <Select
          placeholder="สถานะ"
@@ -268,6 +332,10 @@ const StatusSelect = () => {
             trigger: cn("flex items-center justify-center    "),
             base: cn("flex-1  rounded-[12px]"),
          }}
+         onChange={(e) => {
+            onChange("status", e.target.value);
+         }}
+         selectedKeys={value?.split(",")}
          renderValue={(items) => <div>สถานะ</div>}
          selectionMode={"multiple"}
       >
@@ -276,7 +344,7 @@ const StatusSelect = () => {
                base: cn("flex gap-1"),
             }}
             startContent={<LuTruck />}
-            key={"send"}
+            key={"ship"}
          >
             จัดส่ง
          </SelectItem>
@@ -285,7 +353,7 @@ const StatusSelect = () => {
                base: cn("flex gap-1"),
             }}
             startContent={<LuPackageCheck />}
-            key={"sended"}
+            key={"shipped"}
          >
             จัดส่งแล้ว
          </SelectItem>
@@ -294,7 +362,7 @@ const StatusSelect = () => {
                base: cn("flex gap-1"),
             }}
             startContent={<LuHelpingHand />}
-            key={"take"}
+            key={"pickup"}
          >
             รับที่สถาบัน
          </SelectItem>
@@ -311,9 +379,16 @@ const StatusSelect = () => {
    );
 };
 
-const StatusInstitution = () => {
+const StatusInstitution = ({
+   onChange,
+}: {
+   onChange: (key: keyof DeliverFilter, value: string) => void;
+}) => {
    return (
       <Select
+         onChange={(e) => {
+            onChange("university", e.target.value);
+         }}
          placeholder={`สถาบัน`}
          className="w-[18dvh] font-IBM-Thai"
          classNames={{
@@ -327,23 +402,16 @@ const StatusInstitution = () => {
             classNames={{
                base: cn("flex gap-1"),
             }}
-            key={"send"}
-         >
-            Kmutnb
-         </SelectItem>
-         <SelectItem
-            classNames={{
-               base: cn("flex gap-1"),
-            }}
-            key={"sended"}
+            key={"kmitl"}
          >
             Kmitl
          </SelectItem>
+
          <SelectItem
             classNames={{
                base: cn("flex gap-1"),
             }}
-            key={"take"}
+            key={"odm"}
          >
             Odm
          </SelectItem>

@@ -1,74 +1,113 @@
 "use client";
 
-import { deliverProps, deliveryTypeProps, modalProps } from "@/@type";
+import { deliveryTypeProps, modalProps } from "@/@type";
 import FormDeliver, { DeliverFilter } from "./form";
-import DeliverModal from "./printing.modal";
+import PrintModal from "./printing.modal";
 import TableDeliver from "./table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EditAddress from "./edit_address.modal";
-import AddTracking, { MuitiTracking } from "./add_tracking.modal";
+import AddTracking from "./add_tracking.modal";
 import { cn } from "@/lib/util";
 import { useDeliver, useInfinityDeliver } from "@/lib/query/delivery";
 import AddMultiTracking from "./add_multi_tracking.modal";
+import {
+   DeliverRes,
+   deliveryPrismaProps,
+   getDeliver,
+   refetchData,
+   updateAddress,
+} from "@/lib/actions/deliver.actions";
+import { revalidatePath } from "next/cache";
+import { useRouter } from "next/navigation";
+import _ from "lodash";
+import { Button } from "@nextui-org/react";
+import { Refresh } from "iconsax-react";
+import { LuX } from "react-icons/lu";
 
 export type multiTrackDialog = {
    key: Set<number>;
-   data?: Record<string, deliverProps>;
+   data?: Record<string, DeliverRes["data"][0]>;
    open?: boolean;
 };
-
-const DeliverComp = () => {
-   const [searchData, setSearchData] = useState<DeliverFilter>();
+const DeliverComp = ({
+   isNewData,
+   delivery,
+}: {
+   isNewData: boolean;
+   delivery: DeliverRes;
+}) => {
+   const router = useRouter();
+   const [newData, setNewData] = useState(isNewData);
+   useEffect(() => {
+      setNewData(isNewData);
+   }, [isNewData]);
+   const [searchData, setSearchData] = useState<DeliverFilter>({
+      status : "pickup,ship"
+   });
    const [multiTrackingState, setMultiTrackingState] =
       useState<multiTrackDialog>({
          key: new Set([]),
          open: false,
       });
+
+   const [printModalState, setPrintModalState] = useState<
+      modalProps<DeliverRes["data"]>
+   >({
+      open: false,
+   });
+
    const [selectState, setSelectState] = useState<modalProps>({
       open: false,
       data: undefined,
    });
-   // console.log(selectState);
-   const [isEditAddress, setIsEditAddress] = useState<modalProps<deliverProps>>(
-      { open: false, data: undefined }
-   );
-   const [isPrint, setIsPrint] = useState(false);
+   const [isEditAddress, setIsEditAddress] = useState<
+      modalProps<DeliverRes["data"][0]> & { refetch?: () => void }
+   >({ open: false, data: undefined });
    const [isAddTracking, setIsAddTracking] = useState<
-      modalProps<deliverProps> & { type?: deliveryTypeProps }
+      modalProps<deliveryPrismaProps> & { type?: deliveryTypeProps }
    >({ open: false, data: undefined, type: undefined });
 
    const handleOpenMultiTracking = () => {
       setMultiTrackingState((prev) => ({ ...prev, open: true }));
    };
 
-   const onEditAddress = (data: deliverProps | undefined) => {
+   const handleOpenPrintTracking = (data: DeliverRes["data"]) => {
+      setPrintModalState((prev) => ({ open: true, data: data }));
+   };
+
+   const onEditAddress = (
+      data: DeliverRes["data"][0] | undefined,
+      refetch?: () => void
+   ) => {
       if (data) {
-         setIsEditAddress({ open: true, data: data });
+         setIsEditAddress({ open: true, data: data, refetch: refetch });
       } else {
          setIsEditAddress({ open: false });
       }
    };
 
-   const onOpenAddTrack = (data: deliverProps, type: deliveryTypeProps) => {
+   const onOpenAddTrack = (
+      data: deliveryPrismaProps,
+      type: deliveryTypeProps
+   ) => {
       setIsAddTracking({ open: true, data, type });
    };
    const onChangeTypeSuccess = (type: deliveryTypeProps) => {
       alert("Change Type Success");
       setIsAddTracking((prev) => {
-         console.log("prev", type, prev);
          return { open: true, data: prev.data, type: type };
       });
-      refetch();
    };
 
    const onCloseAddTrack = () => {
       setIsAddTracking({ open: false });
    };
 
-   const deliverQuery = useInfinityDeliver({});
+   // const deliverQuery = useDeliver();
    const refetch = () => {
-      deliverQuery.refetch();
+      // deliverQuery.refetch();
    };
+
    const onCloseSelect = () => {
       setSelectState({ open: false });
       setMultiTrackingState({
@@ -77,21 +116,48 @@ const DeliverComp = () => {
       });
    };
 
+   const handleClosePrint = () => {
+      setPrintModalState({ open: false });
+   };
+
+   const updatePrintModal = (
+      data: Awaited<ReturnType<typeof updateAddress>>
+   ) => {
+      setPrintModalState((prev: modalProps<DeliverRes["data"]>) => {
+         const cloneData = _.cloneDeep(prev.data)!;
+         const findUpdateData = _.findIndex(
+            cloneData,
+            (deliver) => deliver.id === data?.id
+         );
+         cloneData[findUpdateData]["updatedAddress"] = data?.updatedAddress!;
+         return { ...prev, data: cloneData };
+      });
+   };
+   console.log("isEditAddress", isEditAddress);
    return (
-      <div className="flex flex-col pt-6 px-app bg-background relative h-screenDevice bg-default-50">
+      <div className="flex flex-col pt-0 md:pt-6 px-app  bg-background relative overflow-y-hidden md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 ">
+         {newData && (
+            <NotifyModal
+               onRefresh={() => {
+                  // refetchData();
+                  router.refresh();
+               }}
+               onClose={() => setNewData(false)}
+            />
+         )}
          {/*  <div className="flex flex-col relative flex-1 font-IBM-Thai-Looped px-[14px] overflow-y-hidden  bg-default-50 h-screenDevice bg-green-500   "> */}
          <h1 className="hidden md:block font-IBM-Thai text-[30px] text-default-foreground font-bold leading-9 py-2 ">
             การจัดส่ง
          </h1>
-         <DeliverModal
-            open={isPrint}
+         <PrintModal
+            dialogState={[printModalState, setPrintModalState]}
             onEditAddress={onEditAddress}
-            onClose={() => setIsPrint(false)}
+            onClose={handleClosePrint}
          />
          <EditAddress
-            refetch={refetch}
-            open={isEditAddress.open}
-            data={isEditAddress.data}
+            refetch={isEditAddress.refetch}
+            dialogState={[isEditAddress, setIsEditAddress]}
+            updatePrintModal={updatePrintModal}
             onEditAddress={onEditAddress}
          />
          <AddTracking
@@ -106,27 +172,55 @@ const DeliverComp = () => {
             onClose={onCloseSelect}
          />
 
-         {/* <ChangeReceiveType /> */}
-         <div className=" flex flex-col mb-4  overflow-hidden mx-2 max-w-[960px] ">
+         <div className=" flex flex-col mb-4  overflow-hidden  max-w-[960px] ">
             <FormDeliver
                onCloseSelect={onCloseSelect}
                searchState={[searchData, setSearchData]}
                state={[selectState, setSelectState]}
                onAddTrackings={handleOpenMultiTracking}
-               onPrint={() => setIsPrint(true)}
+               onPrintTrackings={handleOpenPrintTracking}
+               selectData={multiTrackingState}
             />
-            {/* <div className=" flex flex-col flex-1"> */}
             <TableDeliver
+               onPrintTrackings={handleOpenPrintTracking}
+               searchState={[searchData, setSearchData]}
                tableSelect={[multiTrackingState, setMultiTrackingState]}
-               query={deliverQuery}
+               // query={deliverQuery}
+               data={delivery}
                onEditAddress={onEditAddress}
                state={[selectState, setSelectState]}
-               onPrint={() => setIsPrint(true)}
+               // onPrint={handleClosePrint}
                onAddTrackings={onOpenAddTrack}
             />
-
-            {/* </div> */}
          </div>
+      </div>
+   );
+};
+
+const NotifyModal = ({
+   onClose,
+   onRefresh,
+}: {
+   onRefresh: () => void;
+   onClose: () => void;
+}) => {
+   return (
+      <div className="rounded-lg font-IBM-Thai-Looped bg-black opacity-70 flex items-center gap-2 py-2 md:py-3 px-4 absolute right-4 bottom-4 z-50">
+         <p className="text-default-100">มีคำสั่งซื้อใหม่เข้ามา</p>
+         <Button
+            onClick={onRefresh}
+            endContent={<Refresh className="text-default-foreground" />}
+            className="bg-default-100 text-default-foreground"
+         >
+            Refresh
+         </Button>
+         <Button
+            onClick={onClose}
+            isIconOnly
+            className="bg-transparent text-default-foreground"
+         >
+            <LuX className="text-default-100" />
+         </Button>
       </div>
    );
 };

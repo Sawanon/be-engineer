@@ -2,7 +2,12 @@
 
 import axios from "axios";
 import { handleError, parseStringify } from "../util";
-import { addMultiTrackingProps, addTrackingProps, deliverProps } from "@/@type";
+import {
+   addMultiTrackingProps,
+   addTrackingProps,
+   courseProps,
+   deliveryProps,
+} from "@/@type";
 import { PrismaClient } from "@prisma/client";
 import {
    addDeliverShipService,
@@ -12,66 +17,215 @@ import { deliveryType } from "../res/const";
 import _ from "lodash";
 import { getCourseByWebappId } from "./course.actions";
 import async from "async";
+import { cache } from "react";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { DeliverFilter } from "@/components/Deliver/form";
 const { B_API_KEY, B_END_POINT } = process.env;
 const prisma = new PrismaClient();
-export type deliveryPrismaProps = Awaited<
-   ReturnType<typeof prisma.delivery.findFirst>
+export type deliveryPrismaProps = NonNullable<
+   Awaited<ReturnType<typeof prisma.delivery.findFirst>>
 >;
-
-type RequiredDeliverProps =
+type RequireddeliveryPrismaProps =
    | "status"
    | "type"
    | "webappOrderId"
    | "webappCourseId";
-export const getDeliver = async () => {
+export type DeliverRes = Awaited<ReturnType<typeof getDeliver>>;
+// export type deliveryPrismaProps = DeliverRes["data"][0]
+
+export const refetchData = () => {
+   console.log("Revalidate");
+   revalidatePath("/deliver");
+   // revalidateTag("getDeliver");
+};
+
+export const getLatestId = async (branch: "ODM" | "KMITL") => {
    try {
       const res = await axios({
          method: "GET",
-         url: `${B_END_POINT}/api/deliver`,
+         url: `${B_END_POINT}/api/deliver/latest-id?branch=${branch.toUpperCase()}`,
          headers: {
             "B-API-KEY": B_API_KEY,
          },
       });
-      return parseStringify(res.data as deliverProps[]);
-   } catch (e) {
-      throw handleError(e);
+      return res.data;
+   } catch (error) {
+      throw handleError(error);
+   } finally {
+      // prisma.$disconnect();
    }
 };
-export const getInfinityDeliver = async ({ pageParam = 1 }) => {
+
+export const getDeliver = cache(async () => {
    try {
-      console.log("url", `${B_END_POINT}/api/deliver?page=${pageParam}`);
-      const res = await axios({
-         method: "GET",
-         url: `${B_END_POINT}/api/deliver?page=${pageParam}`,
-         headers: {
-            "B-API-KEY": B_API_KEY,
+      console.time("get deliver");
+      const res = await prisma.delivery.findMany({
+         include: {
+            Delivery_Course: {
+               include: {
+                  Course: true,
+               },
+               // Course: {
+               //    include: {
+               //       CourseLesson: {
+               //          include: {
+               //             LessonOnDocument: true,
+               //             LessonOnDocumentBook: true,
+               //             LessonOnDocumentSheet: true,
+               //          },
+               //       },
+               //    },
+               // },
+            },
+            Delivery_WebappCourse: {
+               include: {
+                  WebappCourse: true,
+               },
+            },
          },
+         orderBy: { id: "desc" },
+         take: 500000,
       });
+      const count = await prisma.delivery.count();
+      console.timeEnd("get deliver");
 
-      const data = res.data as deliverProps[];
-
-      // if (data.length < 100) {
-      //    return { data: data };
-      // }
-      // return parseStringify({ data: data, nextOffset: pageParam + 1 }) as {
-      //    data: deliverProps[];
-      //    nextOffset: number;
-      // };
-
-      if (data.length < 100) {
-         return parseStringify({
-            data,
-            nextPage: undefined,
-         });
-      }
       return parseStringify({
-         data,
-         nextPage: pageParam + 1,
+         total: count,
+         data: res,
       });
    } catch (e) {
       throw handleError(e);
+   } finally {
+      prisma.$disconnect();
    }
-};
+});
+export const getDeliverByIds = cache(async (Ids: number[]) => {
+   try {
+      const res = await prisma.delivery.findMany({
+         where: {
+            id: { in: Ids },
+         },
+         include: {
+            Delivery_Course: {
+               include: {
+                  Course: {
+                     include: {
+                        CourseLesson: {
+                           include: {
+                              LessonOnDocument: {
+                                 include: {
+                                    DocumentPreExam: true,
+                                 },
+                              },
+                              LessonOnDocumentBook: {
+                                 include: {
+                                    DocumentBook: true,
+                                 },
+                              },
+                              LessonOnDocumentSheet: {
+                                 include: {
+                                    DocumentSheet: true,
+                                 },
+                              },
+                           },
+                        },
+                     },
+                  },
+               },
+            },
+            Delivery_WebappCourse: {
+               include: {
+                  WebappCourse: true,
+               },
+            },
+         },
+         orderBy: { id: "desc" },
+         take: 500000,
+      });
+
+      return parseStringify(res);
+   } catch (e) {
+      throw handleError(e);
+   } finally {
+      prisma.$disconnect();
+   }
+});
+export const getInfinityDeliver = cache(
+   async ({
+      pageParam = 1,
+      search,
+   }: {
+      search: DeliverFilter;
+      pageParam?: number;
+   }) => {
+      try {
+         const filter = {};
+
+         // switch(search.status){
+
+         // }
+
+         const res = await prisma.delivery.findMany({
+            orderBy: [{ id: "desc" }],
+            take: 100,
+            skip: (pageParam - 1) * 100,
+            where: {
+               approved: {
+                  lte: new Date(),
+                  gte: new Date(),
+               },
+               member: {
+                  contains: "test",
+               },
+               branch: {
+                  contains: "master",
+               },
+            },
+            include: {
+               Delivery_Course: {
+                  include: {
+                     Course: true,
+                  },
+               },
+               Delivery_WebappCourse: {
+                  include: {
+                     WebappCourse: true,
+                  },
+               },
+               DeliverShipService: true,
+               //#endregion
+            },
+         });
+
+         const count = await prisma.delivery.count();
+
+         const data = res as deliveryPrismaProps[];
+
+         // if (data.length < 100) {
+         //    return { data: data };
+         // }
+         // return parseStringify({ data: data, nextOffset: pageParam + 1 }) as {
+         //    data: deliveryPrismaProps[];
+         //    nextOffset: number;
+         // };
+
+         if (data.length < 100) {
+            return parseStringify({
+               total: count,
+               data,
+               nextPage: undefined,
+            });
+         }
+         return parseStringify({
+            total: count,
+            data,
+            nextPage: pageParam + 1,
+         });
+      } catch (e) {
+         throw handleError(e);
+      }
+   }
+);
 
 export const getTrackingByWebappIdArr = async (webappId: number[]) => {
    try {
@@ -94,19 +248,32 @@ export const getTrackingByWebappIdArr = async (webappId: number[]) => {
 
 export const getTrackingByWebappId = async (webAppOrderId: number) => {
    try {
-      // const res = await prisma.delivery_Course.findFirst({
-      //    where: {
-      //       webappOrderId: webAppOrderId,
-      //    },
-      //    include: {
-      //       // DeliverShipService: true,
-      //       Course: true,
-      //       Delivery: true,
-      //    },
-      // });
       const res = await prisma.delivery.findFirst({
          where: {
             webappOrderId: webAppOrderId,
+         },
+         include: {
+            // DeliverShipService: true,
+            Course: true,
+            Delivery_Course: {
+               include: {
+                  Course: true,
+               },
+            },
+         },
+      });
+      return parseStringify(res);
+   } catch (error) {
+      throw handleError(error);
+   } finally {
+      prisma.$disconnect();
+   }
+};
+export const getTrackingById = async (id: number) => {
+   try {
+      const res = await prisma.delivery.findFirst({
+         where: {
+            id,
          },
          include: {
             // DeliverShipService: true,
@@ -128,20 +295,24 @@ export const getTrackingByWebappId = async (webAppOrderId: number) => {
 
 export const updateAddress = async ({
    updateAddress,
-   webappOrderId,
-   courseId,
-}: Pick<addTrackingProps, "updateAddress" | "webappOrderId" | "courseId">) => {
+   id,
+}: // courseId,
+{
+   id: number;
+   updateAddress: string;
+}) => {
    try {
-      const getDelivery = await getTrackingByWebappId(webappOrderId);
+      const getDelivery = await getTrackingById(id);
+      console.log("getDelivery", getDelivery);
       if (_.isEmpty(getDelivery)) {
-         const res = await createDelivery({
-            type: "ship",
-            status: "waiting",
-            updatedAddress: updateAddress,
-            webappOrderId,
-            webappCourseId: courseId?.toString(),
-         });
-         return parseStringify(res);
+         // const res = await createDelivery({
+         //    type: "ship",
+         //    status: "waiting",
+         //    updatedAddress: updateAddress,
+         //    webappOrderId,
+         //    // webappCourseId: courseId?.toString(),
+         // });
+         // return parseStringify(res);
       } else {
          const res = await prisma.delivery.update({
             where: {
@@ -153,6 +324,7 @@ export const updateAddress = async ({
                updatedAddress: updateAddress,
             },
          });
+         refetchData();
          return parseStringify(res);
       }
    } catch (error) {
@@ -165,44 +337,32 @@ export const updateAddress = async ({
 export const addMultiTracking = async ({
    deliveryData,
    service,
-   webappOrderIds,
+   ids,
    courseIds,
 }: addMultiTrackingProps) => {
    try {
       const getShipService = await getShipServiceByName(service);
-      const getDeliveries = await getTrackingByWebappIdArr(webappOrderIds);
+      const getDeliveries = await getTrackingByWebappIdArr(ids);
       const groupDelivery: Record<string, deliveryPrismaProps> = {};
       getDeliveries?.forEach((delivery) => {
          groupDelivery[delivery.webappOrderId.toString()] = delivery;
       });
       async.forEachOf(deliveryData, async (delivery, key, callback) => {
          console.log("delivery", delivery);
-         const getDelivery = groupDelivery[delivery.webappOrderId];
-         if (!_.isEmpty(getDelivery)) {
-            const res = await prisma.delivery.update({
-               where: {
-                  // webappOrderId: webAppOrderId,
-                  id: getDelivery.id,
-               },
-               data: {
-                  type: "ship",
-                  status: "success",
-                  trackingCode: delivery.trackingCode,
-                  updatedAt: new Date(),
-               },
-            });
-            return parseStringify(res);
-         } else {
-            const res = await createDelivery({
+         const res = await prisma.delivery.update({
+            where: {
+               // webappOrderId: webAppOrderId,
+               id: delivery.id,
+            },
+            data: {
                type: "ship",
                status: "success",
                trackingCode: delivery.trackingCode,
-               DeliverShipService: { connect: { id: getShipService?.id } },
-               webappOrderId: delivery.webappOrderId,
-               webappCourseId: delivery.courseId.toString(),
-            });
-            return parseStringify(res);
-         }
+               updatedAt: new Date(),
+            },
+         });
+         refetchData();
+         return parseStringify(res);
       });
    } catch (error) {
       throw handleError(error);
@@ -215,47 +375,28 @@ export const addTracking = async ({
    trackingCode,
    note,
    service,
-   webappOrderId,
-   courseId,
-}: addTrackingProps) => {
+   id,
+}: // courseId,
+addTrackingProps) => {
    try {
       // TODO: need to check duplicate or not
       const getShipService = await getShipServiceByName(service);
-      const getDelivery = await getTrackingByWebappId(webappOrderId);
-      if (!_.isEmpty(getDelivery)) {
-         const res = await prisma.delivery.update({
-            where: {
-               // webappOrderId: webAppOrderId,
-               id: getDelivery.id,
-            },
-            data: {
-               type: "ship",
-               status: "success",
-               updatedAddress: updateAddress,
-               trackingCode: trackingCode,
-               note: note,
-               updatedAt: new Date(),
-               webappOrderId: webappOrderId,
-            },
-         });
-         return parseStringify(res);
-      } else {
-         const res = await createDelivery({
+      const res = await prisma.delivery.update({
+         where: {
+            // webappOrderId: webAppOrderId,
+            id: id,
+         },
+         data: {
             type: "ship",
             status: "success",
             updatedAddress: updateAddress,
             trackingCode: trackingCode,
             note: note,
-            DeliverShipService: { connect: { id: getShipService?.id } },
-            webappOrderId: webappOrderId,
-            webappCourseId: courseId.toString(),
-
-            // webappAdminId?: number | null
-            // Course?: CourseCreateNestedOneWithoutDeliveryInput
-         });
-
-         return parseStringify(res);
-      }
+            updatedAt: new Date(),
+         },
+      });
+      refetchData();
+      return parseStringify(res);
    } catch (error) {
       throw handleError(error);
    } finally {
@@ -264,38 +405,24 @@ export const addTracking = async ({
 };
 export const receiveOrder = async ({
    note,
-   webappOrderId,
-   courseId,
-}: Pick<addTrackingProps, "courseId" | "note" | "webappOrderId">) => {
+   id,
+}: Pick<addTrackingProps, "note" | "id">) => {
    try {
-      const getDelivery = await getTrackingByWebappId(webappOrderId!);
-      if (!_.isEmpty(getDelivery)) {
-         const res = await prisma.delivery.update({
-            where: {
-               id: getDelivery.id,
-            },
-            data: {
-               type: "pickup",
-               status: "success",
-               // updatedAddress: updateAddress,
-               note: note,
-               updatedAt: new Date(),
-            },
-         });
-         return parseStringify(res);
-      } else {
-         const res = await createDelivery({
+      const res = await prisma.delivery.update({
+         where: {
+            id: id,
+         },
+         data: {
             type: "pickup",
             status: "success",
+            // updatedAddress: updateAddress,
             note: note,
-            webappOrderId: webappOrderId!,
-            webappCourseId: courseId.toString(),
-            // webappCourseId?: number | null
-            // webappAdminId?: number | null
-            // Course?: CourseCreateNestedOneWithoutDeliveryInput
-         });
-         return parseStringify(res);
-      }
+            updatedAt: new Date(),
+         },
+      });
+      refetchData();
+      return parseStringify(res);
+      throw "not found doc id";
    } catch (error) {
       throw handleError(error);
    } finally {
@@ -305,59 +432,39 @@ export const receiveOrder = async ({
 
 export const changeType = async ({
    type,
-   webappOrderId,
-   courseId,
-}: { courseId: string[] } & Pick<
-   NonNullable<deliveryPrismaProps>,
-   "type" | "webappOrderId"
->) => {
+   id,
+}: Pick<NonNullable<deliveryPrismaProps>, "type" | "id">) => {
    try {
       // TODO: need admin id
-      const getDelivery = await getTrackingByWebappId(webappOrderId);
       const updatedAddress = type === "pickup" ? "รับที่สถาบัน" : "";
-      if (!_.isEmpty(getDelivery)) {
-         const res = await prisma.delivery.update({
-            where: {
-               // webappOrderId: webAppOrderId,
-               id: getDelivery.id,
-            },
-            data: {
-               type: type,
-               status: "waiting",
-               updatedAddress,
-               webappOrderId: webappOrderId,
-            },
-         });
-         return parseStringify(res);
-      } else {
-         await prisma.delivery.create({
-            data: {
-               type,
-               status: "waiting",
-               updatedAddress,
-               webappOrderId: webappOrderId,
-               // webappCourseId: courseId?.toString(),
-            },
-         });
-         const res = await createDelivery({
-            type,
+      const res = await prisma.delivery.update({
+         where: {
+            // webappOrderId: webAppOrderId,
+            id: id,
+         },
+         data: {
+            type: type,
             status: "waiting",
             updatedAddress,
-            webappOrderId: webappOrderId,
-            webappCourseId: courseId?.toString(),
-         });
-         return parseStringify(res);
-      }
+         },
+      });
+      refetchData();
+      return parseStringify(res);
    } catch (error) {
+      console.error(error);
       throw handleError(error);
    } finally {
       prisma.$disconnect();
    }
 };
 
-const createDelivery = async (
-   data: Parameters<typeof prisma.delivery.create>[0]["data"]
-) => {
+const createDelivery = async ({
+   data,
+   courses,
+}: {
+   data: Parameters<typeof prisma.delivery.create>[0]["data"];
+   courses: courseProps[];
+}) => {
    try {
       // const demoCourse = [1579, 3863];
       const webappCourseId = data.webappCourseId
@@ -380,6 +487,38 @@ const createDelivery = async (
          Course: { connect: { id: number } } | undefined;
       }[] = [];
 
+      const relationWebappCourse: {
+         WebappCourse: {
+            connectOrCreate: {
+               where: {
+                  webappCourseId: number;
+               };
+               create: {
+                  webappCourseId: number;
+                  name: string;
+                  term: string;
+               };
+            };
+         };
+      }[] = [];
+
+      courses.forEach((c) => {
+         relationWebappCourse.push({
+            WebappCourse: {
+               connectOrCreate: {
+                  where: {
+                     webappCourseId: c.id,
+                  },
+                  create: {
+                     webappCourseId: c.id,
+                     name: c.course,
+                     term: c.term,
+                  },
+               },
+            },
+         });
+      });
+
       // demoCourse?.forEach((courseId) => {
       webappCourseId?.forEach((courseId) => {
          const course = groupCourse[courseId];
@@ -391,19 +530,74 @@ const createDelivery = async (
 
          return course;
       });
-      console.log("relationCourse", relationCourse);
+      // console.log("relationCourse", relationCourse);
       const res = await prisma.delivery.create({
          data: {
             ...data,
+            Delivery_WebappCourse: {
+               create: relationWebappCourse,
+            },
             Delivery_Course: {
                create: relationCourse,
             },
          },
       });
-      console.log("create Tracking res", res);
+      // console.log("create Tracking res", res);
       return parseStringify(res);
    } catch (error) {
-      console.log(error);
+      console.error(error);
       throw handleError(error);
+   } finally {
+      prisma.$disconnect();
+   }
+};
+
+export const updateDataByBranch = async ({
+   branch,
+   startId,
+}: {
+   startId: number;
+   branch: "ODM" | "KMITL";
+}) => {
+   try {
+      console.time("test");
+      const res = await axios({
+         method: "GET",
+         url: `${B_END_POINT}/api/deliver?start-id=${startId}&branch=${branch}`,
+         headers: {
+            "B-API-KEY": B_API_KEY,
+         },
+      });
+      const orderData = _.orderBy(res.data, ["id"], ["asc"]);
+      for (let index = 0; index < orderData.length; index++) {
+         const deliver = orderData[index] as deliveryProps;
+         const type = deliver.note?.includes("รับที่สถาบัน")
+            ? "pickup"
+            : "ship";
+         await createDelivery({
+            data: {
+               status: "waiting",
+               type,
+               approved: deliver.last_updated,
+               webappOrderId: deliver.id,
+               updatedAddress: deliver.note,
+               branch: deliver.branch,
+               member: deliver.member,
+               webappCourseId: deliver.courses
+                  .map((course) => course.id)
+                  .toString(),
+               mobile: deliver.mobile,
+            },
+            courses: deliver.courses,
+         });
+         // console.log("done", deliver.id);
+      }
+
+      console.timeEnd("test");
+
+      return parseStringify(res.data as deliveryPrismaProps[]);
+   } catch (error) {
+   } finally {
+      prisma.$disconnect();
    }
 };

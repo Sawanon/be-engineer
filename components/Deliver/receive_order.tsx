@@ -1,4 +1,5 @@
-import { deliverProps, deliveryTypeProps } from "@/@type";
+import { deliveryTypeProps } from "@/@type";
+import { deliveryPrismaProps } from "@/lib/actions/deliver.actions";
 import { useUpdatePickup } from "@/lib/query/delivery";
 import { Button, Image as NextUiImage, Textarea } from "@nextui-org/react";
 import { useForm } from "react-hook-form";
@@ -14,10 +15,10 @@ const ReceiveOrder = ({
    mutation,
    data,
 }: {
-   data: deliverProps;
+   data: deliveryPrismaProps;
    mutation: ReturnType<typeof useUpdatePickup>;
    onChangeType: (data: {
-      detail: deliverProps;
+      detail: deliveryPrismaProps;
       type: deliveryTypeProps;
    }) => void;
    onClose: () => void;
@@ -26,9 +27,9 @@ const ReceiveOrder = ({
 
    const onSubmit = ({ note }: { note: string }) => {
       mutation.mutate({
-         webappOrderId: data.id!,
+         id: data?.id!,
          note: note,
-         courseId: data.courses.map((d) => d.id.toString()),
+         // courseId: data?.course.map((d) => d.id.toString()),
       });
    };
 

@@ -15,7 +15,10 @@ export type ErrorMessageProps = {
 
 export type stateProps<T = undefined> = [T, Dispatch<SetStateAction<T>>];
 
-export type deliverProps = {
+export type deliveryProps = {
+   //custom data
+   newAddress?: string;
+   //
    student_name: ReactNode;
    id: number;
    branch: string;
@@ -25,6 +28,7 @@ export type deliverProps = {
    mobile: string;
    note: string;
    tracking?: deliveryPrismaProps;
+   branch: string;
 };
 
 export type courseProps = {
@@ -53,22 +57,20 @@ export type InfinityQuery<T> = UseInfiniteQueryResult<
 export type deliverShipServiceKey = keyof typeof deliveryType;
 
 export type addTrackingProps = {
+   id : number
    updateAddress?: string;
    trackingCode: string;
    note?: string;
-   webappOrderId: number;
+   // webappOrderId: number;
    service: deliverShipServiceKey;
-   courseId: string[] | number[];
+   // courseId: string[] | number[];
    //   status, updatedAddress, courseId, webappOrderId, webappCourseId, webappAdminId, note, createdAt, updatedAt, serviceId, trackingCode
 };
 export type addMultiTrackingProps = {
    service: deliverShipServiceKey;
-   webappOrderIds: number[];
+   ids: number[];
    courseIds: number[];
-   deliveryData: Pick<
-      addTrackingProps,
-      "courseId" | "trackingCode" | "webappOrderId"
-   >[];
+   deliveryData: Pick<addTrackingProps, "trackingCode" | "id">[];
 };
 
 export type deliveryTypeProps = "pickup" | "ship";
