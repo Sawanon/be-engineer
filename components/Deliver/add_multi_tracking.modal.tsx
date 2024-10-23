@@ -34,7 +34,6 @@ import {
 import {
    addMultiTrackingProps,
    addTrackingProps,
-   deliverProps,
    deliverShipServiceKey,
    deliveryTypeProps,
    modalProps,
@@ -53,6 +52,7 @@ import { addDeliverShipService } from "@/lib/actions/delivery_ship.actions";
 import ChangeReceiveType from "./change_type.modal";
 import ReceiveOrder from "./receive_order";
 import { multiTrackDialog } from ".";
+import { useRouter } from "next/navigation";
 type formDetail = Record<string, any> & {
    delivery: deliverShipServiceKey;
 };
@@ -65,6 +65,7 @@ const AddMultiTracking = ({
    refetch: () => void;
    onClose: () => void;
 }) => {
+   const router = useRouter();
    const { open, data } = dialogState;
    const handleClose = () => {
       form.reset();
@@ -74,73 +75,58 @@ const AddMultiTracking = ({
       });
       onClose();
    };
-
    const [search, setSearch] = useState<string>("");
    const form = useForm<formDetail>();
-   console.log("watch", form.watch());
    const {
       register,
       formState: { errors },
    } = form;
-   // console.log("data", data);
-   const [isError, setIsError] = useState(false);
-   const onError = (e: Error) => {
-      console.error(e);
-      setIsError(true);
-   };
 
    const addTrack = useAddMultiTracking({
-      onError: onError,
+      onError: (errors) => {
+         console.error("Error", errors);
+      },
       onSuccess: () => {
          alert("Add multi track Success");
-         refetch();
+         router.refresh();
+         // refetch();
          handleClose();
       },
    });
 
-   const resetForm = () => {
-      // form.formState.();
-   };
-
-   // console.log(addSingleTrack);
    const handleAddTrack = (data: addMultiTrackingProps) => {
-      console.log("data", data);
-      // addTrack.mutateAsync(data);
+      addTrack.mutateAsync(data);
    };
 
    const onSubmit = (formData: formDetail) => {
-      console.log(formData);
       const cloneData: Partial<formDetail> = _.cloneDeep(formData);
       const deliveryService = formData.delivery;
       delete cloneData.delivery;
       const webappOrderIds: number[] = [];
       const courseId: number[] = [];
 
-      const formatData: Pick<
-         addTrackingProps,
-         "courseId" | "trackingCode" | "webappOrderId"
-      >[] = [];
+      const formatData: Pick<addTrackingProps, "trackingCode" | "id">[] = [];
       Object.keys(cloneData).forEach((key) => {
          const trackingNumber: string = formData[key];
          const deliverData = data?.[key];
          webappOrderIds.push(deliverData?.id!);
-         const deliverCourse = deliverData?.courses.map((d) => {
-            courseId.push(d.id);
-            return d.id;
-         });
+         // const deliverCourse = deliverData?.courses.map((d) => {
+         //    courseId.push(d.id);
+         //    return d.id;
+         // });
          if (cloneData[key] !== "") {
             formatData.push({
                trackingCode: trackingNumber,
-               webappOrderId: deliverData?.id!,
+               id: deliverData?.id!,
                // service: deliveryService,
-               courseId: deliverCourse ?? [],
+               // courseId: deliverCourse ?? [],
             });
          }
       });
       handleAddTrack({
          deliveryData: formatData,
          service: deliveryService,
-         webappOrderIds: webappOrderIds,
+         ids: webappOrderIds,
          courseIds: courseId,
       });
    };
@@ -256,26 +242,20 @@ const AddMultiTracking = ({
                               .filter((d) => {
                                  if (search !== "")
                                     return d.member
-                                       .toLowerCase()
+                                       ?.toLowerCase()
                                        .includes(search.toLowerCase());
 
                                  return true;
                               })
                               .map((delivery, index) => {
-                                 const tracking = delivery?.tracking;
-                                 const newAddress = _.isEmpty(
-                                    tracking?.updatedAddress
-                                 )
-                                    ? delivery?.note
-                                    : tracking?.updatedAddress;
                                  return (
                                     <div
-                                       key={delivery.id}
+                                       key={delivery?.id}
                                        className="grid grid-cols-2 gap-1 py-2 "
                                     >
                                        <Popover
-                                          // offset={1}
-                                          // crossOffset={248}
+                                          // offset={2}
+                                          crossOffset={1400}
                                           classNames={{
                                              base: cn("w-1/2 "),
                                           }}
@@ -287,17 +267,17 @@ const AddMultiTracking = ({
                                                 <p className="text-sm text-default-500">
                                                    {index + 1}.
                                                 </p>
-                                                <p>{delivery.member}</p>
+                                                <p>{delivery?.member}</p>
                                              </div>
                                           </PopoverTrigger>
-                                          <PopoverContent>
-                                             <p>{newAddress}</p>
+                                          <PopoverContent >
+                                             <p>{delivery?.updatedAddress}</p>
                                           </PopoverContent>
                                        </Popover>
 
                                        <div>
                                           <Controller
-                                             name={delivery.id.toString()}
+                                             name={delivery?.id.toString()}
                                              control={form.control}
                                              defaultValue=""
                                              rules={{ required: true }}

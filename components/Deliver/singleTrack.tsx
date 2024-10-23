@@ -1,6 +1,5 @@
 import {
    addTrackingProps,
-   deliverProps,
    deliverShipServiceKey,
    deliveryTypeProps,
 } from "@/@type";
@@ -12,6 +11,7 @@ import _ from "lodash";
 import { useForm, Controller } from "react-hook-form";
 import { LuArrowRightLeft, LuX } from "react-icons/lu";
 import CustomInput from "../CustomInput";
+import { deliveryPrismaProps } from "@/lib/actions/deliver.actions";
 type createProp = {
    trackingNumber: string;
    delivery: deliverShipServiceKey;
@@ -28,9 +28,9 @@ const SingleTrack = ({
    isError: boolean;
    handleAddTrack: (data: addTrackingProps) => void;
    addTracking: ReturnType<typeof useAddTracking>;
-   data?: deliverProps;
+   data?: deliveryPrismaProps;
    onChangeType: (data: {
-      detail: deliverProps;
+      detail: deliveryPrismaProps;
       type: deliveryTypeProps;
    }) => void;
    onClose: () => void;
@@ -49,9 +49,9 @@ const SingleTrack = ({
       handleAddTrack({
          note: props.note,
          trackingCode: props.trackingNumber,
-         webappOrderId: data?.id!,
+         id: data?.id!,
          service: props.delivery,
-         courseId  : data?.courses.map(d=> d.id.toString())!
+         // courseId  : data?.courses.map(d=> d.id.toString())!
       });
    };
 

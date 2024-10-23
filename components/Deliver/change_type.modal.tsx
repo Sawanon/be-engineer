@@ -15,9 +15,10 @@ import { LuArrowRightLeft, LuPackageCheck, LuX } from "react-icons/lu";
 
 import thaipost from "../../assets/thaipost.png";
 import Image from "next/image";
-import { deliverProps, deliveryTypeProps, modalProps } from "@/@type";
+import { deliveryTypeProps, modalProps } from "@/@type";
 import { useChangeType } from "@/lib/query/delivery";
 import { data } from "framer-motion/client";
+import { deliveryPrismaProps } from "@/lib/actions/deliver.actions";
 
 const txtType = {
    pickup: "รับที่สถาบัน",
@@ -31,7 +32,7 @@ const ChangeReceiveType = ({
 }: {
    mutation: ReturnType<typeof useChangeType>;
    onClose: () => void;
-   dialog: modalProps<{ detail: deliverProps; type: deliveryTypeProps }>;
+   dialog: modalProps<{ detail: deliveryPrismaProps; type: deliveryTypeProps }>;
 }) => {
    const {
       open,
@@ -98,10 +99,10 @@ const ChangeReceiveType = ({
                            onClick={() => {
                               mutation.mutate({
                                  type: type!,
-                                 webappOrderId: detail?.id!,
-                                 courseId: detail?.courses.map((d) =>
-                                    d.id.toString()
-                                 )!,
+                                 id: detail?.id!,
+                                 // courseId: detail?.courses.map((d) =>
+                                 //    d.id.toString()
+                                 // )!,
                               });
                            }}
                         >

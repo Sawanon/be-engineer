@@ -40,7 +40,7 @@ model CourseLesson {
   position              Int
   courseIdLesson        Int?
   courseId              Int
-  Course                Course                  @relation(fields: [courseId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "courseIdLesson")
+  Course                Course                  @relation(fields: [courseId], references: [id], onDelete: Cascade, map: "courseIdLesson")
   CourseOnCourseLesson  CourseOnCourseLesson[]
   CourseVideo           CourseVideo[]
   LessonOnDocument      LessonOnDocument[]
@@ -73,7 +73,7 @@ model CourseVideo {
   webappVideoId Int
   playlistName  String?      @db.VarChar(255)
   contentName   String?
-  CourseLesson  CourseLesson @relation(fields: [lessonId], references: [id])
+  CourseLesson  CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@index([lessonId], map: "CourseVideo_lessonId_fkey")
 }
@@ -109,7 +109,7 @@ model DocumentSheet {
 model LessonOnDocument {
   lessonId        Int
   preExamId       Int
-  CourseLesson    CourseLesson    @relation(fields: [lessonId], references: [id])
+  CourseLesson    CourseLesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   DocumentPreExam DocumentPreExam @relation(fields: [preExamId], references: [id])
 
   @@id([lessonId, preExamId])
@@ -120,7 +120,7 @@ model LessonOnDocumentBook {
   lessonId     Int
   bookId       Int
   DocumentBook DocumentBook @relation(fields: [bookId], references: [id])
-  CourseLesson CourseLesson @relation(fields: [lessonId], references: [id])
+  CourseLesson CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@id([lessonId, bookId])
   @@index([bookId], map: "LessonOnDocumentBook_bookId_fkey")
@@ -129,7 +129,7 @@ model LessonOnDocumentBook {
 model LessonOnDocumentSheet {
   lessonId      Int
   sheetId       Int
-  CourseLesson  CourseLesson  @relation(fields: [lessonId], references: [id])
+  CourseLesson  CourseLesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   DocumentSheet DocumentSheet @relation(fields: [sheetId], references: [id])
 
   @@id([lessonId, sheetId])
@@ -145,31 +145,38 @@ model DeliverShipService {
 }
 
 model Delivery {
-  id                 Int                 @id @default(autoincrement())
-  type               String              @db.VarChar(45)
-  status             String              @db.VarChar(45)
-  updatedAddress     String?             @db.VarChar(255)
-  courseId           Int?
-  webappOrderId      Int
-  webappCourseId     String?             @db.VarChar(255)
-  webappAdminId      Int?
-  note               String?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @default(now())
-  serviceId          Int?
-  trackingCode       String?
-  Course             Course?             @relation(fields: [courseId], references: [id], onUpdate: NoAction, map: "courseId")
-  DeliverShipService DeliverShipService? @relation(fields: [serviceId], references: [id], onDelete: Restrict, map: "trackingServiceId")
-  Delivery_Course    Delivery_Course[]
+  id                    Int                     @id @default(autoincrement())
+  type                  String                  @db.VarChar(45)
+  status                String                  @db.VarChar(45)
+  updatedAddress        String?                 @db.VarChar(255)
+  courseId              Int?
+  webappOrderId         Int                     @unique(map: "webappOrderId_UNIQUE")
+  webappCourseId        String?                 @db.VarChar(255)
+  webappAdminId         Int?
+  note                  String?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @default(now())
+  serviceId             Int?
+  trackingCode          String?
+  member                String?                 @db.VarChar(255)
+  branch                String?                 @db.VarChar(45)
+  mobile                String?                 @db.VarChar(20)
+  approved              DateTime?               @db.DateTime(0)
+  Course                Course?                 @relation(fields: [courseId], references: [id], onUpdate: NoAction, map: "courseId")
+  DeliverShipService    DeliverShipService?     @relation(fields: [serviceId], references: [id], onDelete: Restrict, map: "trackingServiceId")
+  Delivery_Course       Delivery_Course[]
+  Delivery_WebappCourse Delivery_WebappCourse[]
 
   @@index([courseId], map: "courseId_idx")
   @@index([serviceId], map: "trackingServiceId_idx")
 }
 
 model Tutor {
-  id     Int      @id
-  name   String   @db.VarChar(45)
-  Course Course[]
+  id        Int      @id
+  name      String   @db.VarChar(45)
+  tutorLink String?
+  email     String?
+  Course    Course[]
 }
 
 model Delivery_Course {
@@ -183,4 +190,23 @@ model Delivery_Course {
 
   @@index([courseId], map: "middleCourseId_idx")
   @@index([deliveryId], map: "middleDeliveryId_idx")
+}
+
+model Delivery_WebappCourse {
+  deliverId      Int?
+  webappCourseId Int?
+  id             Int           @id @default(autoincrement())
+  Delivery       Delivery?     @relation(fields: [deliverId], references: [id], onUpdate: SetNull, map: "middleDeliver")
+  WebappCourse   WebappCourse? @relation(fields: [webappCourseId], references: [webappCourseId], onDelete: NoAction, onUpdate: NoAction, map: "middleWebappCourse")
+
+  @@index([deliverId], map: "middleDeliver")
+  @@index([webappCourseId], map: "middleWebappCourse_idx")
+}
+
+model WebappCourse {
+  id                    Int                     @id @default(autoincrement())
+  name                  String?                 @db.VarChar(255)
+  term                  String?                 @db.VarChar(255)
+  webappCourseId        Int?                    @unique(map: "webappCourseId_UNIQUE")
+  Delivery_WebappCourse Delivery_WebappCourse[]
 }
