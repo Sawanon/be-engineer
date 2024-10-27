@@ -10,7 +10,8 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import timezone from "dayjs/plugin/timezone";
 import { NextUIProvider } from "@nextui-org/react";
-import {ThemeProvider as NextThemesProvider} from "next-themes";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { SessionProvider } from "next-auth/react";
 
 import("dayjs/locale/th");
 dayjs.extend(timezone);
@@ -45,9 +46,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
    return (
       <NextUIProvider>
          <NextThemesProvider attribute="class" defaultTheme="light">
-            <QueryClientProvider client={queryClient}>
-               {children}
-            </QueryClientProvider>
+            <SessionProvider>
+               <QueryClientProvider client={queryClient}>
+                  {children}
+               </QueryClientProvider>
+            </SessionProvider>
          </NextThemesProvider>
       </NextUIProvider>
    );

@@ -91,7 +91,7 @@ export const handleError = (error: unknown): ErrorMessageProps => {
       errDetails = {
          isError: true,
          code: axiosError.response?.status!,
-         message: axiosError.message,
+         message: axiosError.response?.data ?? axiosError.message,
          type: "AxiosError",
       };
    }

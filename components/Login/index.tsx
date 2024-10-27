@@ -6,18 +6,27 @@ import { Eye } from "iconsax-react";
 import { Button } from "@nextui-org/react";
 import { LuLogIn } from "react-icons/lu";
 import { Controller, useForm } from "react-hook-form";
-
+import { getProviders, signIn, useSession } from "next-auth/react";
 type loginProps = {
    username: string;
    password: string;
 };
 
 const LoginForm = () => {
+   const { data: session, status } = useSession();
+   console.log("session", session, status);
    const [isVisible, setIsVisible] = useState(false);
    const form = useForm<loginProps>();
    const toggleVisibility = () => setIsVisible(!isVisible);
-   const onSubmit = (data: loginProps) => {
-      console.log("data", data);
+   const onSubmit = async (data: loginProps) => {
+      let response = await signIn("credentials", {
+         username: data.username,
+         password: data.password,
+         redirect: false,
+
+         callbackUrl: "/",
+      });
+      console.log("response", response);
    };
    return (
       <div className="space-y-2 ">

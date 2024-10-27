@@ -1,7 +1,8 @@
 import { deliveryPrismaProps } from "@/lib/actions/deliver.actions";
 import { deliveryType } from "@/lib/res/const";
 import { UseQueryResult } from "@tanstack/react-query";
-
+import NextAuth, { Session, DefaultSession } from "next-auth";
+import { JWT } from "next-auth/jwt"
 export type modalProps<T = undefined> = {
    open: boolean;
    data?: T;
@@ -57,7 +58,7 @@ export type InfinityQuery<T> = UseInfiniteQueryResult<
 export type deliverShipServiceKey = keyof typeof deliveryType;
 
 export type addTrackingProps = {
-   id : number
+   id: number;
    updateAddress?: string;
    trackingCode: string;
    note?: string;
@@ -74,3 +75,29 @@ export type addMultiTrackingProps = {
 };
 
 export type deliveryTypeProps = "pickup" | "ship";
+
+declare module "next-auth" {
+   interface Session {
+      user: {
+         /** The user's postal address. */
+         username: string;
+         firstName: string;
+         lastName: string;
+         isActive: boolean;
+      } & DefaultSession["user"];
+   }
+}
+
+
+
+declare module "next-auth/jwt" {
+   /** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
+   interface JWT {
+     /** OpenID ID Token */
+     username: string;
+     firstName: string;
+     lastName: string;
+     isActive: boolean;
+     idToken?: string
+   }
+ }
