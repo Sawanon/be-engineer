@@ -20,15 +20,15 @@ function middleware(request: NextRequest) {
       console.log("middleware");
       const requestHeaders = new Headers(request.headers);
       requestHeaders.set("x-pathname", request.nextUrl.pathname);
-      return NextResponse.next({
+      NextResponse.next({
          request: {
             headers: requestHeaders,
          },
       });
-      console.log("pathname", pathname);
-      // if (pathname.startsWith("/login")) {
-      //    redirect("/");
-      // }
+      console.log('pathname', pathname)
+      if (pathname.startsWith("/login")) {
+         redirect("/");
+      }
    }
 }
 
