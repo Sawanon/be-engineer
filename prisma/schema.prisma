@@ -129,7 +129,7 @@ model LessonOnDocument {
 model LessonOnDocumentBook {
   lessonId     Int
   bookId       Int
-  DocumentBook DocumentBook @relation(fields: [bookId], references: [id])
+  DocumentBook DocumentBook @relation(fields: [bookId], references: [id], onDelete: Cascade)
   CourseLesson CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@id([lessonId, bookId])
