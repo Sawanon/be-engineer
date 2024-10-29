@@ -32,12 +32,14 @@ import { DocumentMode } from ".";
 const FormDocument = ({
    onAddDocument,
    onChangeMode,
+   className,
 }:{
    onAddDocument: () => void,
    onChangeMode: (mode: DocumentMode) => void,
+   className: string,
 }) => {
    return (
-      <section className="py-2 px-2 grid grid-cols-12  gap-2  items-center">
+      <section className={`grid grid-cols-12  gap-2  items-center ${className}`}>
          <Input
             type="text"
             // label="Email"
@@ -60,6 +62,7 @@ const FormDocument = ({
                onClick={onAddDocument}
                className="max-w-max flex-1 bg-default-foreground text-primary-foreground"
                endContent={<LuPlus size={20} />}
+               aria-label="add document"
             >
                เพิ่ม
             </Button>

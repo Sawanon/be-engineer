@@ -29,7 +29,7 @@ import {
 import { Danger, Video } from "iconsax-react";
 import SortableComponent from "./Sortable";
 import { arrayMove } from "@dnd-kit/sortable";
-import { addBookToLessonAction, addDocumentToLesson, addLessonToDB, changePositionLesson } from "@/lib/actions/lesson.actions";
+import { addBookToLessonAction, addDocumentToLesson, addLessonToDB, addPreExamToLessonAction, changePositionLesson } from "@/lib/actions/lesson.actions";
 import { CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet, Prisma } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -39,10 +39,14 @@ import {
 import { addCourseVideo, changePositionVideoAction, deleteCourseVideo, swapPositionVideo } from "@/lib/actions/video.actions";
 import ManageContent from "./Course/ManageContent";
 import { UniqueIdentifier } from "@dnd-kit/core";
-import { useCourse } from "./Course/courseHook";
+// import { useCourse } from "./Course/courseHook";
 import { listSheetsAction } from "@/lib/actions/sheet.action";
 import SortLessonModal from "./Course/Lesson/SortLessonModal";
 import { listBooksAction } from "@/lib/actions/book.actions";
+import SortContentModal from "./Course/Lesson/SortContentModal";
+import { listPreExamAction } from "@/lib/actions/pre-exam.actions";
+import AddDocumentToLesson from "./Course/Lesson/AddDocumentToLesson";
+import { listCourseAction } from "@/lib/actions/course.actions";
 
 // export type CourseLessonAndContent = CourseLesson & {
 //   CourseVideo: CourseVideo,
@@ -66,7 +70,13 @@ const ManageLesson = ({
   //   { id: 2, title: "Dynamics - 1.2 Graphical" },
   //   { id: 3, title: "Dynamics - 1.3 X-Y Coordinate" },
   // ]);
-  const [refetchCourse] = useCourse()
+  // const [refetchCourse] = useCourse()
+  const {
+    refetch: refetchCourse,
+  } = useQuery({
+      queryKey: ["listCourseAction"],
+      queryFn: () => listCourseAction(),
+  });
   const [isSort, setIsSort] = useState(false);
   const [lessonError, setLessonError] = useState({
     isError: false,
@@ -79,23 +89,10 @@ const ManageLesson = ({
   const [selectedVideoPlaylist, setSelectedVideoPlaylist] = useState<any>();
   const [videoListInLesson, setVideoListInLesson] = useState<any[]>([]);
   const [selectedLesson, setSelectedLesson] = useState<any | undefined>();
-
-  const { data: sheetList } = useQuery({
-    queryKey: ['listSheetsAction'],
-    queryFn: () => listSheetsAction()
-  })
-  const {data: bookList} = useQuery({
-    queryKey: ["listBooksAction"],
-    queryFn: () => listBooksAction(),
-  })
+  
   const [isOpenAddDocument, setIsOpenAddDocument] = useState(false)
   const [selectedDocument, setSelectedDocument] = useState<string | undefined>()
   const [isOpenSortLesson, setIsOpenSortLesson] = useState(false)
-
-  const documentList = useMemo(() => {
-    if(!sheetList || !bookList) return []
-    return [ ...sheetList.map(sheet => ({...sheet, type: 'sheet'})), ...bookList.map(book => ({...book, type: 'book'}))]
-  }, [sheetList, bookList])
 
   const handleOnChangeLessonName = (value: string) => {
     setLessonName(value);
@@ -134,9 +131,9 @@ const ManageLesson = ({
     setVideoListInLesson(lesson.CourseVideo)
   }
 
-  const submitChangePositionVideo = async () => {
-    for (let i = 0; i < selectedLesson.CourseVideo.length; i++) {
-      const video = selectedLesson.CourseVideo[i];
+  const submitChangePositionVideo = async (newCourseVideoList: CourseVideo[]) => {
+    for (let i = 0; i < newCourseVideoList.length; i++) {
+      const video = newCourseVideoList[i];
       console.log(video.name);
       const response = await changePositionVideoAction(video.id, i)
       console.log(response);
@@ -164,14 +161,17 @@ const ManageLesson = ({
     setSelectedDocument(key.toString())
   }
 
-  const submitAddDocumentToLesson = async () => {
+  const submitAddDocumentToLesson = async (selectedDocument: string) => {
     if(!selectedDocument) return
     const [id, type] = selectedDocument.split(":")
     if(type === "sheet"){
       const response = await addDocumentToLesson(parseInt(id), selectedLesson.id)
-      console.log(response)
+      console.log("🚀 ~ submitAddDocumentToLesson ~ response:", response)
     }else if(type === "book"){
       const response = await addBookToLessonAction(parseInt(id), selectedLesson.id)
+      console.log("🚀 ~ submitAddDocumentToLesson ~ response:", response)
+    }else if(type === "preExam"){
+      const response = await addPreExamToLessonAction(parseInt(id), selectedLesson.id)
       console.log("🚀 ~ submitAddDocumentToLesson ~ response:", response)
     }
     handleOnCloseAddDocument()
@@ -196,61 +196,38 @@ const ManageLesson = ({
     if(document.type === "book"){
       return <Image className={`rounded`} width={16} src={document.image} alt="image book" />
     }
-    if(document.type === "sheet"){
+    else if(document.type === "sheet"){
       return <ScrollText size={16} />
+    }
+    else if(document.type === "preExam"){
+      return <ClipboardSignature size={16} />
     }
     return <div>icon</div>
   }
 
+  const handleOnClickSortContent = (lesson: CourseLesson) => {
+    setSelectedLesson(lesson)
+    setIsSort(true)
+  }
+
+  const handleOnCloseSortContent = () => {
+    setSelectedLesson(undefined)
+    setIsSort(false)
+  }
+
+  const handleOnConfirmAddDocument = () => {
+    setSelectedLesson(undefined)
+    refetchCourse()
+  }
+
   return (
     <div className={`bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto ${className}`}>
-      <Modal
-        isOpen={isOpenAddDocument}
-      >
-        <ModalContent className={`p-app`} >
-          <div className={`flex items-center`}>
-            <div className={`flex-1`}></div>
-            <div className={`flex-1 text-center text-3xl font-semibold font-IBM-Thai`}>เอกสาร</div>
-            <div className={`flex-1 flex items-center justify-end`}>
-                <Button onClick={handleOnCloseAddDocument} className={`min-w-0 w-8 max-w-8 max-h-8 bg-primary-foreground`} isIconOnly><X /></Button>
-            </div>
-          </div>
-          <div className={`mt-app`}>
-            {/* <Input
-                placeholder={`ชื่อเอกสาร`}
-                aria-label={`ชื่อเอกสาร`}
-                // onChange={(e) => setDocumentName(e.target.value)}
-            /> */}
-            <Autocomplete
-              onSelectionChange={handleOnChangeDocument}
-            >
-              {
-                documentList?
-                documentList?.map((document, index) => {
-                return (
-                  <AutocompleteItem
-                    key={`${document.id}:${document.type}`}
-                    startContent={renderStartContent(document)}
-                  >
-                    {document.name}
-                  </AutocompleteItem>
-                )
-              })
-            : (
-              <AutocompleteItem key={`loading`}>
-                loading...
-              </AutocompleteItem>
-            )}
-            </Autocomplete>
-          </div>
-          <Button
-            onClick={submitAddDocumentToLesson}
-            className={`mt-[22px] bg-default-foreground text-primary-foreground font-IBM-Thai font-medium text-base`}
-          >
-            บันทึก
-          </Button>
-        </ModalContent>
-      </Modal>
+      <AddDocumentToLesson
+        open={isOpenAddDocument}
+        onClose={handleOnCloseAddDocument}
+        onConfirm={handleOnConfirmAddDocument}
+        lessonId={selectedLesson?.id}
+      />
       <SortLessonModal
         isOpen={isOpenSortLesson}
         lessonList={lessons as CourseLesson[]}
@@ -258,79 +235,15 @@ const ManageLesson = ({
         onConfirm={submitSortLesson}
       />
       {/* sort video content */}
-      <Modal
-        isOpen={isSort}
-        closeButton={<></>}
-        backdrop="blur"
-        classNames={{
-          backdrop: `bg-backdrop`,
-        }}
-      >
-        <ModalContent>
-          {() => (
-            <div className="p-app">
-              <div className="flex">
-                <div className="flex-1"></div>
-                <div
-                  className={`flex-1 text-nowrap text-3xl font-semibold font-IBM-Thai`}
-                >
-                  จัดเรียงเนื้อหา
-                </div>
-                <div className="flex-1 flex justify-end">
-                  <Button
-                    className="bg-transparent"
-                    isIconOnly
-                    onClick={() => setIsSort(false)}
-                  >
-                    <X />
-                  </Button>
-                </div>
-              </div>
-              <div className={`mt-[14px] overflow-hidden`}>
-                <SortableComponent
-                  courseVideoList={selectedLesson.CourseVideo}
-                  onDragEnd={(event) => {
-                    // console.log(`event.collisions`, event.collisions);
-                    const cloneVideo = [...selectedLesson.CourseVideo]
-                    const { active, over } = event;
-                    console.table({ active, over })
-                    const originalPos = cloneVideo.findIndex(
-                      (video: any) => video.id === active.id
-                    );
-                    console.log("🚀 ~ originalPos:", originalPos)
-                    const newPos = cloneVideo.findIndex(
-                      (lesson: any) => lesson.id === over!.id
-                    );
-                    const newPosition = arrayMove(cloneVideo, originalPos, newPos)
-                    console.log(newPosition);
-                    setSelectedLesson((prev: any) => ({
-                      ...prev,
-                      CourseVideo: newPosition,
-                    }))
-                    // if(!over) return
-                    // changePositionVideo(active.id, over.id)
-                    // setLessons((lessons) => {
-                    //   const originalPos = lessons.findIndex(
-                    //     (lesson) => lesson.id === active.id
-                    //   );
-                    //   const newPos = lessons.findIndex(
-                    //     (lesson) => lesson.id === over!.id
-                    //   );
-                    //   return arrayMove(lessons, originalPos, newPos);
-                    // });
-                    // setLessons(event.collisions)
-                  }}
-                />
-              </div>
-              <div className={`mt-app`}>
-                <Button onClick={submitChangePositionVideo} fullWidth className={`bg-default-foreground text-primary-foreground font-medium text-base font-IBM-Thai`}>
-                  ตกลง
-                </Button>
-              </div>
-            </div>
-          )}
-        </ModalContent>
-      </Modal>
+      {selectedLesson &&
+        <SortContentModal
+          courseVideoList={selectedLesson.CourseVideo}
+          open={isSort}
+          onClose={handleOnCloseSortContent}
+          onConfirm={submitChangePositionVideo}
+        />
+      }
+      
       {/* add lesson modal */}
       <Modal
         isOpen={isAddLesson}
@@ -459,10 +372,7 @@ const ManageLesson = ({
               {/* manage lesson content */}
               <div className="flex justify-center gap-2">
                 <Button
-                  onClick={() => {
-                    setSelectedLesson(lesson)
-                    setIsSort(true)
-                  }}
+                  onClick={() => handleOnClickSortContent(lesson)}
                   className="bg-default-100 font-IBM-Thai font-medium"
                   startContent={<ArrowDownUp size={20} />}
                 >
@@ -491,17 +401,24 @@ const ManageLesson = ({
                   )
                 }else if(document.type === "book"){
                   return (
-                    <div className={`mt-2 flex items-center gap-2 font-IBM-Thai-Looped`} key={`documentSheet${document.id}${lesson.id}`}>
+                    <div className={`mt-2 flex items-center gap-2 font-IBM-Thai-Looped`} key={`documentBook${document.id}${lesson.id}`}>
                       <Image className={`h-10 rounded`} src={document.DocumentBook.image} alt="book image" />
                       <div>
                         {document.DocumentBook.name}
                       </div>
                     </div>
                   )
-                }else{
+                }else if(document.type === "preExam"){
                   return (
-                    <div key={`documentSheet${document.id}${lesson.id}`}>pre exam</div>
+                    <div className={`mt-2 flex gap-2 font-IBM-Thai-Looped`} key={`documentPreExam${document.id}${lesson.id}`}>
+                      <ScrollText size={20} />
+                      <div>
+                        {document.DocumentPreExam.name}
+                      </div>
+                    </div>
                   )
+                }else{
+                  return <div key={`unknowDocument${index}`}></div>
                 }
               })}
             </div>

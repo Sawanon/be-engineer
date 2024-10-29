@@ -2,6 +2,7 @@
 import {
   addCourse,
   deleteCourse,
+  listCourseAction,
   listCourseWebapp,
   searchImageByCourseName,
   updateCourse,
@@ -59,13 +60,13 @@ import {
   Textarea,
 } from "@nextui-org/react";
 import ManageLesson from "./ManageLesson";
-import { useCourse } from "./Course/courseHook";
 import { div } from "framer-motion/client";
 import copy from "copy-to-clipboard";
 import { useQuery } from "@tanstack/react-query";
 import { Key } from "@react-types/shared";
 import StatusIcon from "./Course/StatusIcon";
 import { CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet } from "@prisma/client";
+import ConectWebAppModal from "./Course/ConectWebAppModal";
 
 const ManageCourse = ({
   isOpenDrawer,
@@ -78,7 +79,7 @@ const ManageCourse = ({
   onDeleteCourse,
 }: {
   isOpenDrawer: boolean;
-  selectedCourse: Course | undefined;
+  selectedCourse: Course | undefined | null;
   onClose: () => void;
   onConfirmAdd?: (courseId: number) => Promise<void>;
   onFetch?: () => Promise<void>;
@@ -99,7 +100,13 @@ const ManageCourse = ({
   const preExam = (selectedCourse as any)?.uniquePreExam as any[] ?? []
   const books = (selectedCourse as any)?.uniqueBooks as any[] ?? []
   const documentNumber = sheets.length + preExam.length + books.length
-  const [refetchCourse] = useCourse();
+  // const [refetchCourse] = useCourse();
+  const {
+    refetch: refetchCourse,
+ } = useQuery({
+    queryKey: ["listCourseAction"],
+    queryFn: () => listCourseAction(),
+ });
   const [isAdd, setIsAdd] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [isDelete, setIsDelete] = useState(false);
@@ -120,6 +127,7 @@ const ManageCourse = ({
     | { id: number; name: string; image: string; hasFeedback: boolean; term: string; }[]
     | undefined
   >();
+  const [isOpenConectWebapp, setIsOpenConectWebapp] = useState(false)
 
   const listImageCourse = async (courseName: string) => {
     const response = await searchImageByCourseName(courseName);
@@ -335,7 +343,7 @@ const ManageCourse = ({
     const minute = totalMinute % 60
     let totalHour = 0
     if(hour < 20){
-      totalHour = Math.round(hour + (minute / 60)) * 1.5
+      totalHour = Math.round((hour + (minute / 60)) * 1.5)
     }else if(hour >= 20) {
       totalHour = Math.round(hour + (minute / 60)) + 10
     }
@@ -358,6 +366,15 @@ const ManageCourse = ({
     const minute = totalTime % 60
     return `(${hour} ชม. ${minute} นาที)`
   }
+
+  const handleOnClickConectionWebapp = () => {
+    setIsOpenConectWebapp(true)
+  }
+
+  const handleOnCloseConectionWebapp = () => {
+    setIsOpenConectWebapp(false)
+  }
+
   return (
     <CustomDrawer
       isOpen={isOpenDrawer}
@@ -367,6 +384,14 @@ const ManageCourse = ({
         }
       }}
     >
+      <ConectWebAppModal
+        isOpen={isOpenConectWebapp}
+        onClose={handleOnCloseConectionWebapp}
+        branch={selectedCourse?.branch}
+        webappCourseId={selectedCourse?.webappCourseId}
+        courseId={selectedCourse?.id}
+        books={books}
+      />
       {/* <div className="block md:flex h-full w-auto overflow-auto"> */}
       <div className="block md:flex w-auto overflow-auto md:h-full">
         <div className="min-w-[342px] md:w-[342px] p-[14px]">
@@ -541,7 +566,7 @@ const ManageCourse = ({
                 <div className={`text-base font-bold`}>Web-app:</div>
                 <Autocomplete
                   aria-labelledby={`webappcourseBranch`}
-                  className={`mt-2 font-IBM-Thai-Looped`}
+                  className={`hidden mt-2 font-IBM-Thai-Looped`}
                   placeholder="เลือกสาขา"
                   onSelectionChange={handleOnChangeWebappBranch}
                   defaultSelectedKey={selectedCourse?.branch!}
@@ -564,9 +589,16 @@ const ManageCourse = ({
                     </AutocompleteItem>
                   )}
                 </Autocomplete>
+                <Button
+                  className={`min-h-11 bg-default-100 hover:bg-default-200 rounded-lg`}
+                  fullWidth
+                  onClick={handleOnClickConectionWebapp}
+                >
+                  เลือกคอร์สใน Web-app
+                </Button>
                 <Autocomplete
                   aria-labelledby={`webappcourse`}
-                  className={`mt-2 font-IBM-Thai-Looped`}
+                  className={`hidden mt-2 font-IBM-Thai-Looped`}
                   onSelectionChange={handleOnChangeWebapp}
                   placeholder="เลือกคอร์ส"
                   defaultSelectedKey={
@@ -984,7 +1016,7 @@ const ManageCourse = ({
                 ({documentNumber} ชิ้น)
               </div>
             </div>
-            <div className={`mt-2 bg-content1 shadow-neutral-base rounded-lg p-2 font-IBM-Thai-Looped`}>
+            <div className={`mt-2 space-y-2 bg-content1 shadow-neutral-base rounded-lg p-2 font-IBM-Thai-Looped`}>
               {books.length > 0 &&
                 <div>
                   <div className={`text-sm font-bold text-foreground-400`}>
@@ -992,7 +1024,8 @@ const ManageCourse = ({
                   </div>
                   <div className={`space-y-1 mt-2`}>
                     {books.map((book, index) => (
-                      <div key={`bookadmin${index}`}>
+                      <div className={`flex gap-2 items-center`} key={`bookadmin${index}`}>
+                        <Image src={book.image} className={`h-10 rounded`} classNames={{wrapper: 'rounded'}} />
                         {book.name}
                       </div> 
                     ))}
@@ -1033,7 +1066,7 @@ const ManageCourse = ({
                   <div className={`space-y-1 mt-2`}>
                     {preExam.map((preExam, index) => (
                       <div className={`flex items-center gap-2`} key={`preExamadmin${index}`}>
-                        <ScrollText size={20} className={`text-default-foreground`} />
+                        <FileSignature size={20} className={`text-default-foreground`} />
                         <div>
                           {preExam.name}
                         </div>
@@ -1044,7 +1077,7 @@ const ManageCourse = ({
                           isIconOnly
                           className={`min-w-0 w-8 h-8 rounded-lg bg-default-100`}
                         >
-                          <FileSignature size={24} className={`text-default-foreground`} />
+                          <ExternalLink size={24} className={`text-default-foreground`} />
                         </Button>
                       </div> 
                     ))}
