@@ -14,9 +14,6 @@ type loginProps = {
 };
 
 const LoginForm = () => {
-   // const { data: session, status } = useSession();
-   // console.log("session", session, status);
-   const router = useRouter();
    const { data: session, status } = useSession();
    console.log("session", session, status);
    const [isVisible, setIsVisible] = useState(false);
@@ -30,13 +27,8 @@ const LoginForm = () => {
 
          callbackUrl: "/",
       });
-      console.log(response)
-      if (response?.ok) {
-         router.replace("/");
-      }
       console.log("response", response);
    };
-
    return (
       <div className="space-y-2 ">
          <form className="space-y-2" onSubmit={form.handleSubmit(onSubmit)}>
