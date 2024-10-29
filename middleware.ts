@@ -25,10 +25,10 @@ function middleware(request: NextRequest) {
             headers: requestHeaders,
          },
       });
-      console.log('pathname', pathname)
-      if (pathname.startsWith("/login")) {
-         redirect("/");
-      }
+      console.log("pathname", pathname);
+      // if (pathname.startsWith("/login")) {
+      //    redirect("/");
+      // }
    }
 }
 
