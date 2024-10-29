@@ -32,6 +32,7 @@ import DeleteCourseDialog from "@/components/Course/DeleteCourseDialog";
 // import CourseContext from "@/app/course/provider";
 import { CourseLesson, Course as CoursePrisma, DocumentBook, DocumentPreExam, DocumentSheet, LessonOnDocument, LessonOnDocumentBook, LessonOnDocumentSheet} from '@prisma/client'
 import { useParams, useSearchParams } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 
 

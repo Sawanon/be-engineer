@@ -20,6 +20,7 @@ import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { menuItems } from "@/lib/res/const";
+import { signOut } from "next-auth/react";
 
 const NavbarApp = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -101,7 +102,7 @@ const NavbarApp = () => {
               <div className="w-8 h-8 rounded-full bg-gray-200"></div>
               <div className="text-lg font-semibold">Name</div>
             </div>
-            <div onClick={() => alert("logout")} className="p-1 cursor-pointer">
+            <div onClick={() => signOut()} className="p-1 cursor-pointer">
               <LogOut size={24} />
             </div>
           </div>

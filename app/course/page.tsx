@@ -1,27 +1,33 @@
 import CourseComponent from '@/components/Course'
-import ManageCourseDrawer from '@/components/Course/ManageCourseDrawer'
-import React, { Suspense } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { listCourseAction } from '@/lib/actions/course.actions'
+import { Spinner } from '@nextui-org/react'
+import { Suspense } from 'react'
 
-export type Props = {
-  searchParams: Record<string, string> | null | undefined
-}
+// type Props = {
+//   searchParams: Record<string, string> | null | undefined
+// }
 
-export const revalidate = 20
+// export const revalidate = 20
 
-const Course = async (props: Props) => {
+const Course =  () => {
   // const showModal = props.searchParams?.modal === "true"
   // const id = props.searchParams?.id
   // const courses = await listCourseAction()
   return (
-    <div>
-      <CourseComponent
-        // isOpen={showModal}
-        // courseId={id}
-        // courses={courses}
-      />
-    </div>
+    <section>
+      <Suspense
+        fallback={(
+          <div className={`absolute inset-0 bg-backdrop flex items-center justify-center`}>
+            <Spinner />
+          </div>
+        )}
+      >
+        <CourseComponent
+          // isOpen={showModal}
+          // courseId={id}
+          // courses={courses}
+        />
+      </Suspense>
+    </section>
   )
 }
 

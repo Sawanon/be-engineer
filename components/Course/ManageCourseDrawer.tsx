@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Modal, ModalContent } from '@nextui-org/react'
 import CustomDrawer from '../Drawer'
 
-const ManageCourseDrawer = async ({
+const ManageCourseDrawer = ({
   courseId
 }:{
   courseId: number,
