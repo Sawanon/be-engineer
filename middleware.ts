@@ -33,6 +33,7 @@ function middleware(request: NextRequest) {
 }
 
 export default withAuth(middleware, {
+   
    callbacks: {
       authorized: (req) => {
          // TODO: JWT DATA
@@ -55,5 +56,6 @@ export default withAuth(middleware, {
    pages: {
       signIn: "/login",
       error: "/login",
+      
    },
 });

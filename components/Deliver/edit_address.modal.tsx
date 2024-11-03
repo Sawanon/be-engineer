@@ -49,7 +49,7 @@ const EditAddress = ({
    const mutationUpdateAddress = useUpdateAddress({
       onError: onError,
       onSuccess: (data: Awaited<ReturnType<typeof updateAddress>>) => {
-         console.log('refetch', refetch)
+         console.log("refetch", refetch);
          if (refetch) {
             refetch();
          }
@@ -129,6 +129,7 @@ const EditAddress = ({
                         <div className="py-3">
                            {/* <Button fullWidth color="primary"> */}
                            <Button
+                              isLoading={mutationUpdateAddress.isPending}
                               type="submit"
                               fullWidth
                               className="bg-default-foreground text-primary-foreground"

@@ -2,6 +2,7 @@ import { deliveryTypeProps } from "@/@type";
 import { deliveryPrismaProps } from "@/lib/actions/deliver.actions";
 import { useUpdatePickup } from "@/lib/query/delivery";
 import { Button, Image as NextUiImage, Textarea } from "@nextui-org/react";
+import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import {
    LuArrowRightLeft,
@@ -24,11 +25,15 @@ const ReceiveOrder = ({
    onClose: () => void;
 }) => {
    const form = useForm<{ note: string }>();
+   const auth = useSession();
 
    const onSubmit = ({ note }: { note: string }) => {
       mutation.mutate({
          id: data?.id!,
          note: note,
+         webappAdminId: auth.data?.user.id,
+         webappAdminUsername: auth.data?.user.username!,
+
          // courseId: data?.course.map((d) => d.id.toString()),
       });
    };
@@ -86,6 +91,7 @@ const ReceiveOrder = ({
                      <LuArrowRightLeft /> จัดส่ง
                   </Button>
                   <Button
+                     isLoading={mutation.isPending}
                      type="submit"
                      fullWidth
                      className="md:col-span-2 col-span-3 order-1 bg-default-foreground text-primary-foreground"

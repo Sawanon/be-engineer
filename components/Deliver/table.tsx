@@ -107,6 +107,9 @@ const TableDeliver = ({
    useMemo(() => {
       const startIndex = (page - 1) * rowsPerPage;
       const endIndex = startIndex + rowsPerPage + 1;
+      const disabledKeys: Record<string, DeliverRes["data"][0]> = {};
+      const deliverMap: Record<string, DeliverRes["data"][0]> = {};
+
       // console.table({
       //    startIndex,
       //    endIndex,
@@ -125,12 +128,17 @@ const TableDeliver = ({
          (!_.isEmpty(search.status) && search.status !== "") ||
          !_.isEmpty(search.university)
       ) {
-         // const deliverMap: Record<string, DeliverRes["data"][0]> = {};
          const statusSearch = search.status
             ? (search.status.split(",") as (keyof typeof checkStatus)[])
             : [];
          const ArrData: DeliverRes["data"] = [];
          data.data.forEach((deliver) => {
+            const checkType = deliver?.type;
+            if (checkType === "pickup" || deliver?.status === "success") {
+               disabledKeys[deliver.id.toString()] = deliver;
+            }
+            deliverMap[deliver.id.toString()] = deliver;
+
             const checkInput =
                _.isEmpty(search.input) ||
                deliver.member?.toLowerCase().includes(search?.input!) ||
@@ -143,14 +151,6 @@ const TableDeliver = ({
                      ?.toLowerCase()
                      .includes(search?.input!)
                );
-            //  ||
-            // //test
-            // deliver.Delivery_WebappCourse?.some((course) =>
-            //    course.WebappCourse?.name
-            //       ?.toLowerCase()
-            //       .includes(search?.input!)
-            // );
-
             const checkStatusSearch =
                _.isEmpty(search.status) ||
                statusSearch.some((status) => {
@@ -184,20 +184,17 @@ const TableDeliver = ({
          // const slicedObject = _.pick(deliverMap, keys);
 
          setAllPage(Math.ceil(ArrData.length / rowsPerPage));
-         setDeliverItem((prev) => ({
-            ...prev,
-            data: ArrData.slice(startIndex, endIndex),
-         }));
+         setDeliverItem({
+            data: data.data.slice(startIndex, endIndex),
+            disable: disabledKeys,
+            allData: deliverMap,
+         });
+         // setDeliverItem((prev) => ({
+         //    ...prev,
+         //    data: ArrData.slice(startIndex, endIndex),
+         // }));
       } else {
-         const deliverMap: Record<string, DeliverRes["data"][0]> = {};
-         const disabledKeys: Record<string, DeliverRes["data"][0]> = {};
-
          if (!_.isEmpty(deliverItem.allData)) {
-            // const keys = Object.keys(deliverItem.allData).slice(
-            //    startIndex,
-            //    endIndex
-            // );
-            // const slicedObject = _.pick(deliverItem.allData, keys);
             setDeliverItem((prev: dataItem) => {
                return {
                   ...prev,
@@ -385,7 +382,7 @@ const TrackingDetail = ({
    checkType,
 }: {
    checkType: deliveryTypeProps;
-   tracking?: deliveryPrismaProps;
+   tracking?: DeliverRes["data"][0];
 }) => {
    return (
       <>
@@ -397,7 +394,15 @@ const TrackingDetail = ({
                <div className="flex gap-2 items-center text-secondary font-semibold">
                   <p>{tracking?.trackingCode}</p>
 
-                  <Button isIconOnly className="bg-default-100">
+                  <Button
+                     onClick={() => {
+                        window.open(
+                           `${tracking?.DeliverShipService?.trackingUrl}${tracking?.trackingCode}`
+                        );
+                     }}
+                     isIconOnly
+                     className="bg-default-100"
+                  >
                      <HiOutlineTruck size={24} />
                   </Button>
                </div>
@@ -411,7 +416,7 @@ const TrackingDetail = ({
          {checkType === "pickup" && (
             <>
                <p className="text-secondary-fade text-xs">
-                  {dayjs(tracking?.createdAt).format("HH:mm น.")} โดย ...
+                  {dayjs(tracking?.createdAt).format("HH:mm น.")} โดย {tracking?.webappAdminUsername}
                </p>
                <p className="text-secondary font-semibold ">
                   รับวันที่ {dayjs(tracking?.createdAt).format("DD MMMM YYYY")}
