@@ -102,6 +102,10 @@ const ConectWebAppModal = ({
         book.id,
       )
       console.log(response);
+      if(typeof response === "string"){
+        throw response
+      }
+      handleOnClose()
     } catch (error) {
       console.error(error)
     } finally {

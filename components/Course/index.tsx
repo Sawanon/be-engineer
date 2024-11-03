@@ -414,7 +414,7 @@ const CourseComponent = ({
                         <Image radius="sm" width={40} src={course.image} />
                       )} */}
                       <div className="font-IBM-Thai-Looped">
-                        {course.name} {course.id}
+                        {course.name}
                       </div>
                     </div>
                   </TableCell>

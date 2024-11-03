@@ -2,9 +2,12 @@
 
 import axios from "axios";
 import { Course, CourseCreate } from '../model/course'
-import { PrismaClient, Course as CoursePrisma, Prisma } from "@prisma/client";
+import { PrismaClient, Course as CoursePrisma, Prisma, Delivery } from "@prisma/client";
 import { handleError, parseStringify } from "../util";
 import dayjs from "dayjs";
+import { addBookTransactionAction } from "./bookTransactions";
+import { revalidatePath } from "next/cache";
+import { getBookById, updateBookInStock } from "./book.actions";
 
 const ENDPOINT_BE_ENGINEER_URL = process.env.ENDPOINT_BE_ENGINEER_URL;
 const B_API_KEY = process.env.B_API_KEY;
@@ -209,37 +212,110 @@ export const getCourseById = async (courseId: number) => {
   }
 }
 
+const changeBindWebApp = async (courseId: number, branch: string, webAppCourseId: number, bookId: number) => {
+  console.log("start changeBindWebApp vvvv");
+  const deliverList:Delivery[] = await prisma.$queryRaw`
+    SELECT *
+    FROM Delivery
+    WHERE FIND_IN_SET(${webAppCourseId}, webappCourseId) > 0
+    AND status = 'waiting'
+  `
+  const bookTransactions:{
+    startDate: Date,
+    endDate: Date,
+    detail: string,
+    qty: number,
+    bookId: number,
+    deliverId: number,
+  }[] = []
+  const deliverId:number[] = []
+  deliverList.forEach(delivery => {
+    bookTransactions.push({
+      startDate: delivery.approved ?? new Date(),
+      endDate: delivery.approved ?? new Date(),
+      detail: 'deliver:restore from change web app',
+      qty: 1,
+      bookId: bookId,
+      deliverId: delivery.id,
+    })
+    deliverId.push(delivery.id)
+  })
+  const currentBook = await getBookById(bookId)
+  const inStock = currentBook!.inStock + bookTransactions.length;
+  await updateBookInStock(bookId, inStock)
+  const responseAddBookTransaction = await prisma.bookTransactions.createMany({
+    data: bookTransactions,
+  })
+  console.log("🚀 ~ courseConnectWebAppCourse ~ responseAddBookTransaction:", responseAddBookTransaction)
+  const responseLinkDeliveryWithCourse = await prisma.delivery_Course.deleteMany({
+    where: {
+      deliveryId: {
+        in: deliverId,
+      }
+    }
+  })
+  console.log("🚀 ~ changeBindWebApp ~ responseLinkDeliveryWithCourse:", responseLinkDeliveryWithCourse)
+  console.log("end changeBindWebApp ^^^^");
+}
+
 export const courseConnectWebAppCourse = async (courseId: number, branch: string, webAppCourseId: number, bookId: number) => {
   try {
-    const deliverList = await prisma.delivery.findMany({
+    const course = await prisma.course.findFirst({
       where: {
-        webappCourseId: webAppCourseId.toString(),
-      },
-    })
-    const dates:ReturnType<typeof dayjs>[] = []
-    deliverList.forEach(deliver => {
-      if(deliver.approved){
-        dates.push(dayjs(deliver.approved))
+        id: courseId,
       }
     })
-    // หาวันที่มากสุด
-    const maxDate = dates.reduce((max, date) => (date.isAfter(max) ? date : max), dates[0]);
-    // หาวันที่น้อยสุด
-    const minDate = dates.reduce((min, date) => (date.isBefore(min) ? date : min), dates[0]);
-    if(deliverList.length > 0){
-      const response = await prisma.bookTransactions.create({
-        data: {
-          startDate: minDate.toDate(),
-          endDate: maxDate.toDate(),
-          detail: 'deliver',
-          qty: -(deliverList.length),
-          bookId: bookId,
-        }
-      })
-      console.log(response);
+    if(course?.webappCourseId){
+      await changeBindWebApp(courseId, branch, course.webappCourseId, bookId)
     }
-    return deliverList
-    
+    const deliverList:Delivery[] = await prisma.$queryRaw`
+      SELECT *
+      FROM Delivery
+      WHERE FIND_IN_SET(${webAppCourseId}, webappCourseId) > 0
+      AND status = 'waiting'
+    `
+    const bookTransactions:{
+      startDate: Date,
+      endDate: Date,
+      detail: string,
+      qty: number,
+      bookId: number,
+      deliverId: number,
+    }[] = []
+    const deliveryListWithCourse: {
+      deliveryId: number,
+      courseId: number,
+      webappCourseId: number,
+      webappOrderId: number,
+    }[] = []
+    deliverList.forEach(delivery => {
+      bookTransactions.push({
+        startDate: delivery.approved ?? new Date(),
+        endDate: delivery.approved ?? new Date(),
+        detail: delivery.approved == null ? 'deliver:not found approved' : 'deliver',
+        qty: -1,
+        bookId: bookId,
+        deliverId: delivery.id,
+      })
+      deliveryListWithCourse.push({
+        deliveryId: delivery.id,
+        courseId: courseId,
+        webappCourseId: webAppCourseId,
+        webappOrderId: delivery.webappOrderId,
+      })
+    })
+    const currentBook = await getBookById(bookId)
+    const inStock = currentBook!.inStock + -(bookTransactions.length);
+    await updateBookInStock(bookId, inStock)
+    const responseAddBookTransaction = await prisma.bookTransactions.createMany({
+      data: bookTransactions,
+    })
+    console.log("🚀 ~ courseConnectWebAppCourse ~ responseAddBookTransaction:", responseAddBookTransaction)
+    const responseLinkDeliveryWithCourse = await prisma.delivery_Course.createMany({
+      data: deliveryListWithCourse,
+    })
+    console.log("🚀 ~ courseConnectWebAppCourse ~ responseLinkDeliveryWithCourse:", responseLinkDeliveryWithCourse)
+    revalidatePath("/deliver")
     const response = await prisma.course.update({
       where: {
         id: courseId,

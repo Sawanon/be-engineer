@@ -10,7 +10,7 @@ import {
   ModalBody,
   ModalContent,
 } from "@nextui-org/react";
-import { DocumentBook } from "@prisma/client";
+import { DocumentBook, LessonOnDocumentBook } from "@prisma/client";
 import { useDropzone } from "@uploadthing/react";
 import React, { useCallback, useMemo, useState } from "react";
 import { LuImage, LuX } from "react-icons/lu";
@@ -52,6 +52,7 @@ const EditBookModal = ({
   >();
   const [isDelete, setIsDelete] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isCantDelete, setIsCantDelete] = useState(false)
 
   useMemo(() => {
     setName(selectedBook.name)
@@ -181,6 +182,12 @@ const EditBookModal = ({
   };
 
   const handleOnDelete = () => {
+    const book:any = selectedBook
+    const lessonUseBook:LessonOnDocumentBook[] = book.LessonOnDocumentBook;
+    if(lessonUseBook.length > 0){
+      setIsCantDelete(true)
+      return
+    }
     setIsDelete(true)
   };
 
@@ -212,6 +219,35 @@ const EditBookModal = ({
       scrollBehavior={"inside"}
       closeButton={<></>}
     >
+      <Modal
+        isOpen={isCantDelete}
+        classNames={{
+          base: "bottom-0 absolute md:relative w-screen md:w-[428px] bg-white m-0 ",
+          body: "p-0",
+        }}
+        backdrop="blur"
+        onClose={() => {}}
+        closeButton={<></>}
+      >
+        <ModalContent
+          className={`p-app`}
+        >
+          <div className={`text-3xl font-semibold font-IBM-Thai`}>
+            ไม่สามารถลบได้ !
+          </div>
+          <div className={`mt-app font-IBM-Thai-Looped`}>
+            ไม่สามารถลบ หนังสือ {selectedBook.name} เพราะถูกใช้งานในคอร์สแล้ว
+          </div>
+          <div className={`pt-2 flex justify-end`}>
+            <Button
+              className={`bg-default-100 font-IBM-Thai`}
+              onClick={handleOnClose}
+            >
+              ตกลง
+            </Button>
+          </div>
+        </ModalContent>
+      </Modal>
       <ConfirmBook
         open={isDelete}
         onClose={() => setIsDelete(false)}
