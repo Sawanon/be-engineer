@@ -24,6 +24,7 @@ import TableBooks from "./Book/Table";
 import { DocumentBook } from "@prisma/client";
 import { addPreExamAction, listPreExamAction } from "@/lib/actions/pre-exam.actions";
 import TablePreExam from "./PreExam/Table";
+import EditBookModal from "./Book/EditBook.modal";
 
 export type DocumentMode = "book" | "sheet" | "pre-exam";
 
@@ -44,6 +45,7 @@ const DocumentComp = () => {
    // console.log(selectState);
    const [isInventory, setIsInventory] = useState(false);
    const [isAddDocumentBook, setIsAddDocumentBook] = useState(false);
+   const [isOpenEditDocumentBook, setIsOpenEditDocumentBook] = useState(false);
    const [isEditStock, setIsEditStock] = useState(false);
    const [isDelete, setIsDelete] = useState(false);
    const [isViewUsage, setIsViewUsage] = useState(false);
@@ -58,6 +60,37 @@ const DocumentComp = () => {
    const [preExamLink, setPreExamLink] = useState<string | undefined>();
    
    const [selectedBook, setSelectedBook] = useState<DocumentBook | undefined>()
+   const [courseList, setCourseList] = useState<any[]>([])
+   
+   const [page, setPage] = useState(1)
+   const [pageSize, setPageSize] = useState(5)
+   const rowPerPage = 5
+
+   const preExamItems = useMemo(() => {
+      const startIndex = (page - 1) * rowPerPage;
+      const endIndex = startIndex + rowPerPage;
+      return preExamList?.slice(startIndex, endIndex)
+   }, [preExamList, page])
+   
+   useMemo(() => {
+      let pageSize = 1
+      if(documentMode === "book"){
+         if(bookList){
+            pageSize = Math.ceil(bookList.length / rowPerPage)
+         }
+      }else if(documentMode === "pre-exam"){
+         if(preExamList){
+            pageSize = Math.ceil(preExamList.length / rowPerPage)
+         }
+      }else if(documentMode === "sheet"){
+         if(sheetList){
+            pageSize = Math.ceil(sheetList.length / rowPerPage)
+         }
+      }
+      console.log(pageSize);
+      
+      setPageSize(pageSize)
+   }, [documentMode, bookList, preExamList])
 
    const title = useMemo(() => {
       switch (documentMode) {
@@ -107,7 +140,7 @@ const DocumentComp = () => {
    }
 
    return (
-      <div className="relative pt-6 px-app">
+      <div className="relative pt-6 px-app h-screenDevice flex flex-col">
          <BookInventory
             open={isInventory}
             onClose={() => setIsInventory(false)}
@@ -122,10 +155,21 @@ const DocumentComp = () => {
          <AddBook
             open={isAddDocumentBook}
             onClose={() => setIsAddDocumentBook(false)}
-            onDelete={() => setIsDelete(true)}
          />
-         <ConfirmBook open={isDelete} onClose={() => setIsDelete(false)} />
-         <BookUsage book={selectedBook} open={isViewUsage} onClose={() => setIsViewUsage(false)} />
+         {selectedBook &&
+            <EditBookModal
+               open={isOpenEditDocumentBook}
+               selectedBook={selectedBook}
+               onClose={() => {
+                  setIsOpenEditDocumentBook(false)
+                  setTimeout(() => {
+                     setSelectedBook(undefined)
+                  }, 250);
+               }}
+            />
+         }
+         {/* <ConfirmBook open={isDelete} onClose={() => setIsDelete(false)} /> */}
+         <BookUsage courseList={courseList} book={selectedBook} open={isViewUsage} onClose={() => setIsViewUsage(false)} />
          <Modal
             isOpen={isOpenAddDocumentSheet}
             closeButton={<></>}
@@ -194,6 +238,7 @@ const DocumentComp = () => {
                         onClick={() => setIsOpenAddDocumentPreExam(false)}
                         className={`min-w-0 w-8 max-w-8 max-h-8 bg-primary-foreground`}
                         isIconOnly
+                        aria-label="addPreExam-button"
                      >
                         <X />
                      </Button>
@@ -225,6 +270,7 @@ const DocumentComp = () => {
             {title}
          </div>
          <FormDocument
+            className={`py-2`}
             onAddDocument={() => {
                if (documentMode === "sheet") {
                   setIsOpenAddDocumentSheet(true);
@@ -237,21 +283,24 @@ const DocumentComp = () => {
             }}
             onChangeMode={handleOnChangeDocumentMode}
          />
-         <div className="flex-1 px-2">
+         <div className="flex-1">
             {documentMode === "book" &&
                <TableBooks
                   booksList={bookList}
-                  onEditBook={() => {
+                  onEditBook={(book) => {
                      console.log("onEditBook");
+                     setSelectedBook(book)
+                     setIsOpenEditDocumentBook(true)
                   }}
                   onViewStock={(book) => {
                      console.log("onViewStock");
                      setIsInventory(true)
                      setSelectedBook(book)
                   }}
-                  onViewUsage={(book) => {
+                  onViewUsage={(courseLise, book) => {
                      console.log("onViewUsage");
                      setIsViewUsage(true)
+                     setCourseList(courseLise)
                      setSelectedBook(book)
                   }}
                />
@@ -269,21 +318,23 @@ const DocumentComp = () => {
                   onViewUsage={() => {
                      console.log("asd");
                   }}
-                  preExamList={preExamList}
+                  // preExamList={preExamList}
+                  preExamList={preExamItems}
                />
             }
-            <div className="flex w-full justify-center my-[14px]">
-               <Pagination
-                  classNames={{
-                     cursor: "bg-default-foreground",
-                  }}
-                  showShadow
-                  color="primary"
-                  page={1}
-                  total={10}
-                  // onChange={(page) => setPage(page)}
-               />
-            </div>
+         </div>
+         <div className="flex w-full justify-center my-[14px]">
+            <Pagination
+               classNames={{
+                  cursor: "bg-default-foreground",
+               }}
+               aria-label="pagination-document"
+               showShadow
+               color="primary"
+               page={page}
+               total={pageSize}
+               onChange={(page) => setPage(page)}
+            />
          </div>
       </div>
    );

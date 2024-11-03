@@ -1,6 +1,7 @@
 "use client"
 import { menuItems } from '@/lib/res/const'
 import { LogOut } from 'lucide-react'
+import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
@@ -47,7 +48,7 @@ const SidebarApp = () => {
                 <div className={`w-8 h-8 rounded-full bg-gray-300`}></div>
                 <div className={`font-semibold text-default-600 text-lg`}>Username</div>
             </div>
-            <div className={`p-1 cursor-pointer`}>
+            <div onClick={() => signOut()} className={`p-1 cursor-pointer`}>
                 <LogOut size={24} />
             </div>
         </div>

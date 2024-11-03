@@ -25,9 +25,10 @@ import {
    addCourseVideoMany,
    deleteCourseVideoMany,
 } from "@/lib/actions/video.actions";
-import CourseContext from "@/app/course/provider";
-import { useCourse } from "./courseHook";
+// import CourseContext from "@/app/course/provider";
+// import { useCourse } from "./courseHook";
 import SortableComponent from "../Sortable";
+import { listCourseAction } from "@/lib/actions/course.actions";
 
 const ManageContent = ({
    isOpen,
@@ -42,7 +43,13 @@ const ManageContent = ({
    onSuccess: () => void;
    lesson: any;
 }) => {
-   const [refetchCourse] = useCourse();
+   const {
+      refetch: refetchCourse,
+    } = useQuery({
+        queryKey: ["listCourseAction"],
+        queryFn: () => listCourseAction(),
+    });
+   // const [refetchCourse] = useCourse();
    const [videoList, setVideoList] = useState<VideoWebapp[]>([]);
    const [searchPlayListText, setSearchPlayListText] = useState("");
    const [selectedPlaylistId, setSelectedPlaylistId] = useState<Key | null>();

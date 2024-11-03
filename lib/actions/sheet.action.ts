@@ -20,7 +20,11 @@ export const addSheetAction = async (name: string, url: string) => {
 
 export const listSheetsAction = async ():Promise<DocumentSheet[] | undefined> => {
   try {
-    const response = await prisma.documentSheet.findMany()
+    const response = await prisma.documentSheet.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
     return response
   } catch (error) {
     console.error(error)

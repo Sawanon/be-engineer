@@ -38,33 +38,22 @@ import BulletPoint from "@/ui/bullet_point";
 import { DocumentBook } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { getCourseUsageBook } from "@/lib/actions/book.actions";
+import Link from "next/link";
 
 const BookUsage = ({
    open,
    onClose,
    book,
+   courseList,
 }:{
    open: boolean,
    onClose: () => void,
    book?: DocumentBook,
+   courseList: any[],
 }) => {
-   const {data: bookList} =  useQuery({
-      queryKey: ["getCourseUsageBook", book?.id],
-      queryFn: () => getCourseUsageBook(book!.id),
-      enabled: book !== undefined
-   })
-
-   const courseList = bookList?.LessonOnDocumentBook.map(lessOnBook => {
-      lessOnBook.CourseLesson.Course
-      return {
-         name: lessOnBook.CourseLesson.Course.name,
-      }
-   })
    
    return (
       <Modal
-         //  size={"full"}
-         // className=" bg-white"
          isOpen={open}
          classNames={{
             base: "top-0 p-0 m-0 absolute md:relative w-screen   md:w-[428px] bg-white m-0  max-w-full ",
@@ -114,11 +103,13 @@ const BookUsage = ({
                         </p>
                         <div className="ml-4   ">
                            {courseList?.map((course, index) => (
-                              <div key={`courseUsage${index}`} className="flex items-center">
-                                 <BulletPoint />
-                                 <p>{course.name}</p>
-                                 <LuArrowUpRight className="self-start" />
-                              </div>
+                              <Link key={`courseUsage${index}`} href={`/course?id=${course.id}&modal=true`}>
+                                 <div className="flex items-center">
+                                    <BulletPoint />
+                                    <p>{course.name}</p>
+                                    <LuArrowUpRight className="self-start" />
+                                 </div>
+                              </Link>
                            ))}
                            {/* <div className="flex items-center">
                               <BulletPoint />

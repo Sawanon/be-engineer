@@ -85,6 +85,9 @@ model DocumentBook {
   name                 String
   term                 String?                @db.VarChar(45)
   year                 String?                @db.VarChar(10)
+  createdAt            DateTime?              @default(now())
+  updatedAt            DateTime?              @default(now())
+  volume               String?
   BookTransactions     BookTransactions[]
   LessonOnDocumentBook LessonOnDocumentBook[]
 
@@ -95,6 +98,8 @@ model DocumentPreExam {
   id               Int                @id @default(autoincrement())
   name             String
   url              String
+  createdAt        DateTime?          @default(now())
+  updatedAt        DateTime?          @default(now())
   LessonOnDocument LessonOnDocument[]
 
   @@index([name])
@@ -104,6 +109,8 @@ model DocumentSheet {
   id                    Int                     @id @default(autoincrement())
   name                  String
   url                   String
+  createdAt             DateTime?               @default(now())
+  updatedAt             DateTime?               @default(now())
   LessonOnDocumentSheet LessonOnDocumentSheet[]
 
   @@index([name])
@@ -122,7 +129,7 @@ model LessonOnDocument {
 model LessonOnDocumentBook {
   lessonId     Int
   bookId       Int
-  DocumentBook DocumentBook @relation(fields: [bookId], references: [id])
+  DocumentBook DocumentBook @relation(fields: [bookId], references: [id], onDelete: Cascade)
   CourseLesson CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@id([lessonId, bookId])

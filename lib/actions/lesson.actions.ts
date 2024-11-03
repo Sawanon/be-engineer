@@ -1,5 +1,5 @@
 "use server"
-import { CourseLesson, PrismaClient } from "@prisma/client";
+import { CourseLesson, Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient()
 
@@ -57,6 +57,25 @@ export const addBookToLessonAction = async (bookId: number, lessonId: number) =>
     return response
   } catch (error) {
     console.error(error)
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const addPreExamToLessonAction = async (preExamId: number, lessonId: number) => {
+  try {
+    const response = await prisma.lessonOnDocument.create({
+      data: {
+        lessonId: lessonId,
+        preExamId: preExamId,
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
   } finally {
     prisma.$disconnect()
   }

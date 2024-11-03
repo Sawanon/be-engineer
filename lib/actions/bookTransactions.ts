@@ -15,6 +15,9 @@ export const addBookTransactionAction = async (bookTransaction: Prisma.BookTrans
     return response
   } catch (error) {
     console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
   } finally {
     prisma.$disconnect()
   }
@@ -25,7 +28,10 @@ export const listBookTransactionByBookId = async (bookId: number) => {
     const response = await prisma.bookTransactions.findMany({
       where :{
         bookId: bookId,
-      }
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
     })
     return response
   } catch (error) {

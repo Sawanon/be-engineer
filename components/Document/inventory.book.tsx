@@ -23,7 +23,7 @@ import {
 import { DocumentBook } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
    LuArrowLeft,
    LuClipboardList,
@@ -50,6 +50,19 @@ const BookInventory = ({
       queryFn: () => listBookTransactionByBookId(book!.id),
       enabled: book !== undefined
    })
+   
+   const rowPerPage = 10
+   const [page, setPage] = useState(1)
+   const [pageSize, setPageSize] = useState(5)
+
+   const booTransactionItems = useMemo(() => {
+      const startIndex = (page - 1) * rowPerPage;
+      const endIndex = startIndex + rowPerPage;
+      if(bookTransactionsList){
+         setPageSize(Math.ceil(bookTransactionsList.length / rowPerPage))
+      }
+      return bookTransactionsList?.slice(startIndex, endIndex);
+   }, [bookTransactionsList, page])
 
    const renderStartEndDate = (startDate: Date, endDate: Date) => {
       const startDayjs = dayjs(startDate)
@@ -153,9 +166,9 @@ const BookInventory = ({
                               <TableColumn className="text-end">จำนวน</TableColumn>
                            </TableHeader>
                            <TableBody>
-                              {bookTransactionsList
+                              {booTransactionItems
                               ?
-                              bookTransactionsList!.map((bookTransaction, index) => (
+                              booTransactionItems!.map((bookTransaction, index) => (
                                  <TableRow key={`bookTransactionRow${index}`}>
                                     <TableCell>
                                        <div className="flex gap-2 items-center">
@@ -202,9 +215,9 @@ const BookInventory = ({
                               }}
                               showShadow
                               color="primary"
-                              page={1}
-                              total={10}
-                              // onChange={(page) => setPage(page)}
+                              page={page}
+                              total={pageSize}
+                              onChange={(page) => setPage(page)}
                            />
                         </div>
                      </div>

@@ -4,6 +4,7 @@ import axios from "axios";
 import { Course, CourseCreate } from '../model/course'
 import { PrismaClient, Course as CoursePrisma, Prisma } from "@prisma/client";
 import { handleError, parseStringify } from "../util";
+import dayjs from "dayjs";
 
 const ENDPOINT_BE_ENGINEER_URL = process.env.ENDPOINT_BE_ENGINEER_URL;
 const B_API_KEY = process.env.B_API_KEY;
@@ -53,6 +54,9 @@ export const listCourseAction = async ()  => {
             },
           },
         },
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     })
     return res
@@ -158,5 +162,100 @@ export const listCourseWebapp = async ():Promise<any[] | undefined> => {
     return response.data
   } catch (error) {
     console.error(error)
+  }
+}
+
+export const getCourseById = async (courseId: number) => {
+  try {
+    const response = await prisma.course.findFirst({
+      include: {
+        Tutor: true,
+        CourseLesson: {
+          orderBy: {
+            position: 'asc',
+          },
+          include: {
+            CourseVideo: true,
+            LessonOnDocumentSheet: {
+              include: {
+                DocumentSheet: true,
+              }
+            },
+            LessonOnDocument: {
+              include: {
+                DocumentPreExam: true,
+              },
+            },
+            LessonOnDocumentBook: {
+              include: {
+                DocumentBook: true,
+              },
+            },
+          },
+        },
+      },
+      where: {
+        id: courseId,
+      },
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const courseConnectWebAppCourse = async (courseId: number, branch: string, webAppCourseId: number, bookId: number) => {
+  try {
+    const deliverList = await prisma.delivery.findMany({
+      where: {
+        webappCourseId: webAppCourseId.toString(),
+      },
+    })
+    const dates:ReturnType<typeof dayjs>[] = []
+    deliverList.forEach(deliver => {
+      if(deliver.approved){
+        dates.push(dayjs(deliver.approved))
+      }
+    })
+    // หาวันที่มากสุด
+    const maxDate = dates.reduce((max, date) => (date.isAfter(max) ? date : max), dates[0]);
+    // หาวันที่น้อยสุด
+    const minDate = dates.reduce((min, date) => (date.isBefore(min) ? date : min), dates[0]);
+    if(deliverList.length > 0){
+      const response = await prisma.bookTransactions.create({
+        data: {
+          startDate: minDate.toDate(),
+          endDate: maxDate.toDate(),
+          detail: 'deliver',
+          qty: -(deliverList.length),
+          bookId: bookId,
+        }
+      })
+      console.log(response);
+    }
+    return deliverList
+    
+    const response = await prisma.course.update({
+      where: {
+        id: courseId,
+      },
+      data: {
+        branch: branch,
+        webappCourseId: webAppCourseId,
+      },
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
+  } finally {
+    prisma.$disconnect()
   }
 }
