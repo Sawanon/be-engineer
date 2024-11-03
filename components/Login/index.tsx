@@ -35,7 +35,7 @@ const LoginForm = () => {
       }
       console.log("response", response);
    };
-   console.log("form.formState.isSubmitting", form.formState.isSubmitting);
+
    return (
       <div className="space-y-2 ">
          <form className="space-y-2" onSubmit={form.handleSubmit(onSubmit)}>

@@ -2,7 +2,7 @@ import { deliveryPrismaProps } from "@/lib/actions/deliver.actions";
 import { deliveryType } from "@/lib/res/const";
 import { UseQueryResult } from "@tanstack/react-query";
 import NextAuth, { Session, DefaultSession } from "next-auth";
-import { JWT } from "next-auth/jwt"
+import { JWT } from "next-auth/jwt";
 export type modalProps<T = undefined> = {
    open: boolean;
    data?: T;
@@ -64,6 +64,8 @@ export type addTrackingProps = {
    note?: string;
    // webappOrderId: number;
    service: deliverShipServiceKey;
+   webappAdminId?: number;
+   webappAdminUsername: string;
    // courseId: string[] | number[];
    //   status, updatedAddress, courseId, webappOrderId, webappCourseId, webappAdminId, note, createdAt, updatedAt, serviceId, trackingCode
 };
@@ -72,6 +74,8 @@ export type addMultiTrackingProps = {
    ids: number[];
    courseIds: number[];
    deliveryData: Pick<addTrackingProps, "trackingCode" | "id">[];
+   webappAdminId?: number;
+   webappAdminUsername: string;
 };
 
 export type deliveryTypeProps = "pickup" | "ship";
@@ -84,20 +88,19 @@ declare module "next-auth" {
          firstName: string;
          lastName: string;
          isActive: boolean;
+         id: number;
       } & DefaultSession["user"];
    }
 }
 
-
-
 declare module "next-auth/jwt" {
    /** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
    interface JWT {
-     /** OpenID ID Token */
-     username: string;
-     firstName: string;
-     lastName: string;
-     isActive: boolean;
-     idToken?: string
+      /** OpenID ID Token */
+      username: string;
+      firstName: string;
+      lastName: string;
+      isActive: boolean;
+      idToken?: string;
    }
- }
+}

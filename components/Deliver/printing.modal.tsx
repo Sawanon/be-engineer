@@ -15,6 +15,7 @@ import {
    CardBody,
    Divider,
    Image,
+   Spinner,
 } from "@nextui-org/react";
 import { ReactNode, useMemo, useRef, useState } from "react";
 import { LuArrowLeft, LuPenSquare, LuPrinter } from "react-icons/lu";
@@ -55,7 +56,8 @@ const PrintModal = ({
    });
    const [dialog, setDialog] = dialogState;
    const { open, data } = dialog;
-   const queryData = useDeliverByIds(data?.map((d) => d.id));
+   console.log(59,data)
+   const queryData = useDeliverByIds(data?.map((d) => d?.id));
 
    const PDFDoc = useMemo(() => {
       return <PDFDocument data={queryData.data!} />;
@@ -150,18 +152,29 @@ const PrintModal = ({
                         </div>
                         <div
                            ref={contentRef}
-                           className="space-y-2  flex-1 mt-2  overflow-y-auto"
-                        >
-                           {queryData.data?.map((delivery) => {
-                              return (
-                                 <CardDeliver
-                                    refetch={() => queryData.refetch()}
-                                    key={delivery?.id.toString()}
-                                    delivery={delivery}
-                                    onEdit={onEditAddress}
-                                 />
-                              );
+                           className={cn("space-y-2  flex-1 mt-2  overflow-y-auto",{
+                              "flex flex-col" : queryData.isFetching
                            })}
+                        >
+                           {queryData.isFetching ? (
+                              <div className="flex flex-1 items-center justify-center">
+                                 <Spinner
+                                    className="w-[60px] h-[60px]"
+                                    color="default"
+                                 />
+                              </div>
+                           ) : (
+                              queryData.data?.map((delivery) => {
+                                 return (
+                                    <CardDeliver
+                                       refetch={() => queryData.refetch()}
+                                       key={delivery?.id.toString()}
+                                       delivery={delivery}
+                                       onEdit={onEditAddress}
+                                    />
+                                 );
+                              })
+                           )}
                         </div>
                      </div>
                   </div>

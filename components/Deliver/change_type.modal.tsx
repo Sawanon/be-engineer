@@ -94,6 +94,7 @@ const ChangeReceiveType = ({
                            ยกเลิก
                         </Button>
                         <Button
+                        isLoading={mutation.isPending}
                            fullWidth
                            className="font-IBM-Thai bg-default-foreground text-primary-foreground"
                            onClick={() => {

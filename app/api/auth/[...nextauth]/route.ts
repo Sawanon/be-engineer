@@ -20,15 +20,13 @@ const authOptions = {
             password: { label: "Password", type: "password" },
          },
          async authorize(credentials, req) {
-            console.table(credentials);
             // Add logic here to look up the user from the credentials supplied
             const loginRes = await login({
                password: credentials?.password!,
                username: credentials?.username!,
             });
-            
+
             if (loginRes) {
-               console.log("login success", loginRes);
                // Any object returned will be saved in `user` property of the JWT
                return loginRes;
             } else {
@@ -37,15 +35,25 @@ const authOptions = {
          },
       }),
    ],
+
    callbacks: {
       async session({ session, token }: { session: Session; token: any }) {
+         session.user.username = token.username;
+         session.user.firstName = token.firstName;
+         session.user.lastName = token.lastName;
+         session.user.id = token.id;
          return session;
       },
-      // async jwt(token, user, account, profile, isNewUser) {
-      //    console.log("jwt", token, user);
-      //    // Add logic here to generate JWT
-      //    // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
-      //    return token;
+      async jwt({ token, user }: { token: any; user: any }) {
+         if (token.username === undefined) {
+            token.id = user.id
+            token.username = user.username;
+            token.firstName = user.firstName;
+            token.lastName = user.lastName;
+         }
+         // console.log('token', token)
+         return Promise.resolve(token);
+      },
    },
    secret: process.env.NEXTAUTH_SECRET,
 };
