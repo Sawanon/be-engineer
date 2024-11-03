@@ -112,6 +112,7 @@ model DocumentSheet {
   createdAt             DateTime?               @default(now())
   updatedAt             DateTime?               @default(now())
   LessonOnDocumentSheet LessonOnDocumentSheet[]
+  SheetTransactions     SheetTransactions[]
 
   @@index([name])
 }
@@ -172,13 +173,17 @@ model Delivery {
   branch                String?                 @db.VarChar(45)
   mobile                String?                 @db.VarChar(20)
   approved              DateTime?               @db.DateTime(0)
+  webappAdminUsername   String?                 @db.VarChar(45)
+  BookTransactions      BookTransactions[]
   Course                Course?                 @relation(fields: [courseId], references: [id], onUpdate: NoAction, map: "courseId")
   DeliverShipService    DeliverShipService?     @relation(fields: [serviceId], references: [id], onDelete: Restrict, map: "trackingServiceId")
   Delivery_Course       Delivery_Course[]
   Delivery_WebappCourse Delivery_WebappCourse[]
+  SheetTransactions     SheetTransactions[]
 
   @@index([courseId], map: "courseId_idx")
   @@index([serviceId], map: "trackingServiceId_idx")
+  @@index([id], map: "recordBookId_idx")
 }
 
 model Tutor {
@@ -229,7 +234,23 @@ model BookTransactions {
   qty          Int
   createdAt    DateTime     @default(now())
   bookId       Int
+  deliverId    Int?
   DocumentBook DocumentBook @relation(fields: [bookId], references: [id], onDelete: Cascade, map: "bookId")
+  Delivery     Delivery?    @relation(fields: [deliverId], references: [id], map: "deliverId")
 
   @@index([bookId], map: "bookId_idx")
+  @@index([deliverId], map: "deliverId_idx")
+}
+
+model SheetTransactions {
+  id              Int            @id @default(autoincrement())
+  detail          String?        @db.VarChar(45)
+  sheetId         Int?
+  sheet_deliverId Int?
+  createdAt       DateTime?      @default(now())
+  DocumentSheet   DocumentSheet? @relation(fields: [sheetId], references: [id], map: "sheetId")
+  Delivery        Delivery?      @relation(fields: [sheet_deliverId], references: [id], map: "sheet_deliverId")
+
+  @@index([sheet_deliverId], map: "deliverId_idx")
+  @@index([sheetId], map: "sheetId_idx")
 }

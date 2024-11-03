@@ -203,7 +203,7 @@ export const useUpdatePickup = ({
    onError?: (error: Error) => void;
 }) => {
    return useMutation({
-      mutationFn: (data: Pick<addTrackingProps, "note" | "id">) => {
+      mutationFn: (data: Pick<addTrackingProps, "note" | "id" | "webappAdminId" | "webappAdminUsername">) => {
          return receiveOrder(data);
       },
       onError(error, variables, context) {

@@ -12,6 +12,7 @@ import { useForm, Controller } from "react-hook-form";
 import { LuArrowRightLeft, LuX } from "react-icons/lu";
 import CustomInput from "../CustomInput";
 import { deliveryPrismaProps } from "@/lib/actions/deliver.actions";
+import { useSession } from "next-auth/react";
 type createProp = {
    trackingNumber: string;
    delivery: deliverShipServiceKey;
@@ -35,6 +36,8 @@ const SingleTrack = ({
    }) => void;
    onClose: () => void;
 }) => {
+   const auth = useSession();
+
    const form = useForm<createProp>({
       defaultValues: {
          trackingNumber: "",
@@ -51,6 +54,8 @@ const SingleTrack = ({
          trackingCode: props.trackingNumber,
          id: data?.id!,
          service: props.delivery,
+         webappAdminId: auth.data?.user.id,
+         webappAdminUsername: auth.data?.user.username!,
          // courseId  : data?.courses.map(d=> d.id.toString())!
       });
    };
@@ -168,6 +173,7 @@ const SingleTrack = ({
                      <LuArrowRightLeft /> รับที่สถาบัน
                   </Button>
                   <Button
+                     isLoading={addTracking.isPending}
                      type="submit"
                      fullWidth
                      color="primary"

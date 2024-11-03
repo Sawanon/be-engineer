@@ -42,6 +42,7 @@ const DeliverPage = async () => {
    if (newData) {
       refetchData();
    }
+   // refetchData();
    console.table({
       lastODM: getLastIdOdm,
       lastKMITL: getLastIdKmitl,

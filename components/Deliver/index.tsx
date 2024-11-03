@@ -15,6 +15,7 @@ import {
    deliveryPrismaProps,
    getDeliver,
    refetchData,
+   testAddBook,
    updateAddress,
 } from "@/lib/actions/deliver.actions";
 import { revalidatePath } from "next/cache";
@@ -42,7 +43,7 @@ const DeliverComp = ({
       setNewData(isNewData);
    }, [isNewData]);
    const [searchData, setSearchData] = useState<DeliverFilter>({
-      status : "pickup,ship"
+      status: "pickup,ship",
    });
    const [multiTrackingState, setMultiTrackingState] =
       useState<multiTrackDialog>({
@@ -133,9 +134,18 @@ const DeliverComp = ({
          return { ...prev, data: cloneData };
       });
    };
-   console.log("isEditAddress", isEditAddress);
+
    return (
       <div className="flex flex-col pt-0 md:pt-6 px-app  bg-background relative overflow-y-hidden md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 ">
+         {/* <Button
+            onClick={async () => {
+              
+               await testAddBook();
+            }}
+         >
+            test
+         </Button> */}
+
          {newData && (
             <NotifyModal
                onRefresh={() => {
