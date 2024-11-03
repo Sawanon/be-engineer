@@ -375,6 +375,29 @@ const ManageCourse = ({
     setIsOpenConectWebapp(false)
   }
 
+  const renderWebappCourse = (courseId: number) => {
+    if(!webappCourseList) return <div>Loading...</div>
+    const webappCourse = webappCourseList.find(course => course.id === courseId)
+    return (
+      <div className={`flex py-[6px] px-2 gap-1 flex-1`}>
+        <Image src={`${webappCourse?.image}`} className={`h-10 w-10 rounded`} />
+        <div className={`flex-1 font-IBM-Thai-Looped text-start`}>
+          <div className={`font-normal text-base text-default-foreground`}>
+            {webappCourse?.name}
+          </div>
+          <div className={`text-xs text-default-500`}>
+            {webappCourse?.term}
+          </div>
+          {selectedCourse?.branch === "KMITL" &&
+            <div className={`text-xs font-normal text-default-500 rounded bg-default-200`}>
+              KMITL
+            </div>
+          }
+        </div>
+      </div>
+    )
+  }
+
   return (
     <CustomDrawer
       isOpen={isOpenDrawer}
@@ -564,75 +587,18 @@ const ManageCourse = ({
               <Divider className={`mt-app bg-default-200`} />
               <div className={`mt-app font-IBM-Thai-Looped`}>
                 <div className={`text-base font-bold`}>Web-app:</div>
-                <Autocomplete
-                  aria-labelledby={`webappcourseBranch`}
-                  className={`hidden mt-2 font-IBM-Thai-Looped`}
-                  placeholder="เลือกสาขา"
-                  onSelectionChange={handleOnChangeWebappBranch}
-                  defaultSelectedKey={selectedCourse?.branch!}
-                >
-                  {webappBranchCourseList ? (
-                    webappBranchCourseList?.map((webappCourse, index) => {
-                      return (
-                        <AutocompleteItem
-                          aria-labelledby={`webappcourseBranch${index}`}
-                          key={webappCourse.branch}
-                          value={webappCourse.branch}
-                        >
-                          {webappCourse.branch}
-                        </AutocompleteItem>
-                      );
-                    })
-                  ) : (
-                    <AutocompleteItem key={`webappCourseBranchLoading`}>
-                      loading...
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
                 <Button
-                  className={`min-h-11 bg-default-100 hover:bg-default-200 rounded-lg`}
+                  className={`min-h-11 p-0 h-max bg-default-100 hover:bg-default-200 rounded-lg`}
                   fullWidth
                   onClick={handleOnClickConectionWebapp}
                 >
-                  เลือกคอร์สใน Web-app
-                </Button>
-                <Autocomplete
-                  aria-labelledby={`webappcourse`}
-                  className={`hidden mt-2 font-IBM-Thai-Looped`}
-                  onSelectionChange={handleOnChangeWebapp}
-                  placeholder="เลือกคอร์ส"
-                  defaultSelectedKey={
-                    !webappCourseList
-                      ? ""
-                      : selectedCourse?.webappCourseId?.toString()
+                  {selectedCourse?.webappCourseId
+                  ?
+                  renderWebappCourse(selectedCourse.webappCourseId)
+                  :
+                  "เลือกคอร์สใน Web-app"
                   }
-                  startContent={renderWebappImage(selectedCourse?.webappCourseId)}
-                >
-                  {webappCourseList ? (
-                    webappCourseList?.map((webappCourse, index) => {
-                      return (
-                        <AutocompleteItem
-                          aria-labelledby={`webappcourse${index}`}
-                          key={webappCourse.id}
-                          value={webappCourse.id}
-                          textValue={webappCourse.name}
-                          startContent={<Image width={40} height={40} src={`${webappCourse.image}`} />}
-                        >
-                          <div className={`font-IBM-Thai-Looped text-default-foreground`}>
-                            {webappCourse.name}
-                          </div>
-                          <div className={`text-xs font-IBM-Thai-Looped text-default-500`}>
-                            {webappCourse.term}
-                          </div>
-                        </AutocompleteItem>
-                      );
-                    })
-                  ) : (
-                    <AutocompleteItem key={`webappCourseLoading`}>
-                      loading...
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
+                </Button>
                 <div className={`mt-2 flex gap-2 font-IBM-Thai`}>
                   <Button
                     className={`bg-default-100 font-medium`}

@@ -47,6 +47,7 @@ import SortContentModal from "./Course/Lesson/SortContentModal";
 import { listPreExamAction } from "@/lib/actions/pre-exam.actions";
 import AddDocumentToLesson from "./Course/Lesson/AddDocumentToLesson";
 import { listCourseAction } from "@/lib/actions/course.actions";
+import EditVideoDetail from "./Course/CourseVideo/EditVideoDetail";
 
 // export type CourseLessonAndContent = CourseLesson & {
 //   CourseVideo: CourseVideo,
@@ -93,6 +94,9 @@ const ManageLesson = ({
   const [isOpenAddDocument, setIsOpenAddDocument] = useState(false)
   const [selectedDocument, setSelectedDocument] = useState<string | undefined>()
   const [isOpenSortLesson, setIsOpenSortLesson] = useState(false)
+
+  const [selectedVideo, setSelectedVideo] = useState<CourseVideo| undefined>()
+  const [isOpenVideoDetail, setIsOpenVideoDetail] = useState(false)
 
   const handleOnChangeLessonName = (value: string) => {
     setLessonName(value);
@@ -220,8 +224,24 @@ const ManageLesson = ({
     refetchCourse()
   }
 
+  const handleOnOpenVideoDetail = (courseVideo: CourseVideo) => {
+    console.log("courseVideo", courseVideo);
+    setIsOpenVideoDetail(true)
+    setSelectedVideo(courseVideo)
+  }
+
+  const handleOnCloseVideoDetail = () => {
+    setIsOpenVideoDetail(false)
+    setSelectedVideo(undefined)
+  }
+
   return (
     <div className={`bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto ${className}`}>
+      <EditVideoDetail
+        isOpen={isOpenVideoDetail}
+        onClose={handleOnCloseVideoDetail}
+        video={selectedVideo}
+      />
       <AddDocumentToLesson
         open={isOpenAddDocument}
         onClose={handleOnCloseAddDocument}
@@ -339,12 +359,14 @@ const ManageLesson = ({
             </div>
             <Divider className="mt-2" />
             <div className=" mt-2 font-IBM-Thai-Looped">
-              {lesson.CourseVideo.sort((a: any, b: any) => a.position - b.position).map((courseVideo: any, index: number) => {
+              {lesson.CourseVideo.sort((a: any, b: any) => a.position - b.position).map((courseVideo: CourseVideo, index: number) => {
                 return (
-                  <div key={`video${index}`} className="flex p-1 items-center">
+                  <div onClick={() => handleOnOpenVideoDetail(courseVideo)} key={`video${index}`} className="flex p-1 items-center cursor-pointer">
                     <div className="w-8 flex">
                       <Video className="text-foreground-400" size={16} />
-                      <FileText className="text-foreground-400" size={16} />
+                      {courseVideo.descriptionId &&
+                        <FileText className="text-foreground-400" size={16} />
+                      }
                     </div>
                     <div className="ml-1 flex-1">
                       {/* Dynamics - 1.1 Velocity and Acceleration */}

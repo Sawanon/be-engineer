@@ -9,9 +9,15 @@ export const addBookTransactionAction = async (bookTransaction: Prisma.BookTrans
   try {
     const response = await prisma.bookTransactions.create({
       data: bookTransaction,
+      select: {
+        id: true,
+      }
     })
     const book = await getBookById(bookTransaction.bookId)
-    updateBookInStock(bookTransaction.bookId, book!.inStock! + bookTransaction.qty)
+    const inStock = book!.inStock + bookTransaction.qty;
+    console.log("🚀 ~ addBookTransactionAction ~ inStock:", inStock)
+    await updateBookInStock(bookTransaction.bookId, inStock)
+    console.log(`bookTransaction created: ${response.id}`);
     return response
   } catch (error) {
     console.error(error)
