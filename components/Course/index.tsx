@@ -73,7 +73,7 @@ const CourseComponent = ({
    const [isOpenDrawer, setIsOpenDrawer] = useState(false);
    const [isSort, setIsSort] = useState(false);
    const [page, setPage] = useState(1);
-   const [pageSize, setPageSize] = useState(10);
+   const [pageSize, setPageSize] = useState(30);
    const [isDeleteCourse, setIsDeleteCourse] = useState(false);
    const [errorDeleteCourse, setErrorDeleteCourse] = useState({
       isError: false,
