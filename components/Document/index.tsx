@@ -63,7 +63,7 @@ const DocumentComp = () => {
    const [courseList, setCourseList] = useState<any[]>([])
    
    const [page, setPage] = useState(1)
-   const [pageSize, setPageSize] = useState(5)
+   const [pageSize, setPageSize] = useState(30)
    const rowPerPage = 5
 
    const preExamItems = useMemo(() => {
