@@ -36,9 +36,9 @@ const ConectWebAppModal = ({
   const [isLoading, setIsLoading] = useState(false)
 
   useMemo(() => {
-    console.log("branch", branch);
-    console.log("webappCourseId", webappCourseId);
-    console.log(books);
+    // console.log("branch", branch);
+    // console.log("webappCourseId", webappCourseId);
+    // console.log(books);
     
   }, [branch, webappCourseId, books])
 
@@ -59,7 +59,6 @@ const ConectWebAppModal = ({
   };
 
   const renderWebappImage = (webappCourseId: number | null | undefined) => {
-    console.log(webappCourseId);
     if(!webappCourseId) return <div></div>
     if(!webappCourseList) return <div></div>
     const imageUrl = webappCourseList.find(course => course.id === webappCourseId)

@@ -67,6 +67,8 @@ import { Key } from "@react-types/shared";
 import StatusIcon from "./Course/StatusIcon";
 import { CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet } from "@prisma/client";
 import ConectWebAppModal from "./Course/ConectWebAppModal";
+import LessonAdminMode from "./Course/LessonAdminMode";
+import DeleteCourseDialog from "./Course/DeleteCourseDialog";
 
 const ManageCourse = ({
   isOpenDrawer,
@@ -109,7 +111,14 @@ const ManageCourse = ({
  });
   const [isAdd, setIsAdd] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+  
   const [isDelete, setIsDelete] = useState(false);
+  const [isDeleteCourse, setIsDeleteCourse] = useState(false);
+  const [errorDeleteCourse, setErrorDeleteCourse] = useState({
+    isError: false,
+    message: "ลบไม่สำเร็จ ดูเพิ่มเติมใน Console",
+  });
+
   const [isSort, setIsSort] = useState(false);
   const [courseName, setCourseName] = useState<string | undefined>();
   const [courseDetail, setCourseDetail] = useState<string | undefined>();
@@ -121,6 +130,7 @@ const ManageCourse = ({
     isError: false,
     message: "",
   });
+  const [IsLoadingAdd, setIsLoadingAdd] = useState(false);
   const [mode, setMode] = useState<"tutor" | "admin">("tutor");
   const [courseImageList, setCourseImageList] = useState<string[]>([]);
   const [webappCourseList, setWebappCourseList] = useState<
@@ -189,6 +199,10 @@ const ManageCourse = ({
     setIsAdd(true);
     clearData();
     onClose();
+    setAddCourseError({
+      isError: false,
+      message: ``,
+    });
   };
 
   const clearData = () => {
@@ -205,23 +219,25 @@ const ManageCourse = ({
       if (!onConfirmAdd) {
         return;
       }
+      setIsLoadingAdd(true)
       const res = await submitAddCourse();
       if (!res) return console.error(`can't add course ManagementCourse:140`);
       await onConfirmAdd(res.id);
       setIsAdd(false);
-    } catch (error) {
-      console.error(error);
-      if (error instanceof Error) {
-        setAddCourseError({
-          isError: true,
-          message: error.message,
-        });
-      }
-    } finally {
       setAddCourseError({
         isError: false,
-        message: "",
-      })
+        message: ``,
+      });
+    } catch (error) {
+      console.error(error);
+      // if (error instanceof Error) {
+        setAddCourseError({
+          isError: true,
+          message: `${error}`,
+        });
+      // }
+    } finally {
+      setIsLoadingAdd(false)
     }
   };
 
@@ -234,7 +250,7 @@ const ManageCourse = ({
       !clueLink ||
       !playlist
     ) {
-      throw Error(`กรุณากรอกข้อมูลให้ครบ`);
+      throw `กรุณากรอกข้อมูลให้ครบ`;
     }
     const res = await addCourse({
       name: courseName,
@@ -250,9 +266,11 @@ const ManageCourse = ({
   };
 
   const handleDeleteCourse = async () => {
-    if (onDeleteCourse) {
-      onDeleteCourse();
-    }
+    setIsDeleteCourse(true)
+    // if (onDeleteCourse) {
+    //   onDeleteCourse();
+    // }
+
     // console.log(selectedCourse.id);
 
     // return
@@ -379,7 +397,7 @@ const ManageCourse = ({
     if(!webappCourseList) return <div>Loading...</div>
     const webappCourse = webappCourseList.find(course => course.id === courseId)
     return (
-      <div className={`flex py-[6px] px-2 gap-1 flex-1`}>
+      <div className={`flex items-center py-[6px] px-2 gap-1 flex-1`}>
         <Image src={`${webappCourse?.image}`} className={`h-10 w-10 rounded`} />
         <div className={`flex-1 font-IBM-Thai-Looped text-start`}>
           <div className={`font-normal text-base text-default-foreground`}>
@@ -389,7 +407,7 @@ const ManageCourse = ({
             {webappCourse?.term}
           </div>
           {selectedCourse?.branch === "KMITL" &&
-            <div className={`text-xs font-normal text-default-500 rounded bg-default-200`}>
+            <div className={`text-xs font-normal text-default-500 rounded bg-default-200 w-max px-1 py-[2px]`}>
               KMITL
             </div>
           }
@@ -397,6 +415,26 @@ const ManageCourse = ({
       </div>
     )
   }
+
+  const confirmDeleteCourse = async () => {
+    if (!selectedCourse) {
+        return;
+    }
+    const res = await deleteCourse(selectedCourse.id);
+    console.log(res);
+    if (!res) {
+        setErrorDeleteCourse((prev) => ({ ...prev, isError: true }));
+        return;
+    }
+    setIsDeleteCourse(false);
+    handleClose();
+    refetchCourse();
+  };
+
+  const handleCloseDeleteCourseDialog = () => {
+    setErrorDeleteCourse((prev) => ({ ...prev, isError: false }));
+    setIsDeleteCourse(false);
+  };
 
   return (
     <CustomDrawer
@@ -407,6 +445,25 @@ const ManageCourse = ({
         }
       }}
     >
+      <DeleteCourseDialog
+        isOpen={isDeleteCourse}
+        title={`แน่ใจหรือไม่ ?`}
+        error={errorDeleteCourse}
+        onConfirm={async () => {
+          await confirmDeleteCourse()
+        }}
+        onCancel={handleCloseDeleteCourseDialog}
+        detail={
+          <>
+            <div>
+              คุณแน่ใจหรือไม่ที่จะลบ
+            </div>
+            <div>
+              คอร์ส {selectedCourse?.name}
+            </div>
+          </>
+        }
+      />
       <ConectWebAppModal
         isOpen={isOpenConectWebapp}
         onClose={handleOnCloseConectionWebapp}
@@ -668,7 +725,7 @@ const ManageCourse = ({
               <Select
                 placeholder={`ติวเตอร์`}
                 defaultSelectedKeys={
-                  isAdd ? undefined : [`${selectedCourse?.tutorLink}`]
+                  isAdd ? undefined : [`${selectedCourse?.Tutor?.id}`]
                 }
                 classNames={{
                   value: `text-[1em]`,
@@ -678,12 +735,7 @@ const ManageCourse = ({
                 onChange={(e) => {
                   handleOnChangeCourseTutor(e.target.value);
                 }}
-                // classNames={{
-                //   value: [
-                //     "font-bold",
-                //   ]
-                // }}
-                // renderValue={(items) => (<div>ติวเตอร์</div>)}
+                disabledKeys={["loading"]}
               >
                 {tutorList ? (
                   tutorList.map((tutor) => {
@@ -711,7 +763,7 @@ const ManageCourse = ({
                 defaultValue={selectedCourse?.clueLink ?? ""}
                 className="font-IBM-Thai-Looped mt-2"
                 classNames={{
-                  input: `text-[1em]`,
+                  input: `text-[1em] ${clueLink === "" || !clueLink ? 'no-underline' : 'underline'}`,
                 }}
                 placeholder="Link เฉลย"
                 onChange={(e) => handleOnChangeCourseLink(e.target.value)}
@@ -786,6 +838,7 @@ const ManageCourse = ({
                   onClick={() => handleAddCourseConfirm()}
                   className="bg-default-foreground text-primary-foreground font-IBM-Thai font-medium"
                   fullWidth
+                  isLoading={IsLoadingAdd}
                 >
                   บันทึก
                 </Button>
@@ -830,10 +883,18 @@ const ManageCourse = ({
           }}
           mode={mode}
         />
-        <div
+        <LessonAdminMode
+          books={books}
+          sheets={sheets}
+          preExam={preExam}
+          documentNumber={documentNumber}
+          mode={mode}
+          lessons={selectedCourse?.CourseLesson}
+        />
+        {/* <div
           className={`${
             mode === "tutor" ? `hidden` : ``
-          } bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto`}
+          } bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto hidden`}
         >
           <div className={`text-2xl font-bold font-IBM-Thai`}>สารบัญ</div>
           <div className={`mt-2 bg-content1 p-2 rounded-lg shadow space-y-2`}>
@@ -1052,7 +1113,7 @@ const ManageCourse = ({
               }
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </CustomDrawer>
   );

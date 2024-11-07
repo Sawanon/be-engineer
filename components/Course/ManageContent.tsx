@@ -7,6 +7,7 @@ import {
    AutocompleteItem,
    Button,
    Checkbox,
+   Divider,
    Modal,
    ModalContent,
 } from "@nextui-org/react";
@@ -50,6 +51,7 @@ const ManageContent = ({
         queryFn: () => listCourseAction(),
     });
    // const [refetchCourse] = useCourse();
+   const [isLoading, setIsLoading] = useState(false)
    const [videoList, setVideoList] = useState<VideoWebapp[]>([]);
    const [searchPlayListText, setSearchPlayListText] = useState("");
    const [selectedPlaylistId, setSelectedPlaylistId] = useState<Key | null>();
@@ -116,11 +118,12 @@ const ManageContent = ({
    };
 
    const addVideoToLesson = (video: VideoWebapp) => {
-      console.log("video", video);
       setVideoInLesson((prev) => {
          const cloneVideo = { ...prev };
+         const objKeys = Object.keys(cloneVideo)
          if (cloneVideo[`${video.id}`]) {
             cloneVideo[`${video.id}`].action = "inDB";
+            cloneVideo[`${video.id}`].position = objKeys.length + 1
             return cloneVideo;
          }
          const contentName =
@@ -135,7 +138,7 @@ const ManageContent = ({
                hour: video.hour_length,
                minute: video.minute_length,
                lessonId: lesson.id,
-               position: video.position,
+               position: objKeys.length + 1,
                videoLink: video.link,
                webappVideoId: video.id,
                action: "create",
@@ -147,36 +150,22 @@ const ManageContent = ({
    };
 
    const removeVideoToLesson = (video: VideoPlaylist | VideoWebapp) => {
-      console.log('"webappVideoId" in video', "webappVideoId" in video);
-      console.log(video);
-
       const videoId = "webappVideoId" in video ? video.webappVideoId : video.id;
-      console.log(videoId);
 
       setVideoInLesson((prevVideo) => {
          const cloneVideo = { ...prevVideo };
-         console.warn(cloneVideo[`${videoId}`]);
-         console.log(!cloneVideo[`${videoId}`]);
          if (!cloneVideo[`${videoId}`]) return prevVideo;
-         console.log(cloneVideo[`${videoId}`]);
          if (
             cloneVideo[`${videoId}`].action === "inDB" ||
             cloneVideo[`${videoId}`].action === "removeInDB"
          ) {
-            console.log("in if");
             cloneVideo[`${videoId}`] = {
                ...cloneVideo[`${videoId}`],
                action: "removeInDB",
             };
             return cloneVideo;
          }
-         // real remove
          delete cloneVideo[`${videoId}`];
-         // fake remove
-         // cloneVideo[`${video.id}`] = {
-         //   ...video,
-         //   action: "remove"
-         // }
          return cloneVideo;
       });
    };
@@ -188,29 +177,35 @@ const ManageContent = ({
    };
 
    const submitSaveVideoInLesson = async () => {
-      console.log(videoInLesson);
-
-      // remove from DB
-      const idListRemoveFromDB = Object.keys(videoInLesson)
-         .map((key) => videoInLesson[key])
-         .filter((video) => video.action === "removeInDB")
-         .map((video) => video.id!);
-      console.log("removeFromDB", idListRemoveFromDB);
-      const responseDelete = await deleteCourseVideoMany(idListRemoveFromDB);
-      console.log("responseDelete", responseDelete);
-
-      // add to DB
-      const addToDB = Object.keys(videoInLesson)
-         .map((key) => videoInLesson[key])
-         .filter((video) => video.action === "create");
-      console.log("addToDB", addToDB);
-      if (addToDB.length > 0) {
-         const responseAdd = await addCourseVideoMany(addToDB);
-         console.log(responseAdd, "responseAdd");
+      try {
+         console.log(videoInLesson);
+         setIsLoading(true)
+         // remove from DB
+         const idListRemoveFromDB = Object.keys(videoInLesson)
+            .map((key) => videoInLesson[key])
+            .filter((video) => video.action === "removeInDB")
+            .map((video) => video.id!);
+         console.log("removeFromDB", idListRemoveFromDB);
+         const responseDelete = await deleteCourseVideoMany(idListRemoveFromDB);
+         console.log("responseDelete", responseDelete);
+   
+         // add to DB
+         const addToDB = Object.keys(videoInLesson)
+            .map((key) => videoInLesson[key])
+            .filter((video) => video.action === "create");
+         console.log("addToDB", addToDB);
+         if (addToDB.length > 0) {
+            const responseAdd = await addCourseVideoMany(addToDB);
+            console.log(responseAdd, "responseAdd");
+         }
+         // onSuccess()
+         await refetchCourse();
+         onConfirm();
+      } catch (error) {
+         console.error(error)
+      } finally {
+         setIsLoading(false)
       }
-      // onSuccess()
-      await refetchCourse();
-      onConfirm();
    };
 
    return (
@@ -231,7 +226,7 @@ const ManageContent = ({
                   <div className={`flex`}>
                      <div className="flex-1"></div>
                      <div className="flex-1 text-3xl font-semibold font-IBM-Thai text-center">
-                        แก้ไขเนื้อหา
+                        เนื้อหา
                      </div>
                      <div
                         onClick={handleOnCancel}
@@ -240,8 +235,9 @@ const ManageContent = ({
                         <X size={32} />
                      </div>
                   </div>
-                  <div className={`mt-3 grid grid-cols-2 flex-1`}>
-                     <div className={`pr-3 flex flex-col h-full`}>
+                  {/* <div className={`mt-3 grid grid-cols-2 flex-1 overflow-auto`}> */}
+                  <div className={`mt-3 gap-3 flex md:flex-row flex-col flex-1 overflow-auto`}>
+                     <div className={`flex-1 flex flex-col`}>
                         <Autocomplete
                            // className="max-w-xs"
                            placeholder={`Playlist`}
@@ -289,7 +285,7 @@ const ManageContent = ({
                   </AutocompleteItem>
                 )} */}
                         </Autocomplete>
-                        <div className={`mt-2 h-full relative overflow-auto`}>
+                        <div className={`mt-2 flex-1 relative overflow-auto`}>
                            <div className={`absolute inset-0`}>
                               {videoList.map((video) => {
                                  return (
@@ -347,49 +343,64 @@ const ManageContent = ({
                            </div>
                         </div>
                      </div>
-                     <div className={`pl-3 space-y-1`}>
-                        {Object.keys(videoInLesson).map((key, index) => {
-                           const action = videoInLesson[key].action;
-                           const video = videoInLesson[key];
-                           return (
-                              <div
-                                 key={`videoLesson${index}`}
-                                 className={`font-IBM-Thai-Looped ${
-                                    action === "removeInDB" ? `hidden` : `flex`
-                                 } items-center p-2 border-2 border-default-foreground rounded-lg`}
-                              >
-                                 <div className={`flex-1`}>
-                                    <div
-                                       className={`text-foreground-400 text-xs`}
-                                    >
-                                       {video.playlistName}
-                                    </div>
-                                    <div className={`flex items-center gap-1`}>
-                                       <Video size={16} />
-                                       <div>{video.name}</div>
-                                    </div>
-                                 </div>
-                                 <div className={`text-sm text-foreground-400`}>
-                                    {video.hour! * 60 + video.minute!} นาที
-                                 </div>
+                     <Divider className={`hidden md:block`} orientation="vertical" />
+                     <Divider className={`block md:hidden`} />
+                     <div className={`flex-1 overflow-auto`}>
+                        <div className={`overflow-auto flex flex-col gap-1`}>
+                           {Object.keys(videoInLesson).sort((a, b) => {
+                              const prevVideo = videoInLesson[a];
+                              const nextVideo = videoInLesson[b];
+                              if(prevVideo.position! < nextVideo.position!){
+                                 return -1
+                              }else if(prevVideo.position! > nextVideo.position!){
+                                 return 1
+                              }
+                              return 0
+                           }).map((key, index) => {
+                              const action = videoInLesson[key].action;
+                              const video = videoInLesson[key];
+                              return (
                                  <div
-                                    className={`bg-white w-8 h-8 flex items-center justify-center cursor-pointer`}
-                                    onClick={() => {
-                                       removeVideoToLesson(videoInLesson[key]);
-                                       // handleDeleteVideo(videoInLesson, index);
-                                    }}
+                                    key={`videoLesson${index}`}
+                                    className={`font-IBM-Thai-Looped ${
+                                       action === "removeInDB" ? `hidden` : `flex`
+                                    } items-center p-2 border-2 border-default-foreground rounded-lg`}
                                  >
-                                    <X />
+                                    <div className={`flex-1`}>
+                                       <div
+                                          className={`text-foreground-400 text-xs`}
+                                       >
+                                          {video.playlistName}
+                                       </div>
+                                       <div className={`flex items-center gap-1`}>
+                                          <Video size={16} />
+                                          <div>{video.name}</div>
+                                       </div>
+                                    </div>
+                                    <div className={`text-sm text-foreground-400`}>
+                                       {video.hour! * 60 + video.minute!} นาที
+                                    </div>
+                                    <div
+                                       className={`bg-white w-8 h-8 flex items-center justify-center cursor-pointer`}
+                                       onClick={() => {
+                                          removeVideoToLesson(videoInLesson[key]);
+                                          // handleDeleteVideo(videoInLesson, index);
+                                       }}
+                                    >
+                                       <X />
+                                    </div>
                                  </div>
-                              </div>
-                           );
-                        })}
+                              );
+                           })}
+                        </div>
                      </div>
                   </div>
+                  <Divider className={`md:hidden mt-3`} />
                   <div className={`flex justify-end mt-3`}>
                      <Button
                         onClick={submitSaveVideoInLesson}
                         className={`bg-default-foreground text-base font-medium font-IBM-Thai text-primary-foreground`}
+                        isLoading={isLoading}
                      >
                         บันทึก
                      </Button>
