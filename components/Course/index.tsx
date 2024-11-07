@@ -270,12 +270,12 @@ const CourseComponent = ({
     // <CourseContext.Provider value={[refreshCourse]}>
       <div className="flex flex-col pt-6 px-app bg-background relative h-screenDevice bg-default-50">
         {/* Drawer */}
-        <DeleteCourseDialog
+        {/* <DeleteCourseDialog
           isOpen={isDeleteCourse}
           title={`แน่ใจหรือไม่ ?`}
           error={errorDeleteCourse}
-          onConfirm={() => {
-            confirmDeleteCourse()
+          onConfirm={async () => {
+            await confirmDeleteCourse()
           }}
           onCancel={handleCloseDeleteCourseDialog}
           detail={
@@ -288,7 +288,7 @@ const CourseComponent = ({
               </div>
             </>
           }
-        />
+        /> */}
         <ManageCourse
           isOpenDrawer={isOpenDrawer}
           selectedCourse={selectedCourse}
@@ -382,13 +382,13 @@ const CourseComponent = ({
             </Select>
           </div>
           <Button
-            className="mt-2 md:mt-0 w-full md:w-auto font-IBM-Thai text-base font-medium bg-default-foreground text-primary-foreground"
-            endContent={<Plus strokeWidth={4} />}
+            className="flex mt-2 md:mt-0 w-full md:w-auto font-IBM-Thai text-base font-medium bg-default-foreground text-primary-foreground"
+            endContent={<Plus className={`min-w-5 min-h-5`} size={20} />}
             onClick={() => {
               setIsOpenDrawer(true);
             }}
           >
-            <div className={`mt-[2px]`}>เพิ่ม</div>
+            <div className={`mt-1`}>เพิ่ม</div>
           </Button>
         </div>
         <div className="mt-4 flex-1">

@@ -76,6 +76,7 @@ const EditVideoDetail = ({
       isOpen={isOpen}
       closeButton={<></>}
       backdrop="blur"
+      placement='top-center'
       classNames={{
         backdrop: `bg-backdrop`,
       }}

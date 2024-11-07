@@ -25,6 +25,33 @@ export const addLessonToDB = async (courseId: number, lesson: any) => {
     return response
   } catch (error) {
     console.error(error);
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const updateBookInLesson = async (oldBookId: number, newBookId: number, lessonId: number) => {
+  try {
+    const response = await prisma.lessonOnDocumentBook.update({
+      where: {
+        lessonId_bookId: {
+          bookId: oldBookId,
+          lessonId: lessonId,
+        }
+      },
+      data: {
+        bookId: newBookId,
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
   } finally {
     prisma.$disconnect()
   }
@@ -94,6 +121,43 @@ export const changePositionLesson = async (lessonId: number, newPosition: number
     return response
   } catch (error) {
     console.error(error)
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const updateLesson = async (lessonId: number, lesson: Prisma.CourseLessonUpdateInput) => {
+  try {
+    const response = await prisma.courseLesson.update({
+      where: {
+        id: lessonId,
+      },
+      data: lesson,
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const deleteLesson = async (lessonId: number) => {
+  try {
+    const response = await prisma.courseLesson.delete({
+      where: {
+        id: lessonId,
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
   } finally {
     prisma.$disconnect()
   }
