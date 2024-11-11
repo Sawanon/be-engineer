@@ -115,7 +115,6 @@ model DocumentSheet {
   updatedAt             DateTime?               @default(now())
   LessonOnDocumentSheet LessonOnDocumentSheet[]
   RecordSheet           RecordSheet[]
-  SheetTransactions     SheetTransactions[]
 
   @@index([name])
 }
@@ -184,7 +183,6 @@ model Delivery {
   Delivery_WebappCourse Delivery_WebappCourse[]
   RecordBook            RecordBook[]
   RecordSheet           RecordSheet[]
-  SheetTransactions     SheetTransactions[]
 
   @@index([courseId], map: "courseId_idx")
   @@index([serviceId], map: "trackingServiceId_idx")
@@ -260,7 +258,7 @@ model RecordBook {
   @@index([book_deliverId], map: "book_deliverId_idx")
 }
 
-model SheetTransactions {
+model RecordSheet {
   id              Int            @id @default(autoincrement())
   detail          String?        @db.VarChar(45)
   sheetId         Int?
