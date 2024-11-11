@@ -128,13 +128,14 @@ const FormDeliver = ({
                type="text"
                placeholder="ชื่อผู้เรียน คอร์สเรียน หรือ ลำดับ"
                startContent={
-                  <CiSearch className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
+                  <CiSearch strokeWidth={1} className=" text-2xl text-default-400 pointer-events-none flex-shrink-0" />
                }
             />
          </div>
          <div className="flex gap-2 order-2 col-span-12 md:order-4 md:col-span-5 ">
             <I18nProvider locale="en-GB">
                <DateRangePicker
+               color={`primary`}
                   onChange={onChangeDate}
                   classNames={{
                      calendarContent: cn("w-[280px]  "),
@@ -236,9 +237,14 @@ const FormDeliver = ({
                <LuCopyCheck className="text-black h-6 w-6 block md:hidden" />{" "}
             </Button>
             <Button
-               className={cn("bg-default-100 hidden md:flex", {
-                  "hidden md:hidden": selectState.open,
-               })}
+               color="default"
+               variant="flat"
+               className={cn(
+                  "flex-shrink-0 hidden md:flex text-base font-medium",
+                  {
+                     "hidden md:hidden": selectState.open,
+                  }
+               )}
                onClick={onOpenSelect}
             >
                <p className="font-IBM-Thai font-medium">เลือก</p>
@@ -249,9 +255,14 @@ const FormDeliver = ({
                })}
             >
                <Button
-                  className={cn("bg-default-100 hidden font-IBM-Thai", {
-                     "md:flex  ": selectState.open,
-                  })}
+                  className={cn(
+                     "flex-shrink-0 text-base  hidden font-medium font-sans",
+                     {
+                        "md:flex  ": selectState.open,
+                     }
+                  )}
+                  color="default"
+                  variant="flat"
                   onClick={onCloseSelect}
                >
                   <p className="md:block hidden">ยกเลิก</p>
@@ -268,18 +279,23 @@ const FormDeliver = ({
                </Button>
                <Button
                   className={cn(
-                     "font-medium flex-1 bg-default-100 font-IBM-Thai",
-                     {}
+                     "flex-shrink-0 text-base  hidden font-medium font-sans",
+                     {
+                        "flex  ": selectState.open,
+                     }
                   )}
+                  color="default"
+                  variant="flat"
                   onClick={onAddTrackings}
                >
                   <LuTruck size={24} />
                   <p className="">ใส่เลข Track</p>
                </Button>
                <Button
-                  // color={"primary"}
+                  color={"primary"}
+                  variant="solid"
                   className={cn(
-                     "font-medium flex-1 bg-default-foreground text-primary-foreground font-IBM-Thai",
+                     "flex-shrink-0 text-base font-medium flex-1 font-sans",
                      {}
                   )}
                   onClick={() => {
@@ -328,13 +344,18 @@ const StatusSelect = ({
          placeholder="สถานะ"
          // className="w-[18dvh]"
          classNames={{
-            value: "text-black font-IBM-Thai",
+            // value: "text-black font-IBM-Thai",
             trigger: cn("flex items-center justify-center    "),
             base: cn("flex-1  rounded-[12px]"),
          }}
          onChange={(e) => {
             onChange("status", e.target.value);
          }}
+         color="default"
+         variant="flat"
+         className={cn(
+            "flex-shrink-0 hidden md:flex text-base font-sans font-medium"
+         )}
          selectedKeys={value?.split(",")}
          renderValue={(items) => <div>สถานะ</div>}
          selectionMode={"multiple"}
@@ -390,12 +411,17 @@ const StatusInstitution = ({
             onChange("university", e.target.value);
          }}
          placeholder={`สถาบัน`}
-         className="w-[18dvh] font-IBM-Thai"
          classNames={{
-            value: "text-black",
+            // value: "text-black",
             trigger: cn("flex items-center justify-center  "),
             base: cn("flex-1 rounded-[12px]"),
          }}
+         color="default"
+         variant="flat"
+         className={cn(
+            "w-[18dvh] flex-shrink-0 hidden md:flex text-base font-sans font-medium"
+         )}
+
          // selectionMode={"multiple"}
       >
          <SelectItem

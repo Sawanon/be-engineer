@@ -20,9 +20,23 @@ export const metadata: Metadata = {
    description: "Course",
 };
 
+import {
+   IBM_Plex_Sans_Thai,
+   IBM_Plex_Sans_Thai_Looped,
+ } from "next/font/google";
+import { cn } from "@/lib/util";
 
-
-
+ const ibmPlexSansThai = IBM_Plex_Sans_Thai({
+   subsets: ["thai", "latin", "latin-ext"],
+   variable: "--ibm-sans",
+   weight: ["100", "200", "300", "400", "500", "600", "700"],
+ });
+ 
+ const ibmPlexSansThaiLoop = IBM_Plex_Sans_Thai_Looped({
+   subsets: ["thai", "latin", "latin-ext"],
+   variable: "--ibm-serif",
+   weight: ["100", "200", "300", "400", "500", "600", "700"],
+ });
 
 export default function RootLayout({
    children,
@@ -31,7 +45,7 @@ export default function RootLayout({
 }>) {
    return (
       <html lang="en">
-         <body className="flex flex-col">
+         <body className={cn(`flex flex-col ${ibmPlexSansThai} ${ibmPlexSansThaiLoop} antialiased `)}>
             <Providers>
                <div className="md:flex">
                   <NavbarApp />

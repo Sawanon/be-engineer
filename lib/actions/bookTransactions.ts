@@ -23,6 +23,7 @@ export const addBookTransactionAction = async (bookTransaction: Prisma.BookTrans
   }
 }
 
+
 export const listBookTransactionByBookId = async (bookId: number) => {
   try {
     const response = await prisma.bookTransactions.findMany({

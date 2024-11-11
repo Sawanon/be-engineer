@@ -10,13 +10,16 @@ const config: Config = {
       "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
    ],
    theme: {
+      fontFamily :{ 
+         sans: ["var(--ibm-sans)", "Helvetica", "Arial"],
+         serif: ["var(--ibm-serif)", "Times New Roman"],
+      },
       extend: {
          colors: {
-            primary: {
-               DEFAULT: "var(--primary)",
-               foreground: "#FFFFFF",
-               warning  : "#F5A524"
-            },
+            // primary: {
+            //    DEFAULT: "#000000",
+            //    foreground: "#FFFFFF",
+            // },
             secondary: {
                DEFAULT: "var(--secondary)",
                foreground: "#00000",
@@ -28,6 +31,9 @@ const config: Config = {
          fontFamily: {
             'IBM-Thai': 'IBM Plex Sans Thai',
             'IBM-Thai-Looped': 'IBM Plex Sans Thai Looped',
+  
+            sans: "IBM Plex Sans Thai",
+            serif:"'IBM Plex Sans Thai Looped'",
          },
          height: {
             screenDevice: "100dvh",
@@ -48,6 +54,7 @@ const config: Config = {
    important: true,
    darkMode: "class",
    plugins: [nextui({
+      addCommonColors: true,
       //TODO: config color primary calendar this here
       // themes: {
       //    light: {
@@ -56,6 +63,36 @@ const config: Config = {
       //       }
       //    }
       // }
+      themes: {
+         light: {
+           // ...
+           colors: {
+               // background: "#000000",
+            // foreground: "#ECEDEE",
+            primary: {
+              //... 50 to 900
+              foreground: "#FFFFFF",
+              DEFAULT: "#000000",
+            //   50:   "#000000",
+            //   100:  "#000000",
+            //   200:  "#000000",
+            //   300:  "#000000",
+            //   400:  "#000000",
+            //   500:  "#000000",
+            //   600:  "#000000",
+            //   700:  "#000000",
+            //   800:  "#000000",
+            //   900:  "#000000",
+            },
+
+           },
+         },
+         dark: {
+           // ...
+           colors: {},
+         },
+         // ... custom themes
+       },
    })],
 };
 export default config;

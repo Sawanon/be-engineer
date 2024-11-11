@@ -164,6 +164,7 @@ const AddMultiTracking = ({
                               เพิ่มเลข Tracking
                            </p>
                            <Button
+                           disabled={addTrack.isPending}
                               variant="flat"
                               isIconOnly
                               className="bg-transparent text-black absolute right-1 top-1"
@@ -318,7 +319,9 @@ const AddMultiTracking = ({
                            isLoading={addTrack.isPending}
                            type="submit"
                            fullWidth
-                           className="col-span-3 bg-default-foreground  text-primary-foreground"
+                           color="primary"
+                           variant="solid"
+                           className="flex-shrink-0 font-sans  text-base font-medium col-span-3 bg-default-foreground  text-primary-foreground"
                         >
                            บันทึก
                         </Button>

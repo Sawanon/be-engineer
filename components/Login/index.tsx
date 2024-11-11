@@ -28,6 +28,7 @@ const LoginForm = () => {
 
          callbackUrl: "/",
       });
+      console.log(response)
       if (response?.ok) {
          router.replace("/");
       }
