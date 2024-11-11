@@ -1,4 +1,6 @@
-import { listCourseAction } from '@/lib/actions/course.actions'
+import { restoreBook } from '@/lib/actions/book.actions'
+import { countBookInCourse, getCourseById, listCourseAction } from '@/lib/actions/course.actions'
+import { getLessonById, removeBookLessonAction } from '@/lib/actions/lesson.actions'
 import Alert from '@/ui/alert'
 import { Button, Modal, ModalContent } from '@nextui-org/react'
 import { CourseLesson } from '@prisma/client'
@@ -10,10 +12,14 @@ const DisconnectDocument = ({
   isOpen,
   onClose,
   document,
+  lessonId,
+  onSuccess,
 }:{
   isOpen: boolean,
   onClose: () => void,
   document: any,
+  lessonId: number,
+  onSuccess: () => void,
 }) => {
 
   const {refetch: refetchCourse} = useQuery({
@@ -33,6 +39,58 @@ const DisconnectDocument = ({
 
   const submitDeleteDocument = async () => {
     console.log("document", document);
+    try {
+      setIsLoading(true)
+      if(document.type === "book"){
+        const lesson = await getLessonById(lessonId)
+        const bookId =  document.DocumentBook.id
+        if(typeof lesson === "string") throw lesson
+        if(!lesson) throw `lesson is ${lesson}`
+        const course = await getCourseById(lesson.courseId)
+        if(typeof course === "string") throw course
+        if(!course) throw `course is ${course}`
+        if(course.webappCourseId !== null){
+          console.log(lesson.courseId, bookId);
+          const response = await countBookInCourse(lesson.courseId, bookId)
+          if(typeof response === "string") throw response
+          if(!response) throw `response is ${response}`
+          const leftBook = Number(response.leftBook)
+          console.log("🚀 ~ submitDeleteDocument ~ leftBook:", leftBook)
+          if(leftBook > 1){
+            console.log("remove now!");
+            const response = await removeBookLessonAction(bookId, lessonId)
+            console.log("🚀 ~ submitDeleteDocument ~ response:", response)
+          }else{
+            console.log("restore book and remove!");
+            const response = await restoreBook(bookId, course.webappCourseId)
+            console.log("🚀 ~ submitDeleteDocument ~ response:", response)
+            const responseRemoveBook = await removeBookLessonAction(bookId, lessonId)
+            console.log("🚀 ~ submitDeleteDocument ~ responseRemoveBook:", responseRemoveBook)
+          }
+          onSuccess()
+          handleOnClose()
+          return
+        }
+        console.log("remove now ! not connect");
+        const response = await removeBookLessonAction(bookId, lessonId)
+        console.log("🚀 ~ submitDeleteDocument ~ response:", response)
+        onSuccess()
+        handleOnClose()
+        return
+      }
+      setError({
+        isError: false,
+        message: ``,
+      })
+    } catch (error) {
+      console.error(error)
+      setError({
+        isError: true,
+        message: `เกิดข้อผิดพลาดบางอย่าง ดูเพิ่มเติมใน Console`,
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const getName = (document: any) => {

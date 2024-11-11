@@ -29,7 +29,7 @@ export type Course = {
   webappCourseId?: number | null
   webappTableOfContentId?: number | null
   playlist?: string | null
-  price: number,
+  price: number | null,
   Tutor: Tutor | null,
   CourseLesson: CourseLesson[]
 };
@@ -43,9 +43,9 @@ export type CourseCreate =  {
   name: string;
   status: "noContent" | "hasContent" | "uploadWebapp" | "enterForm";
   tutor: number;
-  detail: string
-  clueLink: string
-  price: number
-  playlist: string
+  detail?: string
+  clueLink?: string
+  price?: number
+  playlist?: string
   tutorLink?: string
 }

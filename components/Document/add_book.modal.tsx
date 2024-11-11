@@ -32,7 +32,7 @@ import { useUploadThing } from "@/lib/uploading/uploadthing";
 import { useDropzone } from "@uploadthing/react";
 import { generateClientDropzoneAccept, generatePermittedFileTypes } from 'uploadthing/client'
 import { useCallback, useState } from "react";
-import { addBookAction, listBooksAction } from "@/lib/actions/book.actions";
+import { addBookAction, editBookAction, listBooksAction } from "@/lib/actions/book.actions";
 import { useQuery } from "@tanstack/react-query";
 
 const AddBook = ({
@@ -66,6 +66,10 @@ const AddBook = ({
       setYear(undefined)
       setVolume(undefined)
       onClose()
+      setErrorAddBook({
+         isError: false,
+         message: '',
+      })
    }
 
    const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -127,13 +131,9 @@ const AddBook = ({
             })
          }
          setIsLoading(true)
-         const responseUploadFile = await startUpload(files)
-         if(!responseUploadFile){
-            throw "Can't upload file to Uploadthing"
-         }
          const response = await addBookAction({
             name: name!,
-            image: responseUploadFile![0].url,
+            // image: responseUploadFile![0].url,
             // inStock: volume,
             term: term,
             year: year,
@@ -141,8 +141,29 @@ const AddBook = ({
          })
          console.log("🚀 ~ submitAddBook ~ response:", response)
          if(typeof response === "string"){
+            console.log(response.includes("name_UNIQUE"));
+            
+            if(response.includes("name_UNIQUE")){
+               setErrorAddBook({
+                  isError: true,
+                  message: `ชื่อหนังสือ ${name} มีอยู่แล้ว กรุณาใช้ชื่ออื่น`,
+               })
+               console.error(response)
+               return
+            }
             throw response
          }
+         if(!response){
+            throw `response is ${response}`
+         }
+         const responseUploadFile = await startUpload(files)
+         if(!responseUploadFile){
+            throw "Can't upload file to Uploadthing"
+         }
+         const updateImageToBook = await editBookAction(response.id, {
+            image: responseUploadFile![0].url,
+         })
+         console.log("🚀 ~ submitAddBook ~ updateImageToBook:", updateImageToBook)
          setErrorAddBook({
             isError: false,
             message: ``,
@@ -181,8 +202,8 @@ const AddBook = ({
             <ModalBody className={cn("p-0 flex-1 ")}>
                <div className="flex flex-col pb-4 ">
                   <div className=" flex flex-col rounded-xl    bg-white flex-1 px-4 space-y-2">
-                     <div className="flex gap-1 justify-center my-3  ">
-                        <p className="text-3xl font-semibold">หนังสือ</p>
+                     <div className="flex gap-1 justify-center my-3">
+                        <p className="text-3xl font-semibold font-sans text-default-foreground">หนังสือ</p>
                         <Button
                            variant="flat"
                            isIconOnly
@@ -197,11 +218,11 @@ const AddBook = ({
                      }
                      <CustomInput classNames={{inputWrapper: 'h-11'}} onChange={(e) => setName(e.target.value)} placeholder="ชื่อวิชา" />
                      <div className="flex gap-2">
-                        <div className="cursor-pointer rounded-lg w-28 h-[148px] flex justify-center items-center bg-[#F4F4F5]" {...getRootProps()}>
+                        <div className="cursor-pointer rounded-lg w-28 h-[148px] flex justify-center items-center transition-background bg-default-100 hover:bg-default-300" {...getRootProps()}>
                            <input {...getInputProps()} multiple={false} />
                            {imagePreview
                            ?
-                           <Image className={`object-cover w-28 h-[148px]`} src={`${imagePreview}`} alt="book image" />
+                           <Image className={`object-cover w-28 h-[148px]  data-[loaded=true]:hover:opacity-80`} src={`${imagePreview}`} alt="book image" />
                            :
                            <LuImage className="text-[#A1A1AA] h-24 w-24" />
                            }

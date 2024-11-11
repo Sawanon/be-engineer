@@ -13,8 +13,8 @@ model Course {
   detail               String?
   defaultHours         Int
   tutorLink            String?
-  clueLink             String
-  price                Int
+  clueLink             String?
+  price                Int?
   status               String
   odmCourseId          Int?
   createdAt            DateTime               @default(now())
@@ -23,6 +23,7 @@ model Course {
   webappCourseId       Int?
   playlist             String?
   tutorId              Int?
+  imageUrl             String?
   Tutor                Tutor?                 @relation(fields: [tutorId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tutorId")
   CourseLesson         CourseLesson[]
   CourseOnCourseLesson CourseOnCourseLesson[]
@@ -82,7 +83,7 @@ model DocumentBook {
   id                   Int                    @id @default(autoincrement())
   image                String?
   inStock              Int                    @default(0)
-  name                 String
+  name                 String                 @unique(map: "name_UNIQUE")
   term                 String?                @db.VarChar(45)
   year                 String?                @db.VarChar(10)
   createdAt            DateTime?              @default(now())
@@ -90,6 +91,7 @@ model DocumentBook {
   volume               String?
   BookTransactions     BookTransactions[]
   LessonOnDocumentBook LessonOnDocumentBook[]
+  RecordBook           RecordBook[]
 
   @@index([name])
 }
@@ -112,7 +114,7 @@ model DocumentSheet {
   createdAt             DateTime?               @default(now())
   updatedAt             DateTime?               @default(now())
   LessonOnDocumentSheet LessonOnDocumentSheet[]
-  SheetTransactions     SheetTransactions[]
+  RecordSheet           RecordSheet[]
 
   @@index([name])
 }
@@ -179,7 +181,8 @@ model Delivery {
   DeliverShipService    DeliverShipService?     @relation(fields: [serviceId], references: [id], onDelete: Restrict, map: "trackingServiceId")
   Delivery_Course       Delivery_Course[]
   Delivery_WebappCourse Delivery_WebappCourse[]
-  SheetTransactions     SheetTransactions[]
+  RecordBook            RecordBook[]
+  RecordSheet           RecordSheet[]
 
   @@index([courseId], map: "courseId_idx")
   @@index([serviceId], map: "trackingServiceId_idx")
@@ -242,7 +245,20 @@ model BookTransactions {
   @@index([deliverId], map: "deliverId_idx")
 }
 
-model SheetTransactions {
+model RecordBook {
+  id              Int           @id @default(autoincrement())
+  detail          String?       @db.VarChar(45)
+  book_documentId Int?
+  book_deliverId  Int?
+  createdAt       String?       @db.VarChar(45)
+  Delivery        Delivery?     @relation(fields: [book_deliverId], references: [id], map: "book_deliverId")
+  DocumentBook    DocumentBook? @relation(fields: [book_documentId], references: [id], map: "book_documentId")
+
+  @@index([book_documentId], map: "bookId_idx")
+  @@index([book_deliverId], map: "book_deliverId_idx")
+}
+
+model RecordSheet {
   id              Int            @id @default(autoincrement())
   detail          String?        @db.VarChar(45)
   sheetId         Int?

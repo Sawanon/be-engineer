@@ -144,13 +144,21 @@ const EditInventory = ({
                               setDirection(e === "add" ? "+" : "-")
                            }}
                            aria-label="tabTransaction"
+                           className={`bg-white`}
+                           classNames={{
+                              // tabList: [`group-data-[selected=true]:bg-white`],
+                              // tab: [`group-data-[selected=true]:text-red-400`],
+                              cursor: [`group-data-[selected=true]:bg-white`],
+                              // tabContent: [`group-data-[selected=true]:bg-white`],
+                           }}
+                           color="secondary"
                         >
                            <Tab
                               key="add"
                               title={
                                  <div className="flex items-center space-x-2">
-                                    <LuPlus />
-                                    <span>เพิ่ม</span>
+                                    <LuPlus size={24} className={`group-data-[selected=true]:text-default-foreground`} />
+                                    <span className={`group-data-[selected=true]:text-secondary-default text-secondary-light font-sans font-medium text-lg`}>เพิ่ม</span>
                                  </div>
                               }
                            />
@@ -158,8 +166,8 @@ const EditInventory = ({
                               key="delete"
                               title={
                                  <div className="flex items-center space-x-2">
-                                    <LuMinus />
-                                    <span>ลด</span>
+                                    <LuMinus size={24} className={`group-data-[selected=true]:text-default-foreground text-secondary-light`} />
+                                    <span className={`group-data-[selected=true]:text-secondary-default text-secondary-light font-sans font-medium text-lg`}>ลด</span>
                                  </div>
                               }
                            />
@@ -186,6 +194,7 @@ const EditInventory = ({
                         /> */}
                         <DatePicker
                            label={`วันที่`}
+                           className={`font-serif`}
                            onChange={handleOnChangeDate}
                            defaultValue={parseDate(`${dayjs().format(`YYYY-MM-DD`)}`)}
                            aria-label="datepickerTransaction"

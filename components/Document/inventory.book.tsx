@@ -1,4 +1,4 @@
-import { listBookTransactionByBookId } from "@/lib/actions/bookTransactions";
+import { listBookTransactionByBookId, listBookTransactionByBookIdGroupByYearMonth } from "@/lib/actions/bookTransactions";
 import { tableClassnames } from "@/lib/res/const";
 import { cn } from "@/lib/util";
 import {
@@ -45,9 +45,14 @@ const BookInventory = ({
    book?: DocumentBook
 }) => {
 
+   // const {data: bookTransactionsList} =  useQuery({
+   //    queryKey: ["listBookTransactionByBookId", book?.id],
+   //    queryFn: () => listBookTransactionByBookId(book!.id),
+   //    enabled: book !== undefined
+   // })
    const {data: bookTransactionsList} =  useQuery({
-      queryKey: ["listBookTransactionByBookId", book?.id],
-      queryFn: () => listBookTransactionByBookId(book!.id),
+      queryKey: ["listBookTransactionByBookIdGroupByYearMonth", book?.id],
+      queryFn: () => listBookTransactionByBookIdGroupByYearMonth(book!.id),
       enabled: book !== undefined
    })
    
@@ -83,6 +88,25 @@ const BookInventory = ({
          totalQty += bookTransaction.qty
       })
       return `${totalQty}`
+   }
+
+   const renderDetail = (detail: string) => {
+      if(detail.includes(`deliver`)){
+         const arrDeliverDetail = detail.split(`:`)
+         const deliverText = `คำสั่งซื้อ`
+         const restoreFromChangeWebapp = {
+            value: `restore from change web app`,
+            text: `ดึงหนังสือคืนจากการเปลี่ยน Web-app course`,
+         }
+         if(arrDeliverDetail.length > 1){
+            if(arrDeliverDetail[1] === restoreFromChangeWebapp.value){
+               return restoreFromChangeWebapp.text
+            }
+            return `boom !`
+         }
+         return `${deliverText}`
+      }
+      return detail
    }
 
    return (
@@ -131,8 +155,8 @@ const BookInventory = ({
                                  </p>
                                  <p className="text-[#393E44]">
                                     <span className={`text-lg font-semibold font-IBM-Thai`}>
-                                       {/* {book?.inStock}{" "} */}
-                                       {renderQty()}{" "}
+                                       {book?.inStock}{" "}
+                                       {/* {renderQty()}{" "} */}
                                     </span>
                                     <span className={`text-xs font-IBM-Thai-Looped`}>ชุด</span>
                                  </p>
@@ -150,26 +174,30 @@ const BookInventory = ({
                         </div>
                      </Button>
                      <div className="flex flex-col justify-between  flex-1 py-2  ">
-                        <Table color={"primary"} classNames={{
-                           ...tableClassnames,
-                           th: [
-                              ...tableClassnames.th,
-                              "first:rounded-l-lg",
-                              "last:rounded-r-lg",
-                           ],
-                           table: 'rounded-none',
-                           wrapper: ["p-0", "shadow-none", "rounded-none"],
-                        }}>
+                        <Table
+                           isStriped
+                           color={"primary"}
+                           classNames={{
+                              ...tableClassnames,
+                              th: [
+                                 ...tableClassnames.th,
+                                 "first:rounded-l-lg",
+                                 "last:rounded-r-lg",
+                              ],
+                              table: 'rounded-none',
+                              wrapper: ["p-0", "shadow-none", "rounded-none"],
+                           }}
+                        >
                            <TableHeader>
-                              <TableColumn>วันที่</TableColumn>
-                              <TableColumn width={227} className="text-start">รายการ</TableColumn>
-                              <TableColumn className="text-end">จำนวน</TableColumn>
+                              <TableColumn className={`font-sans`}>วันที่</TableColumn>
+                              <TableColumn width={227} className="text-start font-sans">รายการ</TableColumn>
+                              <TableColumn className="text-end font-sans">จำนวน</TableColumn>
                            </TableHeader>
                            <TableBody>
                               {booTransactionItems
                               ?
                               booTransactionItems!.map((bookTransaction, index) => (
-                                 <TableRow key={`bookTransactionRow${index}`}>
+                                 <TableRow key={`bookTransactionRow${index}`} className={`font-serif`}>
                                     <TableCell>
                                        <div className="flex gap-2 items-center">
                                           <p>{renderStartEndDate(bookTransaction.startDate, bookTransaction.endDate)}</p>
@@ -177,7 +205,7 @@ const BookInventory = ({
                                     </TableCell>
                                     <TableCell width={227} className="">
                                        <div className="flex gap-2  items-center">
-                                          <p className="">{bookTransaction.detail}</p>
+                                          <p className="">{renderDetail(bookTransaction.detail)}</p>
                                        </div>
                                     </TableCell>
                                     <TableCell>

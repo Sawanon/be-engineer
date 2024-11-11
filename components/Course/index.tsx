@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, Key, useMemo, useState } from "react";
+import React, { createContext, Key, useEffect, useMemo, useState } from "react";
 import {
    Button,
    Image,
@@ -14,7 +14,7 @@ import {
    TableHeader,
    TableRow,
 } from "@nextui-org/react";
-import { ClipboardSignature, Plus, ScrollText, Search } from "lucide-react";
+import { ChevronDown, ClipboardSignature, Plus, ScrollText, Search } from "lucide-react";
 import { courseStatus, tableClassnames } from "../../lib/res/const";
 import { Course as CourseT } from "@/lib/model/course";
 import {
@@ -33,8 +33,7 @@ import DeleteCourseDialog from "@/components/Course/DeleteCourseDialog";
 import { CourseLesson, Course as CoursePrisma, DocumentBook, DocumentPreExam, DocumentSheet, LessonOnDocument, LessonOnDocumentBook, LessonOnDocumentSheet} from '@prisma/client'
 import { useParams, useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
-
-
+import _ from 'lodash'
 
 const Status = ({ course }: { course: CourseT }) => {
    let textColor = "";
@@ -79,6 +78,7 @@ const CourseComponent = ({
       isError: false,
       message: "ลบไม่สำเร็จ ดูเพิ่มเติมใน Console",
    });
+   const [preSearchCourse, setPreSearchCourse] = useState("")
    const [searchCourse, setSearchCourse] = useState("")
    const [filterStatusCourse, setFilterStatusCourse] = useState<Key[] | undefined>()
    const [searchCourseByTutorId, setSearchCourseByTutorId] = useState<any | undefined>()
@@ -265,6 +265,20 @@ const CourseComponent = ({
     setSelectedCourse(findCourse);
   };
 
+  const handleSearch = (value: string) => {
+    console.log("search !", value);
+
+    setSearchCourse(value)
+  }
+
+  const debouncedSearch = _.debounce(handleSearch, 3000);
+  useEffect(() => {
+    debouncedSearch(preSearchCourse)
+    return () => {
+      debouncedSearch.cancel()
+    }
+  }, [preSearchCourse])
+
   return (
     // <div className="flex flex-col pt-6 px-4 bg-background relative md:h-screenDevice bg-red-400 md:bg-green-400">
     // <CourseContext.Provider value={[refreshCourse]}>
@@ -316,22 +330,32 @@ const CourseComponent = ({
           <Input
             className="font-IBM-Thai-Looped"
             type="text"
+            classNames={{
+              input: "text-[1em]",
+            }}
             placeholder="ค้นหา...คอร์สเรียน"
             startContent={<Search className="text-foreground-400" />}
             fullWidth
-            onChange={e => setSearchCourse(e.target.value)}
+            onChange={e => setPreSearchCourse(e.target.value)}
           />
           <div className="flex gap-2 mt-2 md:mt-0">
             <Select
               selectionMode="multiple"
               placeholder={`สถานะ`}
               aria-label="สถานะ"
-              className="font-IBM-Thai md:w-[113px]"
+              // color="default"
+              // variant="flat"
+              // className="flex-shrink-0 hidden md:flex text-base font-medium"
+              className="font-sans md:w-max text-default-foreground"
               classNames={{
-                value: ["font-bold"],
+                value: ["text-default-foreground font-medium font-sans"],
                 popoverContent: [`w-max right-0 absolute`],
+                trigger: [`justify-center py-[7px] px-4 gap-3`],
+                innerWrapper: [`w-max`],
+                selectorIcon: [`relative end-0 w-6 h-6`]
               }}
-              renderValue={(items) => <div>สถานะ</div>}
+              selectorIcon={<ChevronDown size={24} />}
+              renderValue={(items) => <div className={`text-default-foreground font-sans`}>สถานะ</div>}
               onSelectionChange={(key) => {
                 setFilterStatusCourse(Array.from(key))
               }}
@@ -348,11 +372,19 @@ const CourseComponent = ({
               selectionMode="single"
               placeholder={`ติวเตอร์`}
               aria-label="ติวเตอร์"
-              className="font-IBM-Thai md:w-[113px]"
+              // color="default"
+              // variant="flat"
+              // className="flex-shrink-0 hidden md:flex text-base font-medium"
+              className="font-sans md:w-max"
               classNames={{
-                value: ["font-bold"],
+                value: ["text-default-foreground font-medium font-sans"],
+                trigger: [`justify-center py-[7px] px-4 gap-3`],
+                popoverContent: [`w-max right-0 absolute`],
+                innerWrapper: [`w-max`],
+                selectorIcon: [`relative end-0 w-6 h-6`],
               }}
               // renderValue={(items) => <div>ติวเตอร์</div>}
+              selectorIcon={<ChevronDown size={24} />}
               disabled={tutorList === undefined}
               onSelectionChange={(key) => {
                 console.log("onchange tutor", key);
@@ -410,9 +442,9 @@ const CourseComponent = ({
                     }}
                   >
                     <div className="flex gap-2 items-center">
-                      {/* {course.image && (
-                        <Image radius="sm" width={40} src={course.image} />
-                      )} */}
+                      {course.imageUrl && (
+                        <Image radius="sm" width={40} src={course.imageUrl} />
+                      )}
                       <div className="font-IBM-Thai-Looped">
                         {course.name}
                       </div>

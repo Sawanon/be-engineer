@@ -4,7 +4,7 @@ import { listSheetsAction } from '@/lib/actions/sheet.action'
 import Alert from '@/ui/alert'
 import { Autocomplete, AutocompleteItem, Button, Image, Modal, ModalContent } from '@nextui-org/react'
 import { useQuery } from '@tanstack/react-query'
-import { ClipboardSignature, ScrollText, X } from 'lucide-react'
+import { ChevronDown, ClipboardSignature, ScrollText, X } from 'lucide-react'
 import React, { Key, useMemo, useState } from 'react'
 import DisconnectDocument from './DisconnectDocument'
 import { updateBookInLesson } from '@/lib/actions/lesson.actions'
@@ -89,13 +89,16 @@ const EditDocument = ({
       }
       const [id, type] = selectedDocument.split(":")
       console.log(id, type);
-      
       setIsLoading(true)
       const oldDocumentId = getId(document)
       if(type === "sheet"){
         // const response = await addDocumentToLesson(parseInt(id), lessonId)
         // console.log("🚀 ~ submitAddDocumentToLesson ~ response:", response)
       }else if(type === "book"){
+        // const oldBookId = document.DocumentBook.id
+        // console.log("old book", oldBookId);
+        // console.log("new book", id);
+        // return
         const response = await updateBookInLesson(oldDocumentId, parseInt(id), lessonId)
         console.log("🚀 ~ submitAddDocumentToLesson ~ response:", response)
       }else if(type === "preExam"){
@@ -201,11 +204,18 @@ const EditDocument = ({
       placement='top-center'
     >
       <ModalContent className={`p-app`} >
-        <DisconnectDocument
-          isOpen={isOpenDisconnect}
-          document={document}
-          onClose={() => setIsOpenDisconnect(false)}
-        />
+        {lessonId &&
+          <DisconnectDocument
+            isOpen={isOpenDisconnect}
+            document={document}
+            onClose={() => setIsOpenDisconnect(false)}
+            lessonId={lessonId}
+            onSuccess={() => {
+              onConfirm()
+              handleOnClose()
+            }}
+          />
+        }
         <div className={`flex items-center`}>
           <div className={`flex-1`}></div>
           <div className={`flex-1 text-center text-3xl font-semibold font-IBM-Thai`}>เอกสาร</div>
@@ -224,6 +234,9 @@ const EditDocument = ({
             startContent={renderStartContentSelected(selectedDocument)}
             // defaultSelectedKey={`${document?.id}:${document?.type}`}
             defaultSelectedKey={renderKey(document)}
+            className={`font-serif`}
+            selectorIcon={<ChevronDown size={24} />}
+            disabledKeys={['loading']}
           >
             {
               documentList?
@@ -232,6 +245,7 @@ const EditDocument = ({
                 <AutocompleteItem
                   key={`${document.id}:${document.type}`}
                   startContent={renderStartContent(document)}
+                  className={`font-serif`}
                 >
                   {document.name}
                 </AutocompleteItem>
@@ -247,14 +261,16 @@ const EditDocument = ({
         <Button
           isLoading={isLoading}
           onClick={handleOnConfirm}
-          className={`mt-app bg-default-foreground text-primary-foreground font-IBM-Thai font-medium text-base`}
+          className={`mt-app bg-default-foreground text-primary-foreground font-IBM-Thai font-medium text-base antialiased`}
         >
           บันทึก
         </Button>
         <Button
           isLoading={isLoading}
           onClick={handleOnDisconnect}
-          className={`mt-2 bg-transparent text-danger-500 font-IBM-Thai font-medium text-base`}
+          color='danger'
+          variant='light'
+          className={`mt-2 text-danger-500 font-sans font-medium text-base antialiased`}
         >
           เอาออก
         </Button>

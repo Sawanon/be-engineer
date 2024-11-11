@@ -69,6 +69,8 @@ import { CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet
 import ConectWebAppModal from "./Course/ConectWebAppModal";
 import LessonAdminMode from "./Course/LessonAdminMode";
 import DeleteCourseDialog from "./Course/DeleteCourseDialog";
+import AddCourseForm from "./Course/AddCourseForm";
+import EditCourseForm from "./Course/EditCourseForm";
 
 const ManageCourse = ({
   isOpenDrawer,
@@ -83,7 +85,7 @@ const ManageCourse = ({
   isOpenDrawer: boolean;
   selectedCourse: Course | undefined | null;
   onClose: () => void;
-  onConfirmAdd?: (courseId: number) => Promise<void>;
+  onConfirmAdd: (courseId: number) => Promise<void>;
   onFetch?: () => Promise<void>;
   onDeleteCourse?: () => Promise<void>;
   tutorList:
@@ -111,6 +113,7 @@ const ManageCourse = ({
  });
   const [isAdd, setIsAdd] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+  const [manageCourseMode, setManageCourseMode] = useState<'add' | 'edit' | 'show'>('add')
   
   const [isDelete, setIsDelete] = useState(false);
   const [isDeleteCourse, setIsDeleteCourse] = useState(false);
@@ -150,6 +153,7 @@ const ManageCourse = ({
       setCourseImageList([])
     }
     setIsAdd(selectedCourse === undefined);
+    setManageCourseMode(selectedCourse === undefined ? 'add' : 'show')
     if (selectedCourse) {
       listImageCourse(selectedCourse.name);
     }
@@ -222,6 +226,7 @@ const ManageCourse = ({
       setIsLoadingAdd(true)
       const res = await submitAddCourse();
       if (!res) return console.error(`can't add course ManagementCourse:140`);
+      if(typeof res === "string") throw res
       await onConfirmAdd(res.id);
       setIsAdd(false);
       setAddCourseError({
@@ -320,7 +325,7 @@ const ManageCourse = ({
     if (!selectedCourse) return;
     if (!key) return;
     const response = await updateCourse(selectedCourse?.id, {
-      branch: key,
+      branch: key.toString(),
     });
     console.log(response);
   };
@@ -436,6 +441,11 @@ const ManageCourse = ({
     setIsDeleteCourse(false);
   };
 
+  const handleOnAddSuccess = async (courseId: number) => {
+    await onConfirmAdd(courseId)
+    setManageCourseMode('show')
+  }
+
   return (
     <CustomDrawer
       isOpen={isOpenDrawer}
@@ -488,14 +498,6 @@ const ManageCourse = ({
               {mode === "tutor" ? `แอดมิน` : `ติวเตอร์`}
             </Button>
           </div>
-          {addCourseError.isError && (
-            <div className="mt-2 rounded-lg bg-danger-50 text-danger-500 border-l-4 border-danger-500 flex items-center gap-2 py-2 px-[14px]">
-              <Danger variant="Bold" />
-              <div className="font-IBM-Thai-Looped font-normal">
-                {addCourseError.message}
-              </div>
-            </div>
-          )}
           {mode === "admin" ? (
             // TODO: admin mode
             <div className={`mt-app`}>
@@ -630,10 +632,10 @@ const ManageCourse = ({
                       className={`px-1 bg-default-50 rounded-lg`}
                       onClick={() => {
                         if (!selectedCourse) return;
-                        copy(selectedCourse.price.toString());
+                        copy(selectedCourse.price?.toString() ?? "");
                       }}
                     >
-                      {selectedCourse?.price.toLocaleString()}
+                      {selectedCourse?.price?.toLocaleString()}
                     </div>
                   </PopoverTrigger>
                   <PopoverContent>
@@ -696,99 +698,7 @@ const ManageCourse = ({
                 </div>
               </div>
             </div>
-          ) : isEdit || isAdd ? (
-            <div className="mt-2">
-              <Input
-                size="lg"
-                defaultValue={isAdd ? undefined : `${selectedCourse?.name}`}
-                className="font-IBM-Thai-Looped text-lg font-medium"
-                classNames={{
-                  input: "font-IBM-Thai-Looped font-medium text-[1em]",
-                }}
-                placeholder="ชื่อวิชา"
-                onChange={(e) => handleOnChangeCourseName(e.target.value)}
-              />
-              <div id="textarea-wrapper">
-                <Textarea
-                  // defaultValue={isAdd ? undefined : `วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรี เนื้อหา midterm`}
-                  defaultValue={
-                    isAdd ? undefined : selectedCourse?.detail ?? "-"
-                  }
-                  classNames={{
-                    input: `text-[1em]`,
-                  }}
-                  className="mt-2 font-IBM-Thai-Looped"
-                  placeholder="วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรีเนื้อหา midterm"
-                  onChange={(e) => handleOnChangeCourseDetail(e.target.value)}
-                />
-              </div>
-              <Select
-                placeholder={`ติวเตอร์`}
-                defaultSelectedKeys={
-                  isAdd ? undefined : [`${selectedCourse?.Tutor?.id}`]
-                }
-                classNames={{
-                  value: `text-[1em]`,
-                }}
-                aria-label="ติวเตอร์"
-                className="font-IBM-Thai-Looped mt-2"
-                onChange={(e) => {
-                  handleOnChangeCourseTutor(e.target.value);
-                }}
-                disabledKeys={["loading"]}
-              >
-                {tutorList ? (
-                  tutorList.map((tutor) => {
-                    return (
-                      <SelectItem
-                        className="font-IBM-Thai-Looped"
-                        aria-label={`${tutor.name}`}
-                        key={tutor.id}
-                      >
-                        {tutor.name}
-                      </SelectItem>
-                    );
-                  })
-                ) : (
-                  <SelectItem
-                    className="font-IBM-Thai-Looped"
-                    aria-label={`loading`}
-                    key={`loading`}
-                  >
-                    loading...
-                  </SelectItem>
-                )}
-              </Select>
-              <Input
-                defaultValue={selectedCourse?.clueLink ?? ""}
-                className="font-IBM-Thai-Looped mt-2"
-                classNames={{
-                  input: `text-[1em] ${clueLink === "" || !clueLink ? 'no-underline' : 'underline'}`,
-                }}
-                placeholder="Link เฉลย"
-                onChange={(e) => handleOnChangeCourseLink(e.target.value)}
-              />
-              <Input
-                defaultValue={selectedCourse?.playlist ?? ""}
-                className={`font-IBM-Thai-Looped mt-2`}
-                classNames={{
-                  input: `text-[1em]`,
-                }}
-                placeholder={`Playlist`}
-                onChange={(e) => handleOnChangePlaylist(e.target.value)}
-              />
-              <Input
-                defaultValue={selectedCourse?.price?.toString()}
-                className="font-IBM-Thai-Looped mt-2"
-                classNames={{
-                  input: `text-[1em]`,
-                }}
-                placeholder="ราคา"
-                type="number"
-                onChange={(e) => handleOnChangePrice(e.target.value)}
-              />
-            </div>
-          ) : (
+          ) : manageCourseMode === "show" ? (
             <div className="mt-4">
               <div className="text-2xl font-bold font-IBM-Thai">
                 {/* Dynamics (CU) midterm */}
@@ -826,12 +736,29 @@ const ManageCourse = ({
                 <span className={`font-bold`}>ราคา:</span>
                 <span>
                   {selectedCourse?.price ?? "-"}
-                  {/* 2,400.- */}
                 </span>
               </div>
+              <Button
+                onClick={() => setManageCourseMode('edit')}
+                className="bg-default-100 font-IBM-Thai font-medium"
+                fullWidth
+              >
+                แก้ไข
+              </Button>
             </div>
+          ) : (
+            manageCourseMode === "add" ?
+            <AddCourseForm
+              onConfirm={handleOnAddSuccess}
+            />
+            :
+            <EditCourseForm
+              onConfirm={handleOnAddSuccess}
+              course={selectedCourse as any}
+              onClickDelete={handleDeleteCourse}
+            />
           )}
-          {mode === "tutor" && (
+          {/* {mode === "tutor" && (
             <div className="mt-4">
               {isAdd ? (
                 <Button
@@ -869,7 +796,7 @@ const ManageCourse = ({
                 </Button>
               )}
             </div>
-          )}
+          )} */}
         </div>
         {/* lesson */}
         <ManageLesson
