@@ -316,8 +316,9 @@ const EditBookModal = ({
               </div>
               <div className="py-2 flex md:flex-row flex-col gap-2 ">
                 <Button
-                  color="secondary"
-                  className="text-danger  order-2 md:order-1 "
+                  color="danger"
+                  variant="light"
+                  className="text-danger font-medium order-2 md:order-1 font-serif"
                   onClick={handleOnDelete}
                 >
                   ลบ

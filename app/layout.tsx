@@ -4,6 +4,10 @@ import "./globals.css";
 import Providers from "./provider";
 import NavbarApp from "@/components/NavbarApp";
 import SidebarApp from "@/components/SidebarApp";
+import {
+   IBM_Plex_Sans_Thai,
+   IBM_Plex_Sans_Thai_Looped,
+ } from "next/font/google";
 const geistSans = localFont({
    src: "./fonts/GeistVF.woff",
    variable: "--font-geist-sans",
@@ -21,7 +25,17 @@ export const metadata: Metadata = {
 };
 
 
-
+export const ibmPlexSansThai = IBM_Plex_Sans_Thai({
+   subsets: ["thai", "latin", "latin-ext"],
+   variable: "--ibm-sans",
+   weight: ["100", "200", "300", "400", "500", "600", "700"],
+ });
+ 
+ export const ibmPlexSansThaiLoop = IBM_Plex_Sans_Thai_Looped({
+   subsets: ["thai", "latin", "latin-ext"],
+   variable: "--ibm-serif",
+   weight: ["100", "200", "300", "400", "500", "600", "700"],
+ });
 
 
 export default function RootLayout({
@@ -31,7 +45,8 @@ export default function RootLayout({
 }>) {
    return (
       <html lang="en">
-         <body className="flex flex-col">
+         {/* <body className="flex flex-col"> */}
+         <body className={`flex flex-col ${ibmPlexSansThai.variable} ${ibmPlexSansThaiLoop.variable} antialiased`}>
             <Providers>
                <div className="md:flex">
                   <NavbarApp />

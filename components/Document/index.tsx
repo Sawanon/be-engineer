@@ -42,7 +42,6 @@ const DocumentComp = () => {
       queryFn: () => listPreExamAction(),
    })
 
-   // console.log(selectState);
    const [isInventory, setIsInventory] = useState(false);
    const [isAddDocumentBook, setIsAddDocumentBook] = useState(false);
    const [isOpenEditDocumentBook, setIsOpenEditDocumentBook] = useState(false);
@@ -64,7 +63,7 @@ const DocumentComp = () => {
    
    const [page, setPage] = useState(1)
    const [pageSize, setPageSize] = useState(30)
-   const rowPerPage = 5
+   const rowPerPage = 30
 
    const preExamItems = useMemo(() => {
       const startIndex = (page - 1) * rowPerPage;
@@ -266,7 +265,7 @@ const DocumentComp = () => {
             </ModalContent>
          </Modal>
 
-         <div className="font-IBM-Thai text-3xl font-bold py-2 hidden md:block">
+         <div className="font-sans text-3xl font-bold py-2 hidden md:block">
             {title}
          </div>
          <FormDocument

@@ -87,9 +87,9 @@ const ConectWebAppModal = ({
       console.log(selectedBranch);
       console.log(selectedWebAppCourse?.id);
       if(books.length === 0){
+        console.log("books is empty", books);
         return
       }
-      const book = books[0]
       if(!courseId || !selectedBranch || !selectedWebAppCourse) {
         return
       }
@@ -98,7 +98,9 @@ const ConectWebAppModal = ({
         courseId,
         selectedBranch!,
         selectedWebAppCourse!.id,
-        book.id,
+        // book.id,
+        books,
+        selectedWebAppCourse.image,
       )
       console.log(response);
       if(typeof response === "string"){

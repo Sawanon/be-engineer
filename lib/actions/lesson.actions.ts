@@ -1,5 +1,8 @@
 "use server"
 import { CourseLesson, Prisma, PrismaClient } from "@prisma/client";
+import { countBookInCourse } from "./course.actions";
+import { cutBook, restoreBook } from "./book.actions";
+import { revalidatePath } from "next/cache";
 
 const prisma = new PrismaClient()
 
@@ -35,6 +38,39 @@ export const addLessonToDB = async (courseId: number, lesson: any) => {
 
 export const updateBookInLesson = async (oldBookId: number, newBookId: number, lessonId: number) => {
   try {
+    const lesson = await prisma.courseLesson.findFirst({
+      where: {
+        id: lessonId,
+      },
+      include: {
+        Course: true,
+      },
+    })
+    if(!lesson) throw `lesson is ${lesson}`
+    if(lesson.Course.webappCourseId !== null)
+    if(lesson.Course.webappCourseId !== null){
+      // goto count old book in course if last restore it
+      const responseLeftOldBookInCourse = await countBookInCourse(lesson.courseId, oldBookId)
+      if(!responseLeftOldBookInCourse) throw `responseLeftOldBookInCourse is ${responseLeftOldBookInCourse}`
+      if(typeof responseLeftOldBookInCourse === "string") throw responseLeftOldBookInCourse
+      const leftOldBook = Number(responseLeftOldBookInCourse.leftBook)
+      console.log("🚀 ~ updateBookInLesson ~ leftOldBook:", leftOldBook)
+      if(leftOldBook === 1){
+        // restore book
+        await restoreBook(oldBookId, lesson.Course.webappCourseId)
+      }
+      // new book
+      const responseLeftNewBookInCourse = await countBookInCourse(lesson.courseId, newBookId)
+      if(!responseLeftNewBookInCourse) throw `responseLeftNewBookInCourse is ${responseLeftNewBookInCourse}`
+      if(typeof responseLeftNewBookInCourse === "string") throw responseLeftNewBookInCourse
+      const leftNewBook = Number(responseLeftNewBookInCourse.leftBook)
+      console.log("🚀 ~ updateBookInLesson ~ leftNewBook:", leftNewBook)
+      if(leftNewBook === 0){
+        // cut book
+        const responesRestore = await cutBook(newBookId, lesson.Course.webappCourseId, lesson.courseId)
+        console.log("🚀 ~ updateBookInLesson ~ responesRestore: cut book", responesRestore)
+      }
+    }
     const response = await prisma.lessonOnDocumentBook.update({
       where: {
         lessonId_bookId: {
@@ -75,6 +111,28 @@ export const addDocumentToLesson = async (documentId: number, lessonId: number) 
 
 export const addBookToLessonAction = async (bookId: number, lessonId: number) => {
   try {
+    const lesson = await prisma.courseLesson.findFirst({
+      where: {
+        id: lessonId,
+      },
+      include: {
+        Course: true,
+      },
+    })
+    if(lesson === null) throw `lesson is null`
+    if(lesson.Course.webappCourseId !== null){
+      // goto update book instock
+      const responseLeftBookInCourse = await countBookInCourse(lesson.courseId, bookId)
+      console.log("🚀 ~ addBookToLessonAction ~ responseLeftBookInCourse:", responseLeftBookInCourse)
+      if(!responseLeftBookInCourse) throw `responseLeftBookInCourse is ${responseLeftBookInCourse}`
+      if(typeof responseLeftBookInCourse === "string") throw responseLeftBookInCourse
+      const leftBook = Number(responseLeftBookInCourse.leftBook)
+      if(leftBook === 0){
+        // cut stock
+        const responseCutBook = await cutBook(bookId, lesson.Course.webappCourseId, lesson.courseId)
+        console.log("🚀 ~ addBookToLessonAction ~ responseCutBook:", responseCutBook)
+      }
+    }
     const response = await prisma.lessonOnDocumentBook.create({
       data: {
         lessonId: lessonId,
@@ -84,6 +142,27 @@ export const addBookToLessonAction = async (bookId: number, lessonId: number) =>
     return response
   } catch (error) {
     console.error(error)
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const removeBookLessonAction = async (bookId: number, lessonId: number) => {
+  try {
+    const response = await prisma.lessonOnDocumentBook.delete({
+      where: {
+        lessonId_bookId: {
+          bookId: bookId,
+          lessonId: lessonId,
+        }
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
   } finally {
     prisma.$disconnect()
   }
@@ -158,6 +237,22 @@ export const deleteLesson = async (lessonId: number) => {
     if(error instanceof Prisma.PrismaClientKnownRequestError){
       return error.message
     }
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const getLessonById = async (lessonId: number) => {
+  try {
+    const response = await prisma.courseLesson.findFirst({
+      where: {
+        id: lessonId,
+      },
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError) return error.message
   } finally {
     prisma.$disconnect()
   }

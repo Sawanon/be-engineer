@@ -13,7 +13,7 @@ const config: Config = {
       extend: {
          colors: {
             primary: {
-               DEFAULT: "var(--primary)",
+               DEFAULT: "var(--nextui-default-foreground)",
                foreground: "#FFFFFF",
                warning  : "#F5A524"
             },
@@ -21,6 +21,8 @@ const config: Config = {
                DEFAULT: "var(--secondary)",
                foreground: "#00000",
             },
+            'secondary-default': `#393E44`,
+            'secondary-light': `#6C7074`,
             background: "var(--background)",
             foreground: "var(--foreground)",
             backdrop: `rgba(255,255,255,0.85)`,
@@ -28,6 +30,8 @@ const config: Config = {
          fontFamily: {
             'IBM-Thai': 'IBM Plex Sans Thai',
             'IBM-Thai-Looped': 'IBM Plex Sans Thai Looped',
+            sans: ["var(--ibm-sans)", "Helvetica", "Arial"],
+            serif: ["var(--ibm-serif)", "Times New Roman"],
          },
          height: {
             screenDevice: "100dvh",
