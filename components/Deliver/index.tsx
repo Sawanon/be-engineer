@@ -4,7 +4,7 @@ import { deliveryTypeProps, modalProps } from "@/@type";
 import FormDeliver, { DeliverFilter } from "./form";
 import PrintModal from "./printing.modal";
 import TableDeliver from "./table";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import EditAddress from "./edit_address.modal";
 import AddTracking from "./add_tracking.modal";
 import { cn } from "@/lib/util";
@@ -19,11 +19,12 @@ import {
    updateAddress,
 } from "@/lib/actions/deliver.actions";
 import { revalidatePath } from "next/cache";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import _ from "lodash";
 import { Button } from "@nextui-org/react";
 import { Refresh } from "iconsax-react";
 import { LuX } from "react-icons/lu";
+import EditTracking from "./edit_tracking.modal";
 
 export type multiTrackDialog = {
    key: Set<number>;
@@ -37,7 +38,10 @@ const DeliverComp = ({
    isNewData: boolean;
    delivery: DeliverRes;
 }) => {
+   const searchParams = useSearchParams();
+
    const router = useRouter();
+   const pathname = usePathname();
    const [newData, setNewData] = useState(isNewData);
    useEffect(() => {
       setNewData(isNewData);
@@ -64,9 +68,14 @@ const DeliverComp = ({
    const [isEditAddress, setIsEditAddress] = useState<
       modalProps<DeliverRes["data"][0]> & { refetch?: () => void }
    >({ open: false, data: undefined });
+
    const [isAddTracking, setIsAddTracking] = useState<
-      modalProps<deliveryPrismaProps> & { type?: deliveryTypeProps }
+      modalProps<DeliverRes["data"][0]> & { type?: deliveryTypeProps }
    >({ open: false, data: undefined, type: undefined });
+
+   const [isEditTracking, setIsEditTracking] = useState<
+      modalProps<DeliverRes["data"][0]>
+   >({ open: false, data: undefined });
 
    const handleOpenMultiTracking = () => {
       setMultiTrackingState((prev) => ({ ...prev, open: true }));
@@ -75,32 +84,75 @@ const DeliverComp = ({
    const handleOpenPrintTracking = (data: DeliverRes["data"]) => {
       setPrintModalState((prev) => ({ open: true, data: data }));
    };
+   const onOpenEditTracking = (data: DeliverRes["data"][0]) => {
+      setIsEditTracking((prev) => ({ open: true, data: data }));
+   };
+   const onCloseEditTracking = () => {
+      setIsEditTracking((prev) => ({ open: false }));
+   };
 
    const onEditAddress = (
       data: DeliverRes["data"][0] | undefined,
       refetch?: () => void
    ) => {
       if (data) {
+         const newPath = `${pathname}?editAddress=${data.id}`;
+         window.history.replaceState(null, "", newPath);
          setIsEditAddress({ open: true, data: data, refetch: refetch });
       } else {
+         replacePath();
          setIsEditAddress({ open: false });
       }
    };
 
+   const replacePath = () => {
+      const newPath = `/deliver`;
+      window.history.replaceState(null, "", newPath);
+   };
+
+   useMemo(() => {
+      const id = searchParams.get("editAddress");
+      if (id) {
+         const findDataByID = delivery.data.find((d) => d.id === parseInt(id));
+         setIsEditAddress({ open: true, data: findDataByID });
+      }
+   }, [searchParams.get("editAddress")]);
+
+   useMemo(() => {
+      const id = searchParams.get("addTracking");
+      if (id) {
+         const findDataByID = delivery.data.find((d) => d.id === parseInt(id));
+         setIsAddTracking({
+            open: true,
+            data: findDataByID,
+            type: findDataByID?.type as deliveryTypeProps,
+         });
+      }
+   }, [searchParams.get("addTracking")]);
+
    const onOpenAddTrack = (
-      data: deliveryPrismaProps,
+      data: DeliverRes["data"][0],
       type: deliveryTypeProps
    ) => {
+      const newPath = `${pathname}?addTracking=${data.id}`;
+      window.history.replaceState(null, "", newPath);
       setIsAddTracking({ open: true, data, type });
    };
    const onChangeTypeSuccess = (type: deliveryTypeProps) => {
       alert("Change Type Success");
-      setIsAddTracking((prev) => {
-         return { open: true, data: prev.data, type: type };
-      });
+      if (type === "ship") {
+         onCloseAddTrack();
+         onEditAddress(isAddTracking.data!);
+      } else {
+         onOpenAddTrack(isAddTracking.data!, type);
+         // setIsAddTracking((prev) => {
+         //    return { open: true, data: prev.data, type: type };
+         // });
+      }
    };
 
    const onCloseAddTrack = () => {
+      replacePath();
       setIsAddTracking({ open: false });
    };
 
@@ -130,21 +182,22 @@ const DeliverComp = ({
             cloneData,
             (deliver) => deliver.id === data?.id
          );
-         cloneData[findUpdateData]["updatedAddress"] = data?.updatedAddress!;
+         if (findUpdateData > -1) {
+            cloneData[findUpdateData]["updatedAddress"] = data?.updatedAddress!;
+         }
          return { ...prev, data: cloneData };
       });
    };
 
    return (
       <div className="flex flex-col pt-0 md:pt-6 px-app  bg-background relative overflow-y-hidden md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 ">
-         {/* <Button
+         {/* <button
             onClick={async () => {
-              
                await testAddBook();
             }}
          >
             test
-         </Button> */}
+         </button> */}
 
          {newData && (
             <NotifyModal
@@ -176,6 +229,12 @@ const DeliverComp = ({
             refetch={refetch}
             onClose={onCloseAddTrack}
          />
+         <EditTracking
+            dialogState={isEditTracking}
+            // refetch={refetch}
+            onClose={onCloseEditTracking}
+         />
+
          <AddMultiTracking
             dialogState={multiTrackingState}
             refetch={refetch}
@@ -192,6 +251,7 @@ const DeliverComp = ({
                selectData={multiTrackingState}
             />
             <TableDeliver
+               onOpenEditTracking={onOpenEditTracking}
                onPrintTrackings={handleOpenPrintTracking}
                searchState={[searchData, setSearchData]}
                tableSelect={[multiTrackingState, setMultiTrackingState]}
@@ -229,7 +289,7 @@ const NotifyModal = ({
             isIconOnly
             className="bg-transparent text-default-foreground"
          >
-            <LuX className="text-default-100" />
+            <LuX className="text-default-100 " />
          </Button>
       </div>
    );

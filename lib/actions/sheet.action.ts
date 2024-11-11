@@ -35,17 +35,3 @@ export const listSheetsAction = async (): Promise<
    }
 };
 
-export const getSheetById = async (id: number) => {
-   try {
-      const response = await prisma.sheetTransactions.findFirst({
-         where: {
-            id: id,
-         },
-      });
-      return response;
-   } catch (error) {
-      console.error(error);
-   } finally {
-      prisma.$disconnect();
-   }
-};

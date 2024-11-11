@@ -56,7 +56,7 @@ const PrintModal = ({
    });
    const [dialog, setDialog] = dialogState;
    const { open, data } = dialog;
-   console.log(59,data)
+
    const queryData = useDeliverByIds(data?.map((d) => d?.id));
 
    const PDFDoc = useMemo(() => {
@@ -108,7 +108,7 @@ const PrintModal = ({
                   <div className="flex flex-1  overflow-y-hidden">
                      <div className="hidden md:block flex-1"></div>
                      {/* TODO: check width in mobile */}
-                     <div className=" md:w-[460px] flex flex-col   bg-gradient-to-b from-[#838388] to-[#9B9BA5] px-4 py-2">
+                     <div className=" md:w-[460px] w-screen flex flex-col   bg-gradient-to-b from-[#838388] to-[#9B9BA5] px-4 py-2">
                         <div className="flex gap-1 justify-between ">
                            <Button
                               className="bg-default-100 text-default-foreground"
@@ -142,6 +142,7 @@ const PrintModal = ({
                               </BlobProvider>
                            )}
                            <Button
+                              isLoading={queryData.isFetching}
                               style={{ display: "contents" }}
                               onClick={() => setPdfState(true)}
                               // onClick={() => reactToPrintFn()}
@@ -152,12 +153,15 @@ const PrintModal = ({
                         </div>
                         <div
                            ref={contentRef}
-                           className={cn("space-y-2  flex-1 mt-2  overflow-y-auto",{
-                              "flex flex-col" : queryData.isFetching
-                           })}
+                           className={cn(
+                              "space-y-2  flex-1 mt-2  overflow-y-auto",
+                              {
+                                 "flex flex-col": queryData.isFetching,
+                              }
+                           )}
                         >
                            {queryData.isFetching ? (
-                              <div className="flex flex-1 items-center justify-center">
+                              <div className="flex flex-1 h-full items-center justify-center">
                                  <Spinner
                                     className="w-[60px] h-[60px]"
                                     color="default"
@@ -255,6 +259,7 @@ const CardDeliver = ({
                               {checkCourse.bookLesson.map((d) => {
                                  return d.DocumentBook.image ? (
                                     <Image
+                                    className="rounded-sm object-cover"
                                        key={d.DocumentBook.id}
                                        width={24}
                                        height={34}

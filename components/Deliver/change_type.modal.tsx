@@ -67,6 +67,7 @@ const ChangeReceiveType = ({
                            isIconOnly
                            className="bg-transparent text-default-foreground absolute right-1 top-4"
                            onClick={onClose}
+                           disabled={mutation.isPending}
                         >
                            <LuX size={24} />
                         </Button>
@@ -84,6 +85,7 @@ const ChangeReceiveType = ({
                      </p>
                      <div className="py-2 grid grid-cols-2 gap-2">
                         <Button
+                           disabled={mutation.isPending}
                            fullWidth
                            onClick={onClose}
                            className={cn(
@@ -94,16 +96,15 @@ const ChangeReceiveType = ({
                            ยกเลิก
                         </Button>
                         <Button
-                        isLoading={mutation.isPending}
+                           isLoading={mutation.isPending}
                            fullWidth
-                           className="font-IBM-Thai bg-default-foreground text-primary-foreground"
+                           color="primary"
+                           variant="solid"
+                           className="flex-shrink-0 font-sans  text-base font-medium "
                            onClick={() => {
                               mutation.mutate({
                                  type: type!,
                                  id: detail?.id!,
-                                 // courseId: detail?.courses.map((d) =>
-                                 //    d.id.toString()
-                                 // )!,
                               });
                            }}
                         >
