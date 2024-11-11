@@ -103,7 +103,11 @@ const BookUsage = ({
                         </p>
                         <div className="ml-4   ">
                            {courseList?.map((course, index) => (
-                              <Link target="_blank" key={`courseUsage${index}`} href={`/course?id=${course.id}&modal=true`}>
+                              <Link
+                                 target="_blank"
+                                 key={`courseUsage${index}`}
+                                 href={`/course?drawerCourse=${course.id}`}
+                              >
                                  <div className="flex items-center">
                                     <BulletPoint />
                                     <p>{course.name}</p>

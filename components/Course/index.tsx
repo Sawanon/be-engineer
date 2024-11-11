@@ -110,6 +110,18 @@ const CourseComponent = ({
    const isOpen = searchParam.get('modal')
 
    useMemo(() => {
+     if(courses){
+      const courseId = searchParam.get('drawerCourse')
+      if(!courseId) return
+      const course = courses.find(course => course.id === parseInt(courseId))
+      setSelectedCourse(course)
+      if(course){
+        setIsOpenDrawer(true)
+      }
+    }
+   }, [searchParam.get('drawerCourse'), courses])
+
+   useMemo(() => {
      if(isOpen && courseId && courses){
       const course = courses.find(course => course.id === parseInt(courseId))
       setSelectedCourse(course)
