@@ -6,7 +6,9 @@ import {
    updateDataByBranch,
 } from "@/lib/actions/deliver.actions";
 import { addDeliverShipService } from "@/lib/actions/delivery_ship.actions";
+import { Spinner } from "@nextui-org/react";
 import _ from "lodash";
+import { Suspense } from "react";
 export const revalidate = 3600;
 
 const DeliverPage = async () => {
@@ -56,7 +58,15 @@ const DeliverPage = async () => {
    return (
       // <section className="absolute inset-0  flex flex-col bg-[#FAFAFA] overflow-x-hidden  ">
       <section className="flex-1 flex flex-col">
-         <DeliverComp isNewData={newData} delivery={delivery} />
+         <Suspense
+            fallback={(
+               <div className={`absolute inset-0 bg-backdrop flex items-center justify-center`}>
+                  <Spinner />
+               </div>
+            )}
+            >
+               <DeliverComp isNewData={newData} delivery={delivery} />
+            </Suspense>
        </section> 
    );
 };
