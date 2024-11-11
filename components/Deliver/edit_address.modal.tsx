@@ -100,6 +100,7 @@ const EditAddress = ({
                            isIconOnly
                            className="bg-transparent text-black absolute right-1 top-1"
                            onClick={onClose}
+                           disabled={mutationUpdateAddress.isPending}
                         >
                            <LuX size={24} />
                         </Button>
@@ -132,7 +133,10 @@ const EditAddress = ({
                               isLoading={mutationUpdateAddress.isPending}
                               type="submit"
                               fullWidth
-                              className="bg-default-foreground text-primary-foreground"
+                              color="primary"
+                              variant="solid"
+                              className="flex-shrink-0 font-sans  text-base font-medium "
+                           
                            >
                               บันทึก
                            </Button>{" "}

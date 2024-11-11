@@ -69,6 +69,14 @@ export type addTrackingProps = {
    // courseId: string[] | number[];
    //   status, updatedAddress, courseId, webappOrderId, webappCourseId, webappAdminId, note, createdAt, updatedAt, serviceId, trackingCode
 };
+export type updateTrackingProps = {
+   id: number;
+   trackingNumber?: string;
+   note?: string;
+   delivery?: deliverShipServiceKey;
+   webappAdminId?: number;
+   webappAdminUsername: string;
+};
 export type addMultiTrackingProps = {
    service: deliverShipServiceKey;
    ids: number[];

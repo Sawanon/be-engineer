@@ -24,7 +24,6 @@ export const metadata: Metadata = {
    description: "Course",
 };
 
-
 export const ibmPlexSansThai = IBM_Plex_Sans_Thai({
    subsets: ["thai", "latin", "latin-ext"],
    variable: "--ibm-sans",
@@ -36,7 +35,6 @@ export const ibmPlexSansThai = IBM_Plex_Sans_Thai({
    variable: "--ibm-serif",
    weight: ["100", "200", "300", "400", "500", "600", "700"],
  });
-
 
 export default function RootLayout({
    children,

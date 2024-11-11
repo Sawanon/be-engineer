@@ -165,19 +165,26 @@ const SingleTrack = ({
                <div className="py-2 grid grid-cols-3 gap-2">
                   <Button
                      fullWidth
-                     className="bg-transparent flex gap-3 bg-white order-2 md:order-1 md:col-span-1 col-span-3 font-IBM-Thai"
                      onClick={() =>
                         onChangeType({ detail: data!, type: "pickup" })
                      }
+                     color="default"
+                     variant="light"
+                     className="text-base font-medium font-sans flex gap-3 order-2 md:order-1 md:col-span-1 col-span-3"
                   >
-                     <LuArrowRightLeft /> รับที่สถาบัน
+                     <LuArrowRightLeft size={24} className="text-[24px]" />
+                     <p>รับที่สถาบัน</p>
                   </Button>
+
+              
+
                   <Button
                      isLoading={addTracking.isPending}
                      type="submit"
                      fullWidth
                      color="primary"
-                     className="font-IBM-Thai md:col-span-2 col-span-3 order-1 md:order-2 bg-default-foreground text-primary-foreground"
+                     variant="solid"
+                     className="flex-shrink-0 font-sans  text-base font-medium md:col-span-2 col-span-3 order-1 md:order-2 "
                   >
                      บันทึก
                   </Button>

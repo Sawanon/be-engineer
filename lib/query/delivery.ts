@@ -2,6 +2,7 @@ import {
    addMultiTrackingProps,
    addTrackingProps,
    deliveryTypeProps,
+   updateTrackingProps,
 } from "@/@type";
 import { DeliverFilter } from "@/components/Deliver/form";
 import {
@@ -15,11 +16,13 @@ import {
    getTrackingByWebappIdArr,
    receiveOrder,
    updateAddress,
+   updateDeliver,
 } from "@/lib/actions/deliver.actions";
 import { Prisma } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { addRecordData } from "../actions/record.actions";
 
 export const formatCourse = (
    delivery: NonNullable<Awaited<ReturnType<typeof getDeliverByIds>>[0]>
@@ -71,6 +74,20 @@ export const formatCourse = (
    });
    return { bookLesson, preExamLesson, sheetLesson };
 };
+export const formatRecord = (
+   delivery: NonNullable<Awaited<ReturnType<typeof getDeliverByIds>>[0]>
+) => {
+   let bookRecord: (typeof delivery.RecordBook)[0][] = [];
+   let sheetRecord: (typeof delivery.RecordSheet)[0][] = [];
+
+   delivery.RecordBook?.forEach((book) => {
+      bookRecord.push(book);
+   });
+   delivery.RecordSheet?.forEach((sheet) => {
+      sheetRecord.push(sheet);
+   });
+   return { bookRecord, sheetRecord };
+};
 
 export const useDeliver = () => {
    return useQuery({
@@ -91,7 +108,7 @@ export const useDeliverByIds = (Ids: number[] | undefined) => {
          return masterDeliver;
       },
       refetchInterval: 5 * 60 * 1000, // refetch every x minute
-      enabled: Ids !== undefined,
+      enabled: Ids !== undefined && Ids.length !== 0,
    });
 };
 
@@ -149,7 +166,29 @@ export const useAddTracking = ({
       onError(error, variables, context) {
          if (onError) onError(error);
       },
-      onSuccess(data, variables, context) {
+      async onSuccess(data, variables, context) {
+         await addRecordData(data.id);
+
+         if (onSuccess) onSuccess();
+      },
+   });
+};
+export const useUpdateTracking = ({
+   onSuccess,
+   onError,
+}: {
+   onSuccess?: () => void;
+
+   onError?: (error: Error) => void;
+}) => {
+   return useMutation({
+      mutationFn: (data: updateTrackingProps) => {
+         return updateDeliver(data);
+      },
+      onError(error, variables, context) {
+         if (onError) onError(error);
+      },
+      async onSuccess(data, variables, context) {
          if (onSuccess) onSuccess();
       },
    });
@@ -203,7 +242,12 @@ export const useUpdatePickup = ({
    onError?: (error: Error) => void;
 }) => {
    return useMutation({
-      mutationFn: (data: Pick<addTrackingProps, "note" | "id" | "webappAdminId" | "webappAdminUsername">) => {
+      mutationFn: (
+         data: Pick<
+            addTrackingProps,
+            "note" | "id" | "webappAdminId" | "webappAdminUsername"
+         >
+      ) => {
          return receiveOrder(data);
       },
       onError(error, variables, context) {
