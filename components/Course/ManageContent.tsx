@@ -217,7 +217,7 @@ const ManageContent = ({
          scrollBehavior="inside"
          className={`h-full`}
          classNames={{
-            backdrop: `bg-backdrop`,
+            backdrop: ['bg-default-foreground/25'],
          }}
       >
          <ModalContent className={`h-full`}>
@@ -245,8 +245,12 @@ const ManageContent = ({
                               <Search className={`text-foreground-400`} />
                            }
                            aria-labelledby="playlist"
+                           className={`font-serif`}
                            inputProps={{
                               "aria-hidden": "true",
+                              classNames: {
+                                 input: ['text-[1em]']
+                              }
                            }}
                            selectedKey={selectedPlaylistId}
                            onSelectionChange={handleOnChangePlayList}
@@ -362,7 +366,7 @@ const ManageContent = ({
                               return (
                                  <div
                                     key={`videoLesson${index}`}
-                                    className={`font-IBM-Thai-Looped ${
+                                    className={`font-serif bg-default-200 ${
                                        action === "removeInDB" ? `hidden` : `flex`
                                     } items-center p-2 border-2 border-default-foreground rounded-lg`}
                                  >
@@ -381,7 +385,7 @@ const ManageContent = ({
                                        {video.hour! * 60 + video.minute!} นาที
                                     </div>
                                     <div
-                                       className={`bg-white w-8 h-8 flex items-center justify-center cursor-pointer`}
+                                       className={`w-8 h-8 flex items-center justify-center cursor-pointer`}
                                        onClick={() => {
                                           removeVideoToLesson(videoInLesson[key]);
                                           // handleDeleteVideo(videoInLesson, index);

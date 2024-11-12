@@ -1,23 +1,16 @@
 "use client";
 import {
-  Autocomplete,
-  AutocompleteItem,
   Button,
-  Checkbox,
   Divider,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
   Image,
-  Input,
-  Modal,
-  ModalContent,
 } from "@nextui-org/react";
-import React, { Key, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ArrowDownUp,
-  ArrowLeft,
   Book,
   ChevronDown,
   ClipboardSignature,
@@ -25,32 +18,19 @@ import {
   MoreHorizontal,
   PenSquare,
   Plus,
-  RefreshCcw,
   ScrollText,
-  Search,
   Trash2,
   Video as VideoLucide,
   X,
 } from "lucide-react";
 import { Danger, Video } from "iconsax-react";
-import SortableComponent from "./Sortable";
-import { arrayMove } from "@dnd-kit/sortable";
-import { addBookToLessonAction, addDocumentToLesson, addLessonToDB, addPreExamToLessonAction, changePositionLesson } from "@/lib/actions/lesson.actions";
-import { CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet, Prisma } from "@prisma/client";
+import { addLessonToDB, changePositionLesson } from "@/lib/actions/lesson.actions";
+import { CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import {
-  getDetailPlayList,
-  listPlayList,
-} from "@/lib/actions/playlist.actions";
-import { addCourseVideo, changePositionVideoAction, deleteCourseVideo, swapPositionVideo } from "@/lib/actions/video.actions";
+import { changePositionVideoAction } from "@/lib/actions/video.actions";
 import ManageContent from "./Course/ManageContent";
-import { UniqueIdentifier } from "@dnd-kit/core";
-// import { useCourse } from "./Course/courseHook";
-import { listSheetsAction } from "@/lib/actions/sheet.action";
 import SortLessonModal from "./Course/Lesson/SortLessonModal";
-import { listBooksAction } from "@/lib/actions/book.actions";
 import SortContentModal from "./Course/Lesson/SortContentModal";
-import { listPreExamAction } from "@/lib/actions/pre-exam.actions";
 import AddDocumentToLesson from "./Course/Lesson/AddDocumentToLesson";
 import { listCourseAction } from "@/lib/actions/course.actions";
 import EditVideoDetail from "./Course/CourseVideo/EditVideoDetail";
@@ -58,10 +38,6 @@ import EditLessonName from "./Course/Lesson/EditLessonName";
 import DeleteLesson from "./Course/Lesson/DeleteLesson";
 import AddLesson from "./Course/Lesson/AddLesson";
 import EditDocument from "./Course/Document/EditDocument";
-
-// export type CourseLessonAndContent = CourseLesson & {
-//   CourseVideo: CourseVideo,
-// }
 
 const ManageLesson = ({
   courseId,
@@ -76,12 +52,6 @@ const ManageLesson = ({
   mode: "tutor" | "admin"
   className: string
 }) => {
-  // const [lessons, setLessons] = useState([
-  //   { id: 1, title: "Dynamics - 1.1 Velocity and Acceleration" },
-  //   { id: 2, title: "Dynamics - 1.2 Graphical" },
-  //   { id: 3, title: "Dynamics - 1.3 X-Y Coordinate" },
-  // ]);
-  // const [refetchCourse] = useCourse()
   const {
     refetch: refetchCourse,
   } = useQuery({
@@ -110,31 +80,6 @@ const ManageLesson = ({
   const [selectedVideo, setSelectedVideo] = useState<CourseVideo| undefined>()
   const [isOpenVideoDetail, setIsOpenVideoDetail] = useState(false)
   const [isOpenEditDocument, setIsOpenEditDocument] = useState(false)
-
-  const handleOnChangeLessonName = (value: string) => {
-    setLessonName(value);
-  };
-
-  const addLesson = async () => {
-    console.log("courseId", courseId);
-    console.log("lessonName", lessonName);
-    if (!lessonName) {
-      return;
-    }
-    const position = lessons ? lessons.length + 1 : 1;
-    const res = await addLessonToDB(courseId, {
-      name: lessonName,
-      position: position,
-    });
-    if(!res) {
-      return alert(`response is empty please view log on server`)
-    }
-    setLessonName(undefined)
-    setIsAddLesson(false);
-    if(onFetch){
-      onFetch()
-    }
-  };
 
   const handleOnCloseEditLessonVideo = () => {
     setSelectedLesson(undefined);
@@ -185,19 +130,6 @@ const ManageLesson = ({
     }
     await refetchCourse()
     handleOnCloseSortLesson()
-  }
-
-  const renderStartContent = (document: any) => {
-    if(document.type === "book"){
-      return <Image className={`rounded`} width={16} src={document.image} alt="image book" />
-    }
-    else if(document.type === "sheet"){
-      return <ScrollText size={16} />
-    }
-    else if(document.type === "preExam"){
-      return <ClipboardSignature size={16} />
-    }
-    return <div>icon</div>
   }
 
   const handleOnClickSortContent = (lesson: CourseLesson) => {
@@ -387,21 +319,6 @@ const ManageLesson = ({
                   </div>
                 );
               })}
-              {/* <div className="flex p-1 items-center">
-                <div className="w-8 flex">
-                  <Video className="text-foreground-400" size={16} />
-                  <FileText className="text-foreground-400" size={16} />
-                </div>
-                <div className="ml-1 flex-1">Dynamics - 1.2 Graphical</div>
-                <div className="text-sm text-foreground-400">59 นาที</div>
-              </div>
-              <div className="flex p-1 items-center">
-                <div className="w-8 flex">
-                  <Video className="text-foreground-400" size={16} />
-                </div>
-                <div className="ml-1 flex-1">Dynamics - 1.3 X-Y Coordinate</div>
-                <div className="text-sm text-foreground-400">74 นาที</div>
-              </div> */}
               {/* manage lesson content */}
               <div className="flex justify-center gap-2">
                 <Button

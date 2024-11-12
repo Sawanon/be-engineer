@@ -166,6 +166,12 @@ const AddDocumentToLesson = ({
         <Autocomplete
           onSelectionChange={handleOnChangeDocument}
           startContent={renderStartContentSelected(selectedDocument)}
+          className={`font-serif`}
+          inputProps={{
+            classNames: {
+              input: ['text-[1em]'],
+            }
+          }}
         >
           {
             documentList?

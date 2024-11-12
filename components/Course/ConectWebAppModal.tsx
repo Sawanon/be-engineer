@@ -35,20 +35,13 @@ const ConectWebAppModal = ({
   const [selectedWebAppCourse, setSelectedWebAppCourse] = useState<WebAppCourse | undefined>()
   const [isLoading, setIsLoading] = useState(false)
 
-  useMemo(() => {
-    // console.log("branch", branch);
-    // console.log("webappCourseId", webappCourseId);
-    // console.log(books);
-    
-  }, [branch, webappCourseId, books])
-
   const handleOnClose = () => {
     onClose()
     setSelectedBranch(undefined)
     setSelectedWebAppCourse(undefined)
   }
 
-  const handleOnChangeWebappBranch = async (key: Key | null) => {
+  const handleOnChangeWebappBranch = async (key: Key | null | string) => {
     console.log(key);
     if (!webappBranchCourseList) return;
     const webappCourseList = webappBranchCourseList.find(
@@ -72,13 +65,8 @@ const ConectWebAppModal = ({
     console.log(key);
     if (!key) return;
     const webappCourse = webappCourseList?.find((course) => `${course.id}` === `${key}`)
+    console.log("🚀 ~ handleOnChangeWebapp ~ webappCourse:", webappCourse)
     setSelectedWebAppCourse(webappCourse);
-    // const response = await updateCourse(selectedCourse?.id, {
-    //   webappCourseId: parseInt(key.toString()),
-    //   status: webappCourse!.hasFeedback ? 'enterForm' : 'uploadWebapp'
-    // });
-    // console.log("🚀 ~ handleOnChangeWebapp ~ response:", response);
-    // refetchCourse()
   };
 
   const submitConnectWebappCourse = async () => {
@@ -113,6 +101,15 @@ const ConectWebAppModal = ({
       setIsLoading(false)
     }
   }
+
+  useMemo(() => {
+    if(webappBranchCourseList && branch && isOpen){
+      handleOnChangeWebappBranch(branch)
+      const courseByBranch = webappBranchCourseList.find(courseByBranch => courseByBranch.branch === branch)
+      const webAppCourse = courseByBranch.courses.find((webAppCourse:any) => `${webAppCourse.id}` === `${webappCourseId}`)
+      setSelectedWebAppCourse(webAppCourse)
+    }
+  }, [branch, webappCourseId, webappBranchCourseList, isOpen])
 
   return (
     <Modal
@@ -171,11 +168,8 @@ const ConectWebAppModal = ({
           className={`mt-2 font-IBM-Thai-Looped`}
           onSelectionChange={handleOnChangeWebapp}
           placeholder="เลือกคอร์ส"
-          defaultSelectedKey={
-            !webappCourseList
-              ? ""
-              : webappCourseId?.toString()
-          }
+          disabledKeys={['webappCourseLoading']}
+          selectedKey={selectedWebAppCourse?.id.toString()}
           startContent={renderWebappImage(selectedWebAppCourse?.id)}
         >
           {webappCourseList ? (

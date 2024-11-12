@@ -8,23 +8,20 @@ import {
   NavbarMenuToggle,
 } from "@nextui-org/react";
 import {
-  BookOpen,
-  Box,
   LogOut,
   Menu,
-  MonitorPlay,
-  Package,
+  User,
   X,
 } from "lucide-react";
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { menuItems } from "@/lib/res/const";
-import { signOut } from "next-auth/react";
-import Image from "next/image";
+import { signOut, useSession } from "next-auth/react";
 
 const NavbarApp = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const auth = useSession();
   const pathName = usePathname();
   const currentMenu = () => {
     // return location.pathname.toString()
@@ -84,7 +81,7 @@ const NavbarApp = () => {
         />
       </NavbarContent>
 
-      <NavbarMenu className="bg-default-100 font-IBM-Thai">
+      <NavbarMenu className="bg-default-100 font-sans">
         <div className="flex-1 flex flex-col">
           <div className="space-y-2 flex-1">
             {menuItems.map((item, index) => (
@@ -108,8 +105,12 @@ const NavbarApp = () => {
           </div>
           <div className={`border-y border-zinc-200 p-app flex gap-app`}>
             <div className="flex flex-1 items-center gap-1">
-              <div className="w-8 h-8 rounded-full bg-gray-200"></div>
-              <div className="text-lg font-semibold">Name</div>
+              <div className="w-8 h-8 rounded-full bg-gray-200 flex justify-center items-center">
+                <User size={24} fill="#000" />
+              </div>
+              <div className="text-lg font-semibold">
+                {auth.data?.user.username}
+              </div>
             </div>
             <div onClick={() => signOut()} className="p-1 cursor-pointer">
               <LogOut size={24} />

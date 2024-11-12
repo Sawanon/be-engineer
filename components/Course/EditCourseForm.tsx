@@ -33,6 +33,7 @@ const EditCourseForm = ({
   const {
     register,
     handleSubmit,
+    watch,
     formState: {errors, isSubmitting},
     setError,
   } = useForm<EditCourse>({
@@ -150,7 +151,7 @@ const EditCourseForm = ({
         <Input
           className="font-IBM-Thai-Looped mt-2"
           classNames={{
-            // input: `text-[1em] ${clueLink === "" || !clueLink ? 'no-underline' : 'underline'}`,
+            input: `text-[1em] ${watch('clueLink') === "" || !watch('clueLink') ? 'no-underline' : 'underline'}`,
           }}
           color={errors.clueLink ? `danger` : `default`}
           placeholder="Link เฉลย"
