@@ -35,6 +35,17 @@ const TableDocument = ({
    onEditBook: () => void,
    onViewUsage: () => void,
 }) => {
+
+   const renderCourseUsage = (sheet: DocumentSheet) => {
+      return (
+         <div className="flex gap-2 font-serif items-center">
+            <p className="text-sm">1</p>
+            <Button onClick={onViewUsage} isIconOnly color="secondary">
+               <LuListTree size={24} />
+            </Button>
+         </div>
+      )
+   }
    return (
       <Table
          classNames={tableClassnames}
@@ -67,7 +78,7 @@ const TableDocument = ({
                return (
                   <TableRow key={`documentRow${index}`}>
                      <TableCell>
-                        <div onClick={onEditBook} className="flex gap-2 items-center">
+                        <div onClick={onEditBook} className={`flex gap-2 items-center font-serif`}>
                            {/* <Image
                               // width={24}
                               height={44}
@@ -96,12 +107,7 @@ const TableDocument = ({
                         </div> */}
                      </TableCell>
                      <TableCell>
-                        <div className="flex gap-2  items-center">
-                           <p className="text-sm">1</p>
-                           <Button onClick={onViewUsage} isIconOnly color="secondary">
-                              <LuListTree size={24} />
-                           </Button>
-                        </div>{" "}
+                        {renderCourseUsage(document)}
                      </TableCell>
                   </TableRow>
                )

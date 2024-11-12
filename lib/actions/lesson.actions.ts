@@ -47,7 +47,6 @@ export const updateBookInLesson = async (oldBookId: number, newBookId: number, l
       },
     })
     if(!lesson) throw `lesson is ${lesson}`
-    if(lesson.Course.webappCourseId !== null)
     if(lesson.Course.webappCourseId !== null){
       // goto count old book in course if last restore it
       const responseLeftOldBookInCourse = await countBookInCourse(lesson.courseId, oldBookId)
@@ -226,6 +225,34 @@ export const updateLesson = async (lessonId: number, lesson: Prisma.CourseLesson
 
 export const deleteLesson = async (lessonId: number) => {
   try {
+    const lesson = await prisma.courseLesson.findFirst({
+      where: {
+        id: lessonId,
+      },
+      include: {
+        Course: true,
+        LessonOnDocumentBook: {
+          include: {
+            DocumentBook: true,
+          },
+        },
+      },
+    })
+    if(!lesson) throw `lesson is ${lesson}`
+    if(lesson.Course.webappCourseId !== null && lesson.LessonOnDocumentBook.length > 0){
+      for (let i = 0; i < lesson.LessonOnDocumentBook.length; i++) {
+        const lessonOnDocument = lesson.LessonOnDocumentBook[i];
+        const responseLeftBookInCourse = await countBookInCourse(lesson.courseId, lessonOnDocument.bookId)
+        if(!responseLeftBookInCourse) throw `responseLeftBookInCourse is ${responseLeftBookInCourse}`
+        if(typeof responseLeftBookInCourse === "string") throw responseLeftBookInCourse
+        const leftBook = Number(responseLeftBookInCourse.leftBook)
+        console.log("🚀 ~ updateBookInLesson ~ leftBook:", leftBook)
+        if(leftBook === 1){
+          // restore book
+          await restoreBook(lessonOnDocument.bookId, lesson.Course.webappCourseId)
+        }
+      }
+    }
     const response = await prisma.courseLesson.delete({
       where: {
         id: lessonId,

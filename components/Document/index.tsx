@@ -1,7 +1,7 @@
 "use client";
 
 import { modalProps } from "@/@type";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FormDocument from "./form";
 import TableDocument from "./table";
 import AddBook from "./add_book.modal";
@@ -25,21 +25,28 @@ import { DocumentBook } from "@prisma/client";
 import { addPreExamAction, listPreExamAction } from "@/lib/actions/pre-exam.actions";
 import TablePreExam from "./PreExam/Table";
 import EditBookModal from "./Book/EditBook.modal";
+import _ from 'lodash'
 
 export type DocumentMode = "book" | "sheet" | "pre-exam";
 
 const DocumentComp = () => {
-   const {data: bookList} = useQuery({
+   const {
+      data: bookListData,
+      isLoading: isLoadingBook,
+   } = useQuery({
       queryKey: ["listBooksAction"],
       queryFn: () => listBooksAction(),
+      refetchOnWindowFocus: true,
    })
-   const { data: sheetList, refetch: refetchSheets } = useQuery({
+   const { data: sheetListData, refetch: refetchSheets } = useQuery({
       queryKey: ["listSheetsAction"],
       queryFn: () => listSheetsAction(),
+      refetchOnWindowFocus: true,
    });
-   const {data: preExamList, refetch: refetchPreExam} = useQuery({
+   const {data: preExamListData, refetch: refetchPreExam} = useQuery({
       queryKey: ["listPreExamAction"],
       queryFn: () => listPreExamAction(),
+      refetchOnWindowFocus: true,
    })
 
    const [isInventory, setIsInventory] = useState(false);
@@ -60,16 +67,78 @@ const DocumentComp = () => {
    
    const [selectedBook, setSelectedBook] = useState<DocumentBook | undefined>()
    const [courseList, setCourseList] = useState<any[]>([])
+
+   const [searchBookText, setSearchBookText] = useState("")
+   const [preSearchBookText, setPreSearchBookText] = useState("")
+   const [searchSheetText, setSearchSheetText] = useState("")
+   const [preSearchSheetText, setPreSearchSheetText] = useState("")
+   const [searchPreExamText, setSearchPreExamText] = useState("")
+   const [preSearchPreExamText, setPreSearchPreExamText] = useState("")
    
    const [page, setPage] = useState(1)
    const [pageSize, setPageSize] = useState(30)
    const rowPerPage = 30
-
-   const preExamItems = useMemo(() => {
-      const startIndex = (page - 1) * rowPerPage;
-      const endIndex = startIndex + rowPerPage;
-      return preExamList?.slice(startIndex, endIndex)
-   }, [preExamList, page])
+   
+   // book search
+   const bookList = useMemo(() => {
+      if(searchBookText !== ""){
+         return bookListData?.filter(book => {
+            return book.name.toLowerCase().includes(searchBookText.toLowerCase()) || book.term?.toLowerCase().includes(searchBookText.toLowerCase()) || book.year?.toLowerCase().includes(searchBookText.toLowerCase())
+         })
+      }
+      return bookListData
+   }, [bookListData, searchBookText])
+   const handleSearchBook = (value: string) => {
+      setSearchBookText(value)
+   }
+   const debounceSearchBook = _.debounce(handleSearchBook, 2000)
+   useEffect(() => {
+      debounceSearchBook(preSearchBookText)
+      return () => {
+         debounceSearchBook.cancel()
+      }
+   }, [preSearchBookText])
+   // book search
+   // sheet search
+   const sheetList = useMemo(() => {
+      if(searchSheetText !== ""){
+         return sheetListData?.filter(sheet => {
+            return sheet.name.toLowerCase().includes(searchSheetText.toLowerCase())
+         })
+      }
+      return sheetListData
+   }, [sheetListData, searchSheetText])
+   const handleSearchSheet = (value: string) => {
+      setSearchSheetText(value)
+   }
+   const debounceSearchSheet = _.debounce(handleSearchSheet, 2000)
+   useEffect(() => {
+      debounceSearchSheet(preSearchSheetText)
+      return () => {
+         debounceSearchSheet.cancel()
+      }
+   }, [preSearchSheetText])
+   // sheet search
+   // pre-exam search
+   const preExamList = useMemo(() => {
+      if(searchPreExamText !== ""){
+         return preExamListData?.filter(preExam => {
+            return preExam.name.toLowerCase().includes(searchPreExamText.toLowerCase())
+         })
+      }
+      return preExamListData
+   }, [preExamListData, searchPreExamText])
+   const handleSearchPreExam = (value: string) => {
+      setSearchPreExamText(value)
+   }
+   const debounceSearchPreExam = _.debounce(handleSearchPreExam, 2000)
+   useEffect(() => {
+      debounceSearchPreExam(preSearchPreExamText)
+      return () => {
+         debounceSearchPreExam.cancel()
+      }
+   }, [preSearchPreExamText])
+   // pre-exam search
    
    useMemo(() => {
       let pageSize = 1
@@ -89,7 +158,25 @@ const DocumentComp = () => {
       console.log(pageSize);
       
       setPageSize(pageSize)
-   }, [documentMode, bookList, preExamList])
+   }, [documentMode, bookList, preExamList, sheetList])
+
+   const bookItems = useMemo(() => {
+      const startIndex = (page - 1) * rowPerPage;
+      const endIndex = startIndex + rowPerPage;
+      return bookList?.slice(startIndex, endIndex)
+   }, [bookList, page])
+
+   const sheetItems = useMemo(() => {
+      const startIndex = (page - 1) * rowPerPage;
+      const endIndex = startIndex + rowPerPage;
+      return sheetList?.slice(startIndex, endIndex)
+   }, [sheetList, page])
+
+   const preExamItems = useMemo(() => {
+      const startIndex = (page - 1) * rowPerPage;
+      const endIndex = startIndex + rowPerPage;
+      return preExamList?.slice(startIndex, endIndex)
+   }, [preExamList, page])
 
    const title = useMemo(() => {
       switch (documentMode) {
@@ -281,11 +368,22 @@ const DocumentComp = () => {
                setIsAddDocumentBook(true);
             }}
             onChangeMode={handleOnChangeDocumentMode}
+            onChangeSearch={(value) => {
+               if(documentMode === "book"){
+                  setPreSearchBookText(value)
+               }else if(documentMode === "sheet"){
+                  setPreSearchSheetText(value)
+               }else if(documentMode === "pre-exam"){
+                  setPreSearchPreExamText(value)
+               }
+               console.log("value", value);
+            }}
          />
          <div className="flex-1">
             {documentMode === "book" &&
                <TableBooks
-                  booksList={bookList}
+                  isLoading={isLoadingBook}
+                  booksList={bookItems}
                   onEditBook={(book) => {
                      console.log("onEditBook");
                      setSelectedBook(book)
@@ -306,7 +404,7 @@ const DocumentComp = () => {
             }
             {documentMode === "sheet" &&
                <TableDocument
-                  documentList={sheetList}
+                  documentList={sheetItems}
                   onViewStock={() => setIsInventory(true)}
                   onEditBook={() => setIsAddDocumentBook(true)}
                   onViewUsage={() => setIsViewUsage(true)}

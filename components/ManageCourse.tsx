@@ -1,101 +1,56 @@
 "use client";
 import {
-  addCourse,
   deleteCourse,
   listCourseAction,
   listCourseWebapp,
   searchImageByCourseName,
-  updateCourse,
 } from "@/lib/actions/course.actions";
 import { PlayList } from "@/lib/model/playlist";
 import { Course } from "@/lib/model/course";
 import React , { useMemo, useState } from "react";
 import CustomDrawer from "./Drawer";
 import {
-  ArrowDownUp,
   ArrowLeft,
-  Book,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardSignature,
   Copy,
   ExternalLink,
-  FileSignature,
-  FileText,
-  MoreHorizontal,
-  Plus,
   RefreshCcw,
-  ScrollText,
-  Search,
-  Tag,
-  Video as VideoLucide,
-  X,
 } from "lucide-react";
-import { Danger, PlayCircle, Video } from "iconsax-react";
 import {
-  Accordion,
-  AccordionItem,
-  Autocomplete,
-  AutocompleteItem,
   Button,
   Divider,
   Image,
-  Input,
-  Modal,
-  ModalContent,
-  Pagination,
   Popover,
   PopoverContent,
   PopoverTrigger,
-  Select,
-  SelectItem,
   Snippet,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-  Textarea,
 } from "@nextui-org/react";
 import ManageLesson from "./ManageLesson";
-import { div } from "framer-motion/client";
 import copy from "copy-to-clipboard";
 import { useQuery } from "@tanstack/react-query";
-import { Key } from "@react-types/shared";
 import StatusIcon from "./Course/StatusIcon";
-import { CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet } from "@prisma/client";
+import { CourseVideo } from "@prisma/client";
 import ConectWebAppModal from "./Course/ConectWebAppModal";
 import LessonAdminMode from "./Course/LessonAdminMode";
 import DeleteCourseDialog from "./Course/DeleteCourseDialog";
 import AddCourseForm from "./Course/AddCourseForm";
 import EditCourseForm from "./Course/EditCourseForm";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 const ManageCourse = ({
   isOpenDrawer,
   selectedCourse,
   onClose,
   onConfirmAdd,
-  tutorList,
-  playList,
   onFetch,
-  onDeleteCourse,
 }: {
   isOpenDrawer: boolean;
   selectedCourse: Course | undefined | null;
   onClose: () => void;
   onConfirmAdd: (courseId: number) => Promise<void>;
   onFetch?: () => Promise<void>;
-  onDeleteCourse?: () => Promise<void>;
-  tutorList:
-    | {
-        id: number;
-        name: string;
-      }[]
-    | undefined;
-  playList: PlayList[] | undefined;
 }) => {
+  const searchParams = useSearchParams()
   const { data: webappBranchCourseList, isFetched } = useQuery({
     queryKey: [`listCourseWebapp`],
     queryFn: () => listCourseWebapp(),
@@ -133,7 +88,6 @@ const ManageCourse = ({
     isError: false,
     message: "",
   });
-  const [IsLoadingAdd, setIsLoadingAdd] = useState(false);
   const [mode, setMode] = useState<"tutor" | "admin">("tutor");
   const [courseImageList, setCourseImageList] = useState<string[]>([]);
   const [webappCourseList, setWebappCourseList] = useState<
@@ -148,8 +102,15 @@ const ManageCourse = ({
   };
 
   useMemo(() => {
+    const mode = searchParams.get('mode')
+    if(mode){
+      const typeMode = mode === 'admin' ? 'admin' : 'tutor'
+      setMode(typeMode)
+    }
+  }, [searchParams.get('mode')])
+
+  useMemo(() => {
     if(!selectedCourse){
-      setMode("tutor")
       setCourseImageList([])
     }
     setIsAdd(selectedCourse === undefined);
@@ -169,44 +130,12 @@ const ManageCourse = ({
     setWebappCourseList(webappCourseList);
   }, [isFetched, selectedCourse]);
 
-  useMemo(() => {
-    console.warn(webappCourseList);
-  }, [webappCourseList]);
-
-  const handleOnChangeCourseName = (value: string) => {
-    setCourseName(value);
-  };
-
-  const handleOnChangeCourseDetail = (value: string) => {
-    setCourseDetail(value);
-  };
-
-  const handleOnChangeCourseTutor = (value: string) => {
-    setCourseTutorId(parseInt(value));
-  };
-
-  const handleOnChangeCourseLink = (value: string) => {
-    setCourseLink(value);
-  };
-
-  const handleOnChangePlaylist = (value: string) => {
-    setPlaylist(value);
-  };
-
-  const handleOnChangePrice = (value: string) => {
-    setPrice(parseInt(value));
-  };
-
   const handleClose = () => {
     setIsEdit(false);
     setIsDelete(false);
     setIsAdd(true);
     clearData();
     onClose();
-    setAddCourseError({
-      isError: false,
-      message: ``,
-    });
   };
 
   const clearData = () => {
@@ -218,139 +147,13 @@ const ManageCourse = ({
     setPrice(undefined);
   };
 
-  const handleAddCourseConfirm = async () => {
-    try {
-      if (!onConfirmAdd) {
-        return;
-      }
-      setIsLoadingAdd(true)
-      const res = await submitAddCourse();
-      if (!res) return console.error(`can't add course ManagementCourse:140`);
-      if(typeof res === "string") throw res
-      await onConfirmAdd(res.id);
-      setIsAdd(false);
-      setAddCourseError({
-        isError: false,
-        message: ``,
-      });
-    } catch (error) {
-      console.error(error);
-      // if (error instanceof Error) {
-        setAddCourseError({
-          isError: true,
-          message: `${error}`,
-        });
-      // }
-    } finally {
-      setIsLoadingAdd(false)
-    }
-  };
-
-  const submitAddCourse = async () => {
-    if (
-      !courseName ||
-      !price ||
-      !courseDetail ||
-      !courseTutorId ||
-      !clueLink ||
-      !playlist
-    ) {
-      throw `กรุณากรอกข้อมูลให้ครบ`;
-    }
-    const res = await addCourse({
-      name: courseName,
-      detail: courseDetail,
-      tutor: courseTutorId,
-      clueLink: clueLink,
-      price: price,
-      status: "noContent",
-      playlist: playlist,
-    });
-    console.log(res);
-    return res;
-  };
-
   const handleDeleteCourse = async () => {
     setIsDeleteCourse(true)
-    // if (onDeleteCourse) {
-    //   onDeleteCourse();
-    // }
-
-    // console.log(selectedCourse.id);
-
-    // return
-    // if(!selectedCourse){
-    //   return
-    // }
-    // const res = await deleteCourse(selectedCourse.id)
-    // console.log(res);
-    // setIsDelete(true)
-  };
-
-  const handleConfirmEditCourse = async () => {
-    if (!selectedCourse) return;
-    setIsEdit(false);
-    console.table({
-      courseName,
-      courseDetail,
-      courseTutorId,
-      clueLink,
-      price,
-      playlist,
-    });
-    let payload: any = {};
-    if (courseName !== undefined) payload.name = courseName;
-    if (courseDetail !== undefined) payload.detail = courseDetail;
-    if (courseTutorId !== undefined) payload.tutorId = courseTutorId;
-    if (clueLink !== undefined) payload.clueLink = clueLink;
-    if (price !== undefined) payload.price = price;
-    if (playlist !== undefined) payload.playlist = playlist;
-    console.log("🚀 ~ handleConfirmEditCourse ~ payload:", payload);
-    const response = await updateCourse(selectedCourse?.id, payload);
-    console.log("🚀 ~ handleConfirmEditCourse ~ response:", response);
-    await refetchCourse();
   };
 
   const handleSwitchMode = () => {
     setMode((prev) => (prev === "tutor" ? "admin" : "tutor"));
   };
-
-  const handleOnChangeWebappBranch = async (key: Key | null) => {
-    console.log(key);
-    if (!webappBranchCourseList) return;
-    const webappCourseList = webappBranchCourseList.find(
-      (webappBranch) => webappBranch.branch === key
-    )?.courses;
-    setWebappCourseList(webappCourseList);
-    if (!selectedCourse) return;
-    if (!key) return;
-    const response = await updateCourse(selectedCourse?.id, {
-      branch: key.toString(),
-    });
-    console.log(response);
-  };
-
-  const handleOnChangeWebapp = async (key: Key | null) => {
-    console.log(key);
-    if (!key || !selectedCourse) return;
-    const webappCourse = webappCourseList?.find((course) => `${course.id}` === `${key}`)
-    const response = await updateCourse(selectedCourse?.id, {
-      webappCourseId: parseInt(key.toString()),
-      status: webappCourse!.hasFeedback ? 'enterForm' : 'uploadWebapp'
-    });
-    console.log("🚀 ~ handleOnChangeWebapp ~ response:", response);
-    refetchCourse()
-  };
-
-  const renderWebappImage = (webappCourseId: number | null | undefined) => {
-    if(!webappCourseId) return <div></div>
-    if(!webappCourseList) return <div></div>
-    const imageUrl = webappCourseList.find(course => course.id === webappCourseId)
-    if(!imageUrl) return <div></div>
-    return (
-      <Image className={`min-w-6 rounded`} width={24} height={24} src={`${imageUrl.image}`} />
-    )
-  }
 
   const renderHourCourse = () => {
     if(!selectedCourse) return {hour: 0, minute: 0, totalHour: 0}
@@ -361,7 +164,6 @@ const ManageCourse = ({
         totalMinute += (courseVideo.hour*60) + (courseVideo.minute)
       })
     })
-    console.log("🚀 ~ renderHourCourse ~ totalMinute:", totalMinute)
     const hour = Math.floor(totalMinute / 60)
     const minute = totalMinute % 60
     let totalHour = 0
@@ -377,18 +179,6 @@ const ManageCourse = ({
     }
   }
   const {hour, minute, totalHour} = renderHourCourse()
-
-  const renderLessonTime = (lesson: any) => {
-    const courseVideoList: CourseVideo[] = lesson.CourseVideo
-    console.log(courseVideoList);
-    let totalTime = 0
-    courseVideoList.forEach(courseVideo => {
-      totalTime += (courseVideo.hour * 60) + (courseVideo.minute)
-    })
-    const hour = Math.floor(totalTime / 60)
-    const minute = totalTime % 60
-    return `(${hour} ชม. ${minute} นาที)`
-  }
 
   const handleOnClickConectionWebapp = () => {
     setIsOpenConectWebapp(true)
@@ -499,7 +289,7 @@ const ManageCourse = ({
             </Button>
           </div>
           {mode === "admin" ? (
-            // TODO: admin mode
+            // admin mode
             <div className={`mt-app`}>
               <div className={`flex gap-1 items-center`}>
                 <StatusIcon status={selectedCourse?.status!} />
@@ -521,17 +311,19 @@ const ManageCourse = ({
               <div className={`mt-2 flex gap-2 overflow-auto scrollbar-hide`}>
                 {courseImageList.map((imageUrl, index) => {
                   return (
-                    <div
-                      key={`imageCourse${index}`}
-                      className={`min-w-[100px] w-[100px] h-[100px]`}
-                    >
-                      <Image
-                        key={`courseImage${index}`}
-                        src={`${imageUrl}`}
-                        width={100}
-                        height={100}
-                      />
-                    </div>
+                    <Link href={`${imageUrl}`} target="_blank">
+                      <div
+                        key={`imageCourse${index}`}
+                        className={`min-w-[100px] w-[100px] h-[100px]`}
+                      >
+                        <Image
+                          key={`courseImage${index}`}
+                          src={`${imageUrl}`}
+                          width={100}
+                          height={100}
+                        />
+                      </div>
+                    </Link>
                   );
                 })}
               </div>

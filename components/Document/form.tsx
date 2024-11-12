@@ -25,7 +25,6 @@ import {
    LuTruck,
    LuX,
 } from "react-icons/lu";
-import dayjs from "dayjs";
 import { modalProps, stateProps } from "@/@type";
 import { Book, ChevronDown, FileSignature, ScrollText } from "lucide-react";
 import { DocumentMode } from ".";
@@ -33,10 +32,12 @@ const FormDocument = ({
    onAddDocument,
    onChangeMode,
    className,
+   onChangeSearch,
 }:{
    onAddDocument: () => void,
    onChangeMode: (mode: DocumentMode) => void,
    className: string,
+   onChangeSearch: (value: string) => void,
 }) => {
    return (
       <section className={`flex gap-2 md:flex-row flex-col items-center ${className}`}>
@@ -50,6 +51,10 @@ const FormDocument = ({
             }
             aria-label={`search document`}
             className={`font-serif`}
+            classNames={{
+               input: [`text-[1em]`],
+            }}
+            onChange={(e) => onChangeSearch(e.target.value)}
          />
          <div className="flex gap-2 flex-1 order-2 w-full md:w-auto">
             <div className={`flex-1`}>
@@ -107,6 +112,7 @@ const StatusSelect = ({
             classNames={{
                base: cn("flex gap-1"),
             }}
+            className={`font-serif`}
             aria-label={`หนังสือ`}
             startContent={<Book size={16} />}
             key={"book"}
@@ -117,6 +123,7 @@ const StatusSelect = ({
             classNames={{
                base: cn("flex gap-1"),
             }}
+            className={`font-serif`}
             aria-label={`เอกสาร`}
             startContent={<ScrollText size={16} />}
             key={"sheet"}
@@ -127,6 +134,7 @@ const StatusSelect = ({
             classNames={{
                base: cn("flex gap-1"),
             }}
+            className={`font-serif`}
             aria-label={`pre-exam`}
             startContent={<FileSignature size={16} />}
             key={"pre-exam"}

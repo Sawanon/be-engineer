@@ -29,6 +29,7 @@ const AddCourseForm = ({
     register,
     handleSubmit,
     formState: {errors, isSubmitting},
+    watch,
     setError,
   } = useForm<CreateCourse>({
     defaultValues: {
@@ -128,7 +129,7 @@ const AddCourseForm = ({
         <Input
           className="font-IBM-Thai-Looped mt-2"
           classNames={{
-            // input: `text-[1em] ${clueLink === "" || !clueLink ? 'no-underline' : 'underline'}`,
+            input: `text-[1em] ${watch('clueLink') === "" || !watch('clueLink') ? 'no-underline' : 'underline'}`,
           }}
           placeholder="Link เฉลย"
           // onChange={(e) => handleOnChangeCourseLink(e.target.value)}

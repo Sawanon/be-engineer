@@ -31,7 +31,6 @@ const LessonAdminMode = ({
         totalMinute += (courseVideo.hour*60) + (courseVideo.minute)
       })
     })
-    console.log("🚀 ~ renderHourCourse ~ totalMinute:", totalMinute)
     const hour = Math.floor(totalMinute / 60)
     const minute = totalMinute % 60
     let totalHour = 0
@@ -49,7 +48,6 @@ const LessonAdminMode = ({
 
   const renderLessonTime = (lesson: any) => {
     const courseVideoList: CourseVideo[] = lesson.CourseVideo
-    console.log(courseVideoList);
     let totalTime = 0
     courseVideoList.forEach(courseVideo => {
       totalTime += (courseVideo.hour * 60) + (courseVideo.minute)

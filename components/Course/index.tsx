@@ -7,6 +7,7 @@ import {
    Pagination,
    Select,
    SelectItem,
+   Spinner,
    Table,
    TableBody,
    TableCell,
@@ -31,7 +32,7 @@ import ErrorBox from "@/components/ErrorBox";
 import DeleteCourseDialog from "@/components/Course/DeleteCourseDialog";
 // import CourseContext from "@/app/course/provider";
 import { CourseLesson, Course as CoursePrisma, DocumentBook, DocumentPreExam, DocumentSheet, LessonOnDocument, LessonOnDocumentBook, LessonOnDocumentSheet} from '@prisma/client'
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
 import _ from 'lodash'
 
@@ -100,16 +101,14 @@ const CourseComponent = ({
       queryKey: ["listTutor"],
       queryFn: () => listTutor(),
    });
-
-   const { data: playList } = useQuery({
-      queryKey: ["listPlayList"],
-      queryFn: () => listPlayList(),
-   });
+   
    const searchParam = useSearchParams()
+   const pathName = usePathname()
    const courseId = searchParam.get('id')
    const isOpen = searchParam.get('modal')
 
    useMemo(() => {
+    //TODO: check mode admin
      if(courses){
       const courseId = searchParam.get('drawerCourse')
       if(!courseId) return
@@ -119,17 +118,7 @@ const CourseComponent = ({
         setIsOpenDrawer(true)
       }
     }
-   }, [searchParam.get('drawerCourse'), courses])
-
-   useMemo(() => {
-     if(isOpen && courseId && courses){
-      const course = courses.find(course => course.id === parseInt(courseId))
-      setSelectedCourse(course)
-      if(course){
-        setIsOpenDrawer(true)
-      }
-     }
-   }, [isOpen, courseId])
+   }, [searchParam.get('drawerCourse'), courses, searchParam.get('mode')])
 
    const findUniqueDocument = (course: any) => {
     const uniqueSheets = Array.from(
@@ -230,9 +219,15 @@ const CourseComponent = ({
     return courseFromSearch;
   }, [page, courses, isLoading, searchCourse, filterStatusCourse, searchCourseByTutorId]);
 
+  const replacePath = () => {
+    const newPath = `/course`;
+    window.history.replaceState(null, "", newPath);
+  };
+
   const handleCloseManageCourse = () => {
     setIsOpenDrawer(false);
     setSelectedCourse(undefined);
+    replacePath()
   };
 
   const confirmDeleteCourse = async () => {
@@ -291,6 +286,14 @@ const CourseComponent = ({
     }
   }, [preSearchCourse])
 
+  const handleOnClickCourse = (course:any) => {
+    setSelectedCourse(course);
+    setIsOpenDrawer((prev) => !prev);
+    const mode = course.status === "noContent" ? `tutor` : `admin`
+    const newPath = `${pathName}?drawerCourse=${course.id}&mode=${mode}`;
+    window.history.replaceState(null, "", newPath);
+  }
+
   return (
     // <div className="flex flex-col pt-6 px-4 bg-background relative md:h-screenDevice bg-red-400 md:bg-green-400">
     // <CourseContext.Provider value={[refreshCourse]}>
@@ -318,9 +321,6 @@ const CourseComponent = ({
         <ManageCourse
           isOpenDrawer={isOpenDrawer}
           selectedCourse={selectedCourse}
-          onDeleteCourse={async () => {
-            setIsDeleteCourse(true)
-          }}
           onClose={handleCloseManageCourse}
           onFetch={async () => {
             await refetchCourse()
@@ -332,8 +332,6 @@ const CourseComponent = ({
             // setAddedCourseId(courseId)
             // await refetchCourse()
           }}
-          tutorList={tutorList}
-          playList={playList}
         />
         <div className="font-IBM-Thai text-3xl font-bold py-2 hidden md:block">
           คอร์สเรียน
@@ -426,7 +424,7 @@ const CourseComponent = ({
             </Select>
           </div>
           <Button
-            className="flex mt-2 md:mt-0 w-full md:w-auto font-IBM-Thai text-base font-medium bg-default-foreground text-primary-foreground"
+            className="flex mt-2 md:mt-0 w-full md:w-auto font-sans text-base font-medium bg-default-foreground text-primary-foreground"
             endContent={<Plus className={`min-w-5 min-h-5`} size={20} />}
             onClick={() => {
               setIsOpenDrawer(true);
@@ -443,15 +441,16 @@ const CourseComponent = ({
               <TableColumn className="font-IBM-Thai">ติวเตอร์</TableColumn>
               <TableColumn className="font-IBM-Thai">เอกสาร</TableColumn>
             </TableHeader>
-            <TableBody items={courseItem ?? []}>
+            <TableBody
+              isLoading={isLoading}
+              loadingContent={<Spinner />}
+              items={courseItem ?? []}
+            >
               {/* {courses.map((course, index) => ( */}
               {(course) => (
                 <TableRow key={`courseRow${course.id}`}>
                   <TableCell
-                    onClick={() => {
-                      setSelectedCourse(course);
-                      setIsOpenDrawer((prev) => !prev);
-                    }}
+                    onClick={() => handleOnClickCourse(course)}
                   >
                     <div className="flex gap-2 items-center">
                       {course.imageUrl && (
@@ -503,7 +502,7 @@ const CourseComponent = ({
           <Pagination
             total={pageSize}
             initialPage={page}
-            className="p-0 m-0"
+            className={`p-0 m-0 font-serif`}
             classNames={{
               cursor: "bg-default-foreground",
             }}
