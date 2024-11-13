@@ -26,13 +26,11 @@ import {
 
 const TableDocument = ({
    documentList,
-   onViewStock,
-   onEditBook,
+   onEditSheet,
    onViewUsage
 }:{
    documentList? :DocumentSheet[],
-   onViewStock: () => void,
-   onEditBook: () => void,
+   onEditSheet: (sheet: DocumentSheet) => void,
    onViewUsage: () => void,
 }) => {
 
@@ -78,13 +76,7 @@ const TableDocument = ({
                return (
                   <TableRow key={`documentRow${index}`}>
                      <TableCell>
-                        <div onClick={onEditBook} className={`flex gap-2 items-center font-serif`}>
-                           {/* <Image
-                              // width={24}
-                              height={44}
-                              alt="NextUI hero Image"
-                              src="https://nextui-docs-v2.vercel.app/images/hero-card-complete.jpeg"
-                           /> */}
+                        <div onClick={() => onEditSheet(document)} className={`flex gap-2 items-center font-serif`}>
                            <ScrollText size={24} />
                            <p>{document.name}</p>
                         </div>

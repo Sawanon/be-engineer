@@ -1,6 +1,7 @@
 "use client";
 import {
   deleteCourse,
+  duplicationCourseAction,
   listCourseAction,
   listCourseWebapp,
   searchImageByCourseName,
@@ -95,6 +96,7 @@ const ManageCourse = ({
     | undefined
   >();
   const [isOpenConectWebapp, setIsOpenConectWebapp] = useState(false)
+  const [isLoadingDuplicate, setIsLoadingDuplicate] = useState(false)
 
   const listImageCourse = async (courseName: string) => {
     const response = await searchImageByCourseName(courseName);
@@ -236,6 +238,23 @@ const ManageCourse = ({
     setManageCourseMode('show')
   }
 
+  const handleOnClickDuplicate = async () => {
+    try {
+      if(selectedCourse){
+        setIsLoadingDuplicate(true)
+        const responseDuplicate = await duplicationCourseAction(selectedCourse.id)
+        if(!responseDuplicate) throw `responseDuplicate is ${responseDuplicate}`
+        if(typeof responseDuplicate === "string") throw responseDuplicate
+        handleClose()
+        if(onFetch) onFetch()
+      }
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsLoadingDuplicate(false)
+    }
+  }
+
   return (
     <CustomDrawer
       isOpen={isOpenDrawer}
@@ -271,6 +290,7 @@ const ManageCourse = ({
         webappCourseId={selectedCourse?.webappCourseId}
         courseId={selectedCourse?.id}
         books={books}
+        onSuccess={refetchCourse}
       />
       {/* <div className="block md:flex h-full w-auto overflow-auto"> */}
       <div className="block md:flex w-auto overflow-auto md:h-full">
@@ -530,13 +550,22 @@ const ManageCourse = ({
                   {selectedCourse?.price ?? "-"}
                 </span>
               </div>
-              <Button
-                onClick={() => setManageCourseMode('edit')}
-                className="bg-default-100 font-IBM-Thai font-medium"
-                fullWidth
-              >
-                แก้ไข
-              </Button>
+              <div className={`flex gap-2 mt-2 pt-[6px]`}>
+                <Button
+                  className={`bg-default-100 font-sans font-medium px-4 py-2 min-w-0 text-base`}
+                  isLoading={isLoadingDuplicate}
+                  onClick={handleOnClickDuplicate}
+                >
+                  ทำซ้ำ
+                </Button>
+                <Button
+                  onClick={() => setManageCourseMode('edit')}
+                  className="bg-default-100 font-sans font-medium text-base"
+                  fullWidth
+                >
+                  แก้ไข
+                </Button>
+              </div>
             </div>
           ) : (
             manageCourseMode === "add" ?
@@ -550,45 +579,6 @@ const ManageCourse = ({
               onClickDelete={handleDeleteCourse}
             />
           )}
-          {/* {mode === "tutor" && (
-            <div className="mt-4">
-              {isAdd ? (
-                <Button
-                  onClick={() => handleAddCourseConfirm()}
-                  className="bg-default-foreground text-primary-foreground font-IBM-Thai font-medium"
-                  fullWidth
-                  isLoading={IsLoadingAdd}
-                >
-                  บันทึก
-                </Button>
-              ) : isEdit ? (
-                <>
-                  <Button
-                    onClick={handleConfirmEditCourse}
-                    className="bg-default-foreground text-primary-foreground font-IBM-Thai font-medium"
-                    fullWidth
-                  >
-                    บันทึก
-                  </Button>
-                  <Button
-                    onClick={() => handleDeleteCourse()}
-                    className="bg-transparent text-danger-500 font-IBM-Thai font-medium mt-2"
-                    fullWidth
-                  >
-                    ลบ
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  onClick={() => setIsEdit(true)}
-                  className="bg-default-100 font-IBM-Thai font-medium"
-                  fullWidth
-                >
-                  แก้ไข
-                </Button>
-              )}
-            </div>
-          )} */}
         </div>
         {/* lesson */}
         <ManageLesson

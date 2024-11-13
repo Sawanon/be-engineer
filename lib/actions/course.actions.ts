@@ -8,11 +8,117 @@ import dayjs from "dayjs";
 import { addBookTransactionAction } from "./bookTransactions";
 import { revalidatePath } from "next/cache";
 import { getBookById, updateBookInStock } from "./book.actions";
+import _ from 'lodash'
 
 const ENDPOINT_BE_ENGINEER_URL = process.env.ENDPOINT_BE_ENGINEER_URL;
 const B_API_KEY = process.env.B_API_KEY;
 const prisma = new PrismaClient();
 
+export const duplicationCourseAction = async (courseId: number) => {
+  try {
+    const originCourse = await prisma.course.findFirst({
+      where: {
+        id: courseId,
+      },
+      include: {
+        CourseLesson: {
+          include: {
+            CourseVideo: true,
+            LessonOnDocumentBook: {
+              include: {
+                DocumentBook: true,
+              },
+            },
+            LessonOnDocumentSheet :{
+              include: {
+                DocumentSheet: true,
+              },
+            },
+            LessonOnDocument :{
+              include: {
+                DocumentPreExam: true,
+              },
+            },
+          }
+        }
+      }
+    })
+    console.log("🚀 ~ duplicationCourseAction ~ originCourse:", originCourse)
+    const cloneCourse = {...originCourse}
+    const cloneLesson = _.cloneDeep(cloneCourse.CourseLesson)
+    delete cloneCourse.CourseLesson
+    delete cloneCourse.id
+    delete cloneCourse.createdAt
+    delete cloneCourse.updatedAt
+    delete cloneCourse.playlist
+    delete cloneCourse.webappCourseId
+    delete cloneCourse.branch
+    delete cloneCourse.imageUrl
+    const readyCreateCourse:Prisma.CourseCreateManyInput = {
+      name: `${cloneCourse.name!} copy`,
+      detail: cloneCourse.detail,
+      status: cloneCourse.status!,
+      clueLink: cloneCourse.clueLink,
+      price: cloneCourse.price,
+      tutorId: cloneCourse.tutorId,
+      defaultHours: cloneCourse.defaultHours!,
+    }
+    console.log("🚀 ~ duplicationCourseAction ~ cloneCourse:", cloneCourse)
+    const responseCreateCourse = await prisma.course.create({
+      data: readyCreateCourse,
+    })
+    console.log("🚀 ~ duplicationCourseAction ~ responseCreateCourse:", responseCreateCourse)
+    if(cloneLesson){
+      for (let i = 0; i < cloneLesson.length; i++) {
+        const lesson = cloneLesson[i];
+        const responseCreateLesson = await prisma.courseLesson.create({
+          data: {
+            name: `${lesson.name}`,
+            position: lesson.position,
+            courseId: responseCreateCourse.id,
+            CourseVideo: {
+              createMany: {
+                data: lesson.CourseVideo.map(video => ({
+                  ...video,
+                  id: undefined,
+                  lessonId: undefined,
+                })),
+              }
+            },
+            LessonOnDocumentBook: {
+              createMany: {
+                data: lesson.LessonOnDocumentBook.map(book => ({
+                  bookId: book.bookId,
+                })),
+              }
+            },
+            LessonOnDocumentSheet: {
+              createMany: {
+                data: lesson.LessonOnDocumentSheet.map(sheet => ({
+                  sheetId: sheet.sheetId,
+                }))
+              }
+            },
+            LessonOnDocument: {
+              createMany: {
+                data: lesson.LessonOnDocument.map(preExam => ({
+                  preExamId: preExam.preExamId
+                }))
+              }
+            },
+          }
+        })
+        console.log("🚀 ~ duplicationCourseAction ~ responseCreateLesson:", responseCreateLesson)
+      }
+      return responseCreateCourse
+    }
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError) return error.message
+  } finally {
+    prisma.$disconnect()
+  }
+}
 
 export const searchImageByCourseName = async (courseName: string) => {
   try {
@@ -334,6 +440,7 @@ export const courseConnectWebAppCourse = async (courseId: number, branch: string
         branch: branch,
         webappCourseId: webAppCourseId,
         imageUrl: imageUrl,
+        status: `uploadWebapp`,
       },
     })
     return response
