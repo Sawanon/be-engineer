@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import FormDocument from "./form";
 import TableDocument from "./table";
 import AddBook from "./add_book.modal";
-import ConfirmBook from "./confirm.book";
 import BookInventory from "./inventory.book";
 import EditInventory from "./inventory.book.edit";
 import BookUsage from "./usage.book";
@@ -21,15 +20,19 @@ import { addSheetAction, listSheetsAction } from "@/lib/actions/sheet.action";
 import { useQuery } from "@tanstack/react-query";
 import { listBooksAction } from "@/lib/actions/book.actions";
 import TableBooks from "./Book/Table";
-import { DocumentBook } from "@prisma/client";
+import { DocumentBook, DocumentSheet } from "@prisma/client";
 import { addPreExamAction, listPreExamAction } from "@/lib/actions/pre-exam.actions";
 import TablePreExam from "./PreExam/Table";
 import EditBookModal from "./Book/EditBook.modal";
 import _ from 'lodash'
+import { usePathname, useSearchParams } from "next/navigation";
+import EditSheeModal from "./Sheet/EditSheeModal";
 
 export type DocumentMode = "book" | "sheet" | "pre-exam";
 
 const DocumentComp = () => {
+   const searchParams = useSearchParams()
+   const pathName = usePathname()
    const {
       data: bookListData,
       isLoading: isLoadingBook,
@@ -56,6 +59,9 @@ const DocumentComp = () => {
    const [isDelete, setIsDelete] = useState(false);
    const [isViewUsage, setIsViewUsage] = useState(false);
    const [documentMode, setDocumentMode] = useState<DocumentMode>("book");
+
+   const [isOpenEditSheet, setIsOpenEditSheet] = useState(false)
+   const [selectedSheet, setSelectedSheet] = useState<DocumentSheet | undefined>()
 
    const [isOpenAddDocumentSheet, setIsOpenAddDocumentSheet] = useState(false);
    const [documentName, setDocumentName] = useState<string | undefined>();
@@ -225,6 +231,41 @@ const DocumentComp = () => {
       refetchPreExam()
    }
 
+   const handleOnClickEditBook = (book: DocumentBook) => {
+      setSelectedBook(book)
+      setIsOpenEditDocumentBook(true)
+      const newPath = `${pathName}?bookId=${book.id}`;
+      window.history.replaceState(null, "", newPath);
+   }
+
+   const handleOnCloseEditBook = () => {
+      setIsOpenEditDocumentBook(false)
+      setTimeout(() => {
+         setSelectedBook(undefined)
+      }, 250);
+      replacePath()
+   }
+
+   const replacePath = () => {
+      const newPath = `/document`;
+      window.history.replaceState(null, "", newPath);
+   };
+
+   useMemo(() => {
+      if(bookListData){
+         const bookId = searchParams.get('bookId')
+         if(!bookId) return
+         const book = bookListData.find(book => book.id === parseInt(bookId))
+         if(!book)return
+         handleOnClickEditBook(book)
+      }
+   }, [searchParams.get('bookId'), bookListData])
+
+   const handleOnClickEditSheet = (sheet: DocumentSheet) => {
+      setSelectedSheet(sheet)
+      setIsOpenEditSheet(true)
+   }
+
    return (
       <div className="relative pt-6 px-app h-screenDevice flex flex-col">
          <BookInventory
@@ -246,14 +287,16 @@ const DocumentComp = () => {
             <EditBookModal
                open={isOpenEditDocumentBook}
                selectedBook={selectedBook}
-               onClose={() => {
-                  setIsOpenEditDocumentBook(false)
-                  setTimeout(() => {
-                     setSelectedBook(undefined)
-                  }, 250);
-               }}
+               onClose={handleOnCloseEditBook}
             />
          }
+         <EditSheeModal
+            isOpen={isOpenEditSheet}
+            sheet={selectedSheet}
+            onClose={() => {
+               setIsOpenEditSheet(false)
+            }}
+         />
          {/* <ConfirmBook open={isDelete} onClose={() => setIsDelete(false)} /> */}
          <BookUsage courseList={courseList} book={selectedBook} open={isViewUsage} onClose={() => setIsViewUsage(false)} />
          <Modal
@@ -384,11 +427,7 @@ const DocumentComp = () => {
                <TableBooks
                   isLoading={isLoadingBook}
                   booksList={bookItems}
-                  onEditBook={(book) => {
-                     console.log("onEditBook");
-                     setSelectedBook(book)
-                     setIsOpenEditDocumentBook(true)
-                  }}
+                  onEditBook={handleOnClickEditBook}
                   onViewStock={(book) => {
                      console.log("onViewStock");
                      setIsInventory(true)
@@ -405,8 +444,7 @@ const DocumentComp = () => {
             {documentMode === "sheet" &&
                <TableDocument
                   documentList={sheetItems}
-                  onViewStock={() => setIsInventory(true)}
-                  onEditBook={() => setIsAddDocumentBook(true)}
+                  onEditSheet={handleOnClickEditSheet}
                   onViewUsage={() => setIsViewUsage(true)}
                />
             }

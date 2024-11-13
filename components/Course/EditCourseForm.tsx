@@ -1,4 +1,4 @@
-import { updateCourse } from '@/lib/actions/course.actions';
+import { listCourseAction, updateCourse } from '@/lib/actions/course.actions';
 import { listTutor } from '@/lib/actions/tutor.actions';
 import Alert from '@/ui/alert';
 import { Button, Input, Select, SelectItem, Textarea } from '@nextui-org/react';
@@ -22,7 +22,7 @@ const EditCourseForm = ({
   onClickDelete,
 }:{
   onConfirm: (courseId: number) => Promise<void>,
-  course?: Course | null,
+  course?: NonNullable<Awaited<ReturnType<typeof listCourseAction>>>[0],
   onClickDelete: () => void,
 }) => {
   const { data: tutorList } = useQuery({
@@ -97,7 +97,6 @@ const EditCourseForm = ({
             input: "font-serif font-medium text-[1em]",
           }}
           placeholder="ชื่อวิชา"
-          // onChange={(e) => handleOnChangeCourseName(e.target.value)}
           {...register('courseName', {required: true})}
         />
         <div id="textarea-wrapper">
@@ -108,8 +107,7 @@ const EditCourseForm = ({
             color={errors.courseDetail ? `danger` : `default`}
             className="mt-2 font-serif"
             placeholder="วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรีเนื้อหา midterm"
-            // onChange={(e) => handleOnChangeCourseDetail(e.target.value)}
-            {...register('courseDetail', {required: true})}
+            {...register('courseDetail', {required: (course?.CourseLesson.length ?? 0) > 0 ? true : false})}
           />
         </div>
         <Select
@@ -120,9 +118,6 @@ const EditCourseForm = ({
           color={errors.courseTutorId ? `danger` : `default`}
           aria-label="ติวเตอร์"
           className="font-serif mt-2"
-          // onChange={(e) => {
-          //   handleOnChangeCourseTutor(e.target.value);
-          // }}
           disabledKeys={["loading"]}
           {...register('courseTutorId', {required: true})}
         >
@@ -155,8 +150,7 @@ const EditCourseForm = ({
           }}
           color={errors.clueLink ? `danger` : `default`}
           placeholder="Link เฉลย"
-          // onChange={(e) => handleOnChangeCourseLink(e.target.value)}
-          {...register('clueLink', {required: true})}
+          {...register('clueLink', {required: (course?.CourseLesson.length ?? 0) > 0 ? true : false})}
         />
         <Input
           className={`font-IBM-Thai-Looped mt-2`}
@@ -165,8 +159,7 @@ const EditCourseForm = ({
           }}
           placeholder={`Playlist`}
           color={errors.playlist ? `danger` : `default`}
-          // onChange={(e) => handleOnChangePlaylist(e.target.value)}
-          {...register('playlist', {required: true})}
+          {...register('playlist', {required: (course?.CourseLesson.length ?? 0) > 0 ? true : false})}
         />
         <Input
           className="font-IBM-Thai-Looped mt-2"
@@ -176,12 +169,10 @@ const EditCourseForm = ({
           placeholder="ราคา"
           color={errors.price ? `danger` : `default`}
           type="number"
-          // onChange={(e) => handleOnChangePrice(e.target.value)}
-          {...register('price', {required: true})}
+          {...register('price', {required: (course?.CourseLesson.length ?? 0) > 0 ? true : false})}
         />
         <div className={`pt-[6px] mt-2`}>
           <Button
-            // onClick={handleConfirmEditCourse}
             className="bg-default-foreground text-primary-foreground font-IBM-Thai font-medium"
             fullWidth
             type='submit'
@@ -190,21 +181,12 @@ const EditCourseForm = ({
             บันทึก
           </Button>
           <Button
-            // onClick={() => handleDeleteCourse()}
             className="bg-transparent text-danger-500 font-IBM-Thai font-medium mt-2"
             fullWidth
             onClick={handleOnClickDelete}
           >
             ลบ
           </Button>
-          {/* <Button
-            type='submit'
-            className="bg-default-foreground text-primary-foreground font-IBM-Thai font-medium"
-            fullWidth
-            isLoading={isSubmitting}
-          >
-            บันทึก
-          </Button> */}
         </div>
     </form>
   </div>

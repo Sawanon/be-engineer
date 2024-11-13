@@ -104,8 +104,6 @@ const CourseComponent = ({
    
    const searchParam = useSearchParams()
    const pathName = usePathname()
-   const courseId = searchParam.get('id')
-   const isOpen = searchParam.get('modal')
 
    useMemo(() => {
     //TODO: check mode admin
