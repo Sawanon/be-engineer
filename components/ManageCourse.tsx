@@ -331,9 +331,8 @@ const ManageCourse = ({
               <div className={`mt-2 flex gap-2 overflow-auto scrollbar-hide`}>
                 {courseImageList.map((imageUrl, index) => {
                   return (
-                    <Link href={`${imageUrl}`} target="_blank">
+                    <Link key={`imageCourse${index}`} href={`${imageUrl}`} target="_blank">
                       <div
-                        key={`imageCourse${index}`}
                         className={`min-w-[100px] w-[100px] h-[100px]`}
                       >
                         <Image
