@@ -1,56 +1,43 @@
 "use client";
 import {
-  Autocomplete,
-  AutocompleteItem,
   Button,
-  Checkbox,
   Divider,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Image,
-  Input,
-  Modal,
-  ModalContent,
 } from "@nextui-org/react";
-import React, { Key, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ArrowDownUp,
-  ArrowLeft,
   Book,
   ChevronDown,
   ClipboardSignature,
   FileText,
   MoreHorizontal,
+  PenSquare,
   Plus,
-  RefreshCcw,
   ScrollText,
-  Search,
+  Trash2,
   Video as VideoLucide,
   X,
 } from "lucide-react";
 import { Danger, Video } from "iconsax-react";
-import SortableComponent from "./Sortable";
-import { arrayMove } from "@dnd-kit/sortable";
-import { addBookToLessonAction, addDocumentToLesson, addLessonToDB, addPreExamToLessonAction, changePositionLesson } from "@/lib/actions/lesson.actions";
-import { CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet, Prisma } from "@prisma/client";
+import { addLessonToDB, changePositionLesson } from "@/lib/actions/lesson.actions";
+import { CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import {
-  getDetailPlayList,
-  listPlayList,
-} from "@/lib/actions/playlist.actions";
-import { addCourseVideo, changePositionVideoAction, deleteCourseVideo, swapPositionVideo } from "@/lib/actions/video.actions";
+import { changePositionVideoAction } from "@/lib/actions/video.actions";
 import ManageContent from "./Course/ManageContent";
-import { UniqueIdentifier } from "@dnd-kit/core";
-// import { useCourse } from "./Course/courseHook";
-import { listSheetsAction } from "@/lib/actions/sheet.action";
 import SortLessonModal from "./Course/Lesson/SortLessonModal";
-import { listBooksAction } from "@/lib/actions/book.actions";
 import SortContentModal from "./Course/Lesson/SortContentModal";
-import { listPreExamAction } from "@/lib/actions/pre-exam.actions";
 import AddDocumentToLesson from "./Course/Lesson/AddDocumentToLesson";
 import { listCourseAction } from "@/lib/actions/course.actions";
-
-// export type CourseLessonAndContent = CourseLesson & {
-//   CourseVideo: CourseVideo,
-// }
+import EditVideoDetail from "./Course/CourseVideo/EditVideoDetail";
+import EditLessonName from "./Course/Lesson/EditLessonName";
+import DeleteLesson from "./Course/Lesson/DeleteLesson";
+import AddLesson from "./Course/Lesson/AddLesson";
+import EditDocument from "./Course/Document/EditDocument";
 
 const ManageLesson = ({
   courseId,
@@ -65,12 +52,6 @@ const ManageLesson = ({
   mode: "tutor" | "admin"
   className: string
 }) => {
-  // const [lessons, setLessons] = useState([
-  //   { id: 1, title: "Dynamics - 1.1 Velocity and Acceleration" },
-  //   { id: 2, title: "Dynamics - 1.2 Graphical" },
-  //   { id: 3, title: "Dynamics - 1.3 X-Y Coordinate" },
-  // ]);
-  // const [refetchCourse] = useCourse()
   const {
     refetch: refetchCourse,
   } = useQuery({
@@ -83,6 +64,8 @@ const ManageLesson = ({
     message: "",
   });
   const [isAddLesson, setIsAddLesson] = useState(false);
+  const [isEditLesson, setIsEditLesson] = useState(false);
+  const [isDeleteLesson, setIsDeleteLesson] = useState(false);
   const [lessonName, setLessonName] = useState<string | undefined>();
   const [editLessonContent, setEditLessonContent] = useState(false);
   const [videoList, setVideoList] = useState([]);
@@ -91,33 +74,12 @@ const ManageLesson = ({
   const [selectedLesson, setSelectedLesson] = useState<any | undefined>();
   
   const [isOpenAddDocument, setIsOpenAddDocument] = useState(false)
-  const [selectedDocument, setSelectedDocument] = useState<string | undefined>()
+  const [selectedDocument, setSelectedDocument] = useState<any | undefined>()
   const [isOpenSortLesson, setIsOpenSortLesson] = useState(false)
 
-  const handleOnChangeLessonName = (value: string) => {
-    setLessonName(value);
-  };
-
-  const addLesson = async () => {
-    console.log("courseId", courseId);
-    console.log("lessonName", lessonName);
-    if (!lessonName) {
-      return;
-    }
-    const position = lessons ? lessons.length + 1 : 1;
-    const res = await addLessonToDB(courseId, {
-      name: lessonName,
-      position: position,
-    });
-    if(!res) {
-      return alert(`response is empty please view log on server`)
-    }
-    setLessonName(undefined)
-    setIsAddLesson(false);
-    if(onFetch){
-      onFetch()
-    }
-  };
+  const [selectedVideo, setSelectedVideo] = useState<CourseVideo| undefined>()
+  const [isOpenVideoDetail, setIsOpenVideoDetail] = useState(false)
+  const [isOpenEditDocument, setIsOpenEditDocument] = useState(false)
 
   const handleOnCloseEditLessonVideo = () => {
     setSelectedLesson(undefined);
@@ -156,28 +118,6 @@ const ManageLesson = ({
     setIsOpenAddDocument(false)
   }
 
-  const handleOnChangeDocument = (key : Key | null) => {
-    if(!key)return
-    setSelectedDocument(key.toString())
-  }
-
-  const submitAddDocumentToLesson = async (selectedDocument: string) => {
-    if(!selectedDocument) return
-    const [id, type] = selectedDocument.split(":")
-    if(type === "sheet"){
-      const response = await addDocumentToLesson(parseInt(id), selectedLesson.id)
-      console.log("🚀 ~ submitAddDocumentToLesson ~ response:", response)
-    }else if(type === "book"){
-      const response = await addBookToLessonAction(parseInt(id), selectedLesson.id)
-      console.log("🚀 ~ submitAddDocumentToLesson ~ response:", response)
-    }else if(type === "preExam"){
-      const response = await addPreExamToLessonAction(parseInt(id), selectedLesson.id)
-      console.log("🚀 ~ submitAddDocumentToLesson ~ response:", response)
-    }
-    handleOnCloseAddDocument()
-    refetchCourse()
-  }
-
   const handleOnCloseSortLesson = () => {
     setIsOpenSortLesson(false)
   }
@@ -190,19 +130,6 @@ const ManageLesson = ({
     }
     await refetchCourse()
     handleOnCloseSortLesson()
-  }
-
-  const renderStartContent = (document: any) => {
-    if(document.type === "book"){
-      return <Image className={`rounded`} width={16} src={document.image} alt="image book" />
-    }
-    else if(document.type === "sheet"){
-      return <ScrollText size={16} />
-    }
-    else if(document.type === "preExam"){
-      return <ClipboardSignature size={16} />
-    }
-    return <div>icon</div>
   }
 
   const handleOnClickSortContent = (lesson: CourseLesson) => {
@@ -220,8 +147,48 @@ const ManageLesson = ({
     refetchCourse()
   }
 
+  const handleOnOpenVideoDetail = (courseVideo: CourseVideo) => {
+    console.log("courseVideo", courseVideo);
+    setIsOpenVideoDetail(true)
+    setSelectedVideo(courseVideo)
+  }
+
+  const handleOnCloseVideoDetail = () => {
+    setIsOpenVideoDetail(false)
+    setSelectedVideo(undefined)
+  }
+
+  const handleOnClickChangeLessonName = (lesson: any) => {
+    setSelectedLesson(lesson)
+    setIsEditLesson(true)
+  }
+
+  const handleOnClickDeleteLesson = (lesson: any) => {
+    setSelectedLesson(lesson)
+    setIsDeleteLesson(true)
+  }
+
+  const handleOnClickEditDocument = (document: any, lesson: any) => {
+    console.log("document", document);
+    setSelectedDocument(document)
+    setSelectedLesson(lesson)
+    setIsOpenEditDocument(true)
+  }
+
   return (
-    <div className={`bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto ${className}`}>
+    <div className={`bg-default-100 p-app md:min-w-[469px] md:w-[469px] overflow-y-auto ${className}`}>
+      <EditVideoDetail
+        isOpen={isOpenVideoDetail}
+        onClose={handleOnCloseVideoDetail}
+        video={selectedVideo}
+      />
+      <EditDocument
+        isOpen={isOpenEditDocument}
+        document={selectedDocument}
+        onClose={() => setIsOpenEditDocument(false)}
+        onConfirm={refetchCourse}
+        lessonId={selectedLesson?.id}
+      />
       <AddDocumentToLesson
         open={isOpenAddDocument}
         onClose={handleOnCloseAddDocument}
@@ -243,51 +210,25 @@ const ManageLesson = ({
           onConfirm={submitChangePositionVideo}
         />
       }
-      
+      {/* Delete lesson */}
+      <DeleteLesson
+        isOpen={isDeleteLesson}
+        onClose={() => setIsDeleteLesson(false)}
+        lesson={selectedLesson}
+      />
+      {/* Edit lesson name */}
+      <EditLessonName
+        isOpen={isEditLesson}
+        lesson={selectedLesson}
+        onClose={() => setIsEditLesson(false)}
+      />
       {/* add lesson modal */}
-      <Modal
+      <AddLesson
         isOpen={isAddLesson}
-        closeButton={<></>}
-        backdrop="blur"
-        classNames={{
-          backdrop: `bg-backdrop`,
-        }}
-      >
-        <ModalContent>
-          {() => (
-            <div className={`p-app`}>
-              <div className={`flex`}>
-                <div className="flex-1"></div>
-                <div className="flex-1 text-3xl font-semibold font-IBM-Thai text-center">
-                  บทเรียน
-                </div>
-                <div
-                  onClick={() => setIsAddLesson(false)}
-                  className="cursor-pointer flex-1 flex justify-end items-center"
-                >
-                  <X size={32} />
-                </div>
-              </div>
-              <Input
-                size="lg"
-                className="font-IBM-Thai-Looped text-lg font-medium mt-3"
-                classNames={{
-                  input: "font-IBM-Thai-Looped text-lg font-medium",
-                }}
-                placeholder="ชื่อบทเรียน"
-                onChange={(e) => handleOnChangeLessonName(e.target.value)}
-              />
-              <Button
-                className={`mt-3 text-base font-medium font-IBM-Thai bg-default-foreground text-primary-foreground`}
-                fullWidth
-                onClick={() => addLesson()}
-              >
-                บันทึก
-              </Button>
-            </div>
-          )}
-        </ModalContent>
-      </Modal>
+        courseId={courseId}
+        onClose={() => setIsAddLesson(false)}
+        position={lessons?.length ?? 1}
+      />
       <ManageContent
         isOpen={editLessonContent}
         onConfirm={() => {
@@ -333,18 +274,42 @@ const ManageLesson = ({
               <div className="text-lg font-IBM-Thai-Looped font-medium">
                 {lesson.name}
               </div>
-              <Button size="sm" isIconOnly className="bg-transparent">
-                <MoreHorizontal size={24} />
-              </Button>
+              <Dropdown
+                classNames={{
+                  content: 'w-max min-w-[158px]'
+                }}
+              >
+                <DropdownTrigger>
+                  <Button size="sm" isIconOnly className="bg-transparent">
+                    <MoreHorizontal size={24} />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="lesson action" onAction={(key) => {
+                  if(key === "changeName"){
+                    handleOnClickChangeLessonName(lesson)
+                  }else if(key === "delete"){
+                    handleOnClickDeleteLesson(lesson)
+                  }
+                }}>
+                  <DropdownItem className={`text-default-foreground`} startContent={<PenSquare size={16} />} key={`changeName`}>
+                    เปลี่ยนชื่อ
+                  </DropdownItem>
+                  <DropdownItem className={`text-danger-500`} key={`delete`} startContent={<Trash2 size={16} />}>
+                    ลบ
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
             </div>
             <Divider className="mt-2" />
             <div className=" mt-2 font-IBM-Thai-Looped">
-              {lesson.CourseVideo.sort((a: any, b: any) => a.position - b.position).map((courseVideo: any, index: number) => {
+              {lesson.CourseVideo.sort((a: any, b: any) => a.position - b.position).map((courseVideo: CourseVideo, index: number) => {
                 return (
-                  <div key={`video${index}`} className="flex p-1 items-center">
+                  <div onClick={() => handleOnOpenVideoDetail(courseVideo)} key={`video${index}`} className="flex p-1 items-center cursor-pointer">
                     <div className="w-8 flex">
                       <Video className="text-foreground-400" size={16} />
-                      <FileText className="text-foreground-400" size={16} />
+                      {courseVideo.descriptionId &&
+                        <FileText className="text-foreground-400" size={16} />
+                      }
                     </div>
                     <div className="ml-1 flex-1">
                       {/* Dynamics - 1.1 Velocity and Acceleration */}
@@ -354,21 +319,6 @@ const ManageLesson = ({
                   </div>
                 );
               })}
-              {/* <div className="flex p-1 items-center">
-                <div className="w-8 flex">
-                  <Video className="text-foreground-400" size={16} />
-                  <FileText className="text-foreground-400" size={16} />
-                </div>
-                <div className="ml-1 flex-1">Dynamics - 1.2 Graphical</div>
-                <div className="text-sm text-foreground-400">59 นาที</div>
-              </div>
-              <div className="flex p-1 items-center">
-                <div className="w-8 flex">
-                  <Video className="text-foreground-400" size={16} />
-                </div>
-                <div className="ml-1 flex-1">Dynamics - 1.3 X-Y Coordinate</div>
-                <div className="text-sm text-foreground-400">74 นาที</div>
-              </div> */}
               {/* manage lesson content */}
               <div className="flex justify-center gap-2">
                 <Button
@@ -392,7 +342,7 @@ const ManageLesson = ({
               {documentList.map((document) => {
                 if(document.type === "sheet"){
                   return (
-                    <div className={`mt-2 flex gap-2 font-IBM-Thai-Looped`} key={`documentSheet${document.id}${lesson.id}`}>
+                    <div onClick={() => handleOnClickEditDocument(document, lesson)} className={`cursor-pointer mt-2 flex gap-2 font-IBM-Thai-Looped`} key={`documentSheet${document.id}${lesson.id}`}>
                       <ClipboardSignature size={20} />
                       <div>
                         {document.DocumentSheet.name}
@@ -401,7 +351,7 @@ const ManageLesson = ({
                   )
                 }else if(document.type === "book"){
                   return (
-                    <div className={`mt-2 flex items-center gap-2 font-IBM-Thai-Looped`} key={`documentBook${document.id}${lesson.id}`}>
+                    <div onClick={() => handleOnClickEditDocument(document, lesson)} className={`cursor-pointer mt-2 flex items-center gap-2 font-IBM-Thai-Looped`} key={`documentBook${document.id}${lesson.id}`}>
                       <Image className={`h-10 rounded`} src={document.DocumentBook.image} alt="book image" />
                       <div>
                         {document.DocumentBook.name}
@@ -410,7 +360,7 @@ const ManageLesson = ({
                   )
                 }else if(document.type === "preExam"){
                   return (
-                    <div className={`mt-2 flex gap-2 font-IBM-Thai-Looped`} key={`documentPreExam${document.id}${lesson.id}`}>
+                    <div onClick={() => handleOnClickEditDocument(document, lesson)} className={`cursor-pointer mt-2 flex gap-2 font-IBM-Thai-Looped`} key={`documentPreExam${document.id}${lesson.id}`}>
                       <ScrollText size={20} />
                       <div>
                         {document.DocumentPreExam.name}

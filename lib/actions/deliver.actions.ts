@@ -699,7 +699,7 @@ export const testAddBook = async () => {
       const res = await createDelivery({
          data: {
             status: "waiting",
-            type: "ship",
+            type: "pickup",
             approved: "2024-09-17T03:06:50.176Z",
             webappOrderId: 99999,
             updatedAddress: "test",

@@ -17,6 +17,8 @@ const LoginForm = () => {
    // const { data: session, status } = useSession();
    // console.log("session", session, status);
    const router = useRouter();
+   const { data: session, status } = useSession();
+   console.log("session", session, status);
    const [isVisible, setIsVisible] = useState(false);
    const form = useForm<loginProps>();
    const toggleVisibility = () => setIsVisible(!isVisible);
@@ -32,6 +34,7 @@ const LoginForm = () => {
       if (response?.ok) {
          router.replace("/");
       }
+      console.log("response", response);
    };
 
    return (

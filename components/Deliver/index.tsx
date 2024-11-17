@@ -191,13 +191,13 @@ const DeliverComp = ({
 
    return (
       <div className="flex flex-col pt-0 md:pt-6 px-app  bg-background relative overflow-y-hidden md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 ">
-         {/* <button
+         <button
             onClick={async () => {
                await testAddBook();
             }}
          >
             test
-         </button> */}
+         </button>
 
          {newData && (
             <NotifyModal
@@ -240,8 +240,8 @@ const DeliverComp = ({
             refetch={refetch}
             onClose={onCloseSelect}
          />
-
-         <div className=" flex flex-col mb-4  overflow-hidden  max-w-[960px] ">
+{/* max-w-[960px]  */}
+         <div className=" flex flex-col mb-4  overflow-hidden  ">
             <FormDeliver
                onCloseSelect={onCloseSelect}
                searchState={[searchData, setSearchData]}

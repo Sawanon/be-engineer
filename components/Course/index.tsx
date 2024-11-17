@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, Key, useMemo, useState } from "react";
+import React, { createContext, Key, useEffect, useMemo, useState } from "react";
 import {
    Button,
    Image,
@@ -7,6 +7,7 @@ import {
    Pagination,
    Select,
    SelectItem,
+   Spinner,
    Table,
    TableBody,
    TableCell,
@@ -14,7 +15,7 @@ import {
    TableHeader,
    TableRow,
 } from "@nextui-org/react";
-import { ClipboardSignature, Plus, ScrollText, Search } from "lucide-react";
+import { ChevronDown, ClipboardSignature, Plus, ScrollText, Search } from "lucide-react";
 import { courseStatus, tableClassnames } from "../../lib/res/const";
 import { Course as CourseT } from "@/lib/model/course";
 import {
@@ -31,10 +32,9 @@ import ErrorBox from "@/components/ErrorBox";
 import DeleteCourseDialog from "@/components/Course/DeleteCourseDialog";
 // import CourseContext from "@/app/course/provider";
 import { CourseLesson, Course as CoursePrisma, DocumentBook, DocumentPreExam, DocumentSheet, LessonOnDocument, LessonOnDocumentBook, LessonOnDocumentSheet} from '@prisma/client'
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
-
-
+import _ from 'lodash'
 
 const Status = ({ course }: { course: CourseT }) => {
    let textColor = "";
@@ -73,12 +73,13 @@ const CourseComponent = ({
    const [isOpenDrawer, setIsOpenDrawer] = useState(false);
    const [isSort, setIsSort] = useState(false);
    const [page, setPage] = useState(1);
-   const [pageSize, setPageSize] = useState(10);
+   const [pageSize, setPageSize] = useState(30);
    const [isDeleteCourse, setIsDeleteCourse] = useState(false);
    const [errorDeleteCourse, setErrorDeleteCourse] = useState({
       isError: false,
       message: "ลบไม่สำเร็จ ดูเพิ่มเติมใน Console",
    });
+   const [preSearchCourse, setPreSearchCourse] = useState("")
    const [searchCourse, setSearchCourse] = useState("")
    const [filterStatusCourse, setFilterStatusCourse] = useState<Key[] | undefined>()
    const [searchCourseByTutorId, setSearchCourseByTutorId] = useState<any | undefined>()
@@ -100,24 +101,22 @@ const CourseComponent = ({
       queryKey: ["listTutor"],
       queryFn: () => listTutor(),
    });
-
-   const { data: playList } = useQuery({
-      queryKey: ["listPlayList"],
-      queryFn: () => listPlayList(),
-   });
+   
    const searchParam = useSearchParams()
-   const courseId = searchParam.get('id')
-   const isOpen = searchParam.get('modal')
+   const pathName = usePathname()
 
    useMemo(() => {
-     if(isOpen && courseId && courses){
+    //TODO: check mode admin
+     if(courses){
+      const courseId = searchParam.get('drawerCourse')
+      if(!courseId) return
       const course = courses.find(course => course.id === parseInt(courseId))
       setSelectedCourse(course)
       if(course){
         setIsOpenDrawer(true)
       }
-     }
-   }, [isOpen, courseId])
+    }
+   }, [searchParam.get('drawerCourse'), courses, searchParam.get('mode')])
 
    const findUniqueDocument = (course: any) => {
     const uniqueSheets = Array.from(
@@ -199,12 +198,10 @@ const CourseComponent = ({
         uniqueBooks,
       }
     })
-    const currentCourses = courseWithUniqueBooks?.slice(startIndex, endIndex);
+    // const currentCourses = courseWithUniqueBooks?.slice(startIndex, endIndex);
+    // const currentCourses = courseWithUniqueBooks
     
-    if (courses) {
-      setPageSize(Math.ceil(courses.length / rowsPerPage));
-    }
-    let courseFromSearch = currentCourses
+    let courseFromSearch = courseWithUniqueBooks
     if(searchCourse !== ""){
       courseFromSearch = courseFromSearch?.filter(course => course.name.toLowerCase().startsWith(searchCourse))
     }
@@ -215,12 +212,22 @@ const CourseComponent = ({
     if(searchCourseByTutorId && searchCourseByTutorId.size > 0) {
       courseFromSearch = courseFromSearch?.filter(course => course.Tutor?.id === parseInt(searchCourseByTutorId.currentKey))
     }
-    return courseFromSearch;
+    
+    if (courseFromSearch) {
+      setPageSize(Math.ceil(courseFromSearch.length / rowsPerPage));
+    }
+    return courseFromSearch?.slice(startIndex, endIndex);
   }, [page, courses, isLoading, searchCourse, filterStatusCourse, searchCourseByTutorId]);
+
+  const replacePath = () => {
+    const newPath = `/course`;
+    window.history.replaceState(null, "", newPath);
+  };
 
   const handleCloseManageCourse = () => {
     setIsOpenDrawer(false);
     setSelectedCourse(undefined);
+    replacePath()
   };
 
   const confirmDeleteCourse = async () => {
@@ -265,17 +272,39 @@ const CourseComponent = ({
     setSelectedCourse(findCourse);
   };
 
+  const handleSearch = (value: string) => {
+    console.log("search !", value);
+
+    setSearchCourse(value)
+  }
+
+  const debouncedSearch = _.debounce(handleSearch, 3000);
+  useEffect(() => {
+    debouncedSearch(preSearchCourse)
+    return () => {
+      debouncedSearch.cancel()
+    }
+  }, [preSearchCourse])
+
+  const handleOnClickCourse = (course:any) => {
+    setSelectedCourse(course);
+    setIsOpenDrawer((prev) => !prev);
+    const mode = course.status === "noContent" ? `tutor` : `admin`
+    const newPath = `${pathName}?drawerCourse=${course.id}&mode=${mode}`;
+    window.history.replaceState(null, "", newPath);
+  }
+
   return (
     // <div className="flex flex-col pt-6 px-4 bg-background relative md:h-screenDevice bg-red-400 md:bg-green-400">
     // <CourseContext.Provider value={[refreshCourse]}>
       <div className="flex flex-col pt-6 px-app bg-background relative h-screenDevice bg-default-50">
         {/* Drawer */}
-        <DeleteCourseDialog
+        {/* <DeleteCourseDialog
           isOpen={isDeleteCourse}
           title={`แน่ใจหรือไม่ ?`}
           error={errorDeleteCourse}
-          onConfirm={() => {
-            confirmDeleteCourse()
+          onConfirm={async () => {
+            await confirmDeleteCourse()
           }}
           onCancel={handleCloseDeleteCourseDialog}
           detail={
@@ -288,13 +317,10 @@ const CourseComponent = ({
               </div>
             </>
           }
-        />
+        /> */}
         <ManageCourse
           isOpenDrawer={isOpenDrawer}
           selectedCourse={selectedCourse}
-          onDeleteCourse={async () => {
-            setIsDeleteCourse(true)
-          }}
           onClose={handleCloseManageCourse}
           onFetch={async () => {
             await refetchCourse()
@@ -306,8 +332,6 @@ const CourseComponent = ({
             // setAddedCourseId(courseId)
             // await refetchCourse()
           }}
-          tutorList={tutorList}
-          playList={playList}
         />
         <div className="font-IBM-Thai text-3xl font-bold py-2 hidden md:block">
           คอร์สเรียน
@@ -316,29 +340,39 @@ const CourseComponent = ({
           <Input
             className="font-IBM-Thai-Looped"
             type="text"
+            classNames={{
+              input: "text-[1em]",
+            }}
             placeholder="ค้นหา...คอร์สเรียน"
             startContent={<Search className="text-foreground-400" />}
             fullWidth
-            onChange={e => setSearchCourse(e.target.value)}
+            onChange={e => setPreSearchCourse(e.target.value)}
           />
           <div className="flex gap-2 mt-2 md:mt-0">
             <Select
               selectionMode="multiple"
               placeholder={`สถานะ`}
               aria-label="สถานะ"
-              className="font-IBM-Thai md:w-[113px]"
+              // color="default"
+              // variant="flat"
+              // className="flex-shrink-0 hidden md:flex text-base font-medium"
+              className="font-sans md:w-max text-default-foreground"
               classNames={{
-                value: ["font-bold"],
+                value: ["text-default-foreground font-medium font-sans"],
                 popoverContent: [`w-max right-0 absolute`],
+                trigger: [`justify-center py-[7px] px-4 gap-3`],
+                innerWrapper: [`w-max`],
+                selectorIcon: [`relative end-0 w-6 h-6`]
               }}
-              renderValue={(items) => <div>สถานะ</div>}
+              selectorIcon={<ChevronDown size={24} />}
+              renderValue={(items) => <div className={`text-default-foreground font-sans`}>สถานะ</div>}
               onSelectionChange={(key) => {
                 setFilterStatusCourse(Array.from(key))
               }}
             >
               {Object.keys(courseStatus).map((key, index) => {
                 return (
-                  <SelectItem key={`${key}`} startContent={courseStatus[key].icon}>
+                  <SelectItem className={`font-serif`} key={`${key}`} startContent={courseStatus[key].icon}>
                     {courseStatus[key].name}
                   </SelectItem>
                 );
@@ -348,11 +382,19 @@ const CourseComponent = ({
               selectionMode="single"
               placeholder={`ติวเตอร์`}
               aria-label="ติวเตอร์"
-              className="font-IBM-Thai md:w-[113px]"
+              // color="default"
+              // variant="flat"
+              // className="flex-shrink-0 hidden md:flex text-base font-medium"
+              className="font-sans md:w-max"
               classNames={{
-                value: ["font-bold"],
+                value: ["text-default-foreground font-medium font-sans"],
+                trigger: [`justify-center py-[7px] px-4 gap-3`],
+                popoverContent: [`w-max right-0 absolute`],
+                innerWrapper: [`w-max`],
+                selectorIcon: [`relative end-0 w-6 h-6`],
               }}
               // renderValue={(items) => <div>ติวเตอร์</div>}
+              selectorIcon={<ChevronDown size={24} />}
               disabled={tutorList === undefined}
               onSelectionChange={(key) => {
                 console.log("onchange tutor", key);
@@ -382,13 +424,13 @@ const CourseComponent = ({
             </Select>
           </div>
           <Button
-            className="mt-2 md:mt-0 w-full md:w-auto font-IBM-Thai text-base font-medium bg-default-foreground text-primary-foreground"
-            endContent={<Plus strokeWidth={4} />}
+            className="flex mt-2 md:mt-0 w-full md:w-auto font-sans text-base font-medium bg-default-foreground text-primary-foreground"
+            endContent={<Plus className={`min-w-5 min-h-5`} size={20} />}
             onClick={() => {
               setIsOpenDrawer(true);
             }}
           >
-            <div className={`mt-[2px]`}>เพิ่ม</div>
+            <div className={`mt-1`}>เพิ่ม</div>
           </Button>
         </div>
         <div className="mt-4 flex-1">
@@ -399,22 +441,23 @@ const CourseComponent = ({
               <TableColumn className="font-IBM-Thai">ติวเตอร์</TableColumn>
               <TableColumn className="font-IBM-Thai">เอกสาร</TableColumn>
             </TableHeader>
-            <TableBody items={courseItem ?? []}>
+            <TableBody
+              isLoading={isLoading}
+              loadingContent={<Spinner />}
+              items={courseItem ?? []}
+            >
               {/* {courses.map((course, index) => ( */}
               {(course) => (
                 <TableRow key={`courseRow${course.id}`}>
                   <TableCell
-                    onClick={() => {
-                      setSelectedCourse(course);
-                      setIsOpenDrawer((prev) => !prev);
-                    }}
+                    onClick={() => handleOnClickCourse(course)}
                   >
                     <div className="flex gap-2 items-center">
-                      {/* {course.image && (
-                        <Image radius="sm" width={40} src={course.image} />
-                      )} */}
+                      {course.imageUrl && (
+                        <Image radius="sm" width={40} src={course.imageUrl} />
+                      )}
                       <div className="font-IBM-Thai-Looped">
-                        {course.name} {course.id}
+                        {course.name}
                       </div>
                     </div>
                   </TableCell>
@@ -459,7 +502,7 @@ const CourseComponent = ({
           <Pagination
             total={pageSize}
             initialPage={page}
-            className="p-0 m-0"
+            className={`p-0 m-0 font-serif`}
             classNames={{
               cursor: "bg-default-foreground",
             }}

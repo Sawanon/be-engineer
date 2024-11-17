@@ -14,13 +14,15 @@ const ConectWebAppModal = ({
   branch,
   courseId,
   books,
+  onSuccess,
 }:{
   isOpen: boolean,
   onClose: () => void,
   webappCourseId?: number | null,
   branch?: string | null,
   courseId?: number,
-  books: DocumentBook[]
+  books: DocumentBook[],
+  onSuccess: () => void,
 }) => {
   const { data: webappBranchCourseList, isFetched } = useQuery({
     queryKey: [`listCourseWebapp`],
@@ -35,20 +37,13 @@ const ConectWebAppModal = ({
   const [selectedWebAppCourse, setSelectedWebAppCourse] = useState<WebAppCourse | undefined>()
   const [isLoading, setIsLoading] = useState(false)
 
-  useMemo(() => {
-    console.log("branch", branch);
-    console.log("webappCourseId", webappCourseId);
-    console.log(books);
-    
-  }, [branch, webappCourseId, books])
-
   const handleOnClose = () => {
     onClose()
     setSelectedBranch(undefined)
     setSelectedWebAppCourse(undefined)
   }
 
-  const handleOnChangeWebappBranch = async (key: Key | null) => {
+  const handleOnChangeWebappBranch = async (key: Key | null | string) => {
     console.log(key);
     if (!webappBranchCourseList) return;
     const webappCourseList = webappBranchCourseList.find(
@@ -59,11 +54,10 @@ const ConectWebAppModal = ({
   };
 
   const renderWebappImage = (webappCourseId: number | null | undefined) => {
-    console.log(webappCourseId);
-    if(!webappCourseId) return <div></div>
-    if(!webappCourseList) return <div></div>
+    if(!webappCourseId) return
+    if(!webappCourseList) return
     const imageUrl = webappCourseList.find(course => course.id === webappCourseId)
-    if(!imageUrl) return <div></div>
+    if(!imageUrl) return
     return (
       <Image className={`min-w-6 rounded`} width={24} height={24} src={`${imageUrl.image}`} />
     )
@@ -71,15 +65,10 @@ const ConectWebAppModal = ({
 
   const handleOnChangeWebapp = async (key: Key | null) => {
     console.log(key);
-    if (!key) return;
+    if (!key) return setSelectedWebAppCourse(undefined);
     const webappCourse = webappCourseList?.find((course) => `${course.id}` === `${key}`)
+    console.log("🚀 ~ handleOnChangeWebapp ~ webappCourse:", webappCourse)
     setSelectedWebAppCourse(webappCourse);
-    // const response = await updateCourse(selectedCourse?.id, {
-    //   webappCourseId: parseInt(key.toString()),
-    //   status: webappCourse!.hasFeedback ? 'enterForm' : 'uploadWebapp'
-    // });
-    // console.log("🚀 ~ handleOnChangeWebapp ~ response:", response);
-    // refetchCourse()
   };
 
   const submitConnectWebappCourse = async () => {
@@ -87,10 +76,10 @@ const ConectWebAppModal = ({
       console.log(courseId);
       console.log(selectedBranch);
       console.log(selectedWebAppCourse?.id);
-      if(books.length === 0){
-        return
-      }
-      const book = books[0]
+      // if(books.length === 0){
+      //   console.log("books is empty", books);
+      //   return
+      // }
       if(!courseId || !selectedBranch || !selectedWebAppCourse) {
         return
       }
@@ -99,15 +88,31 @@ const ConectWebAppModal = ({
         courseId,
         selectedBranch!,
         selectedWebAppCourse!.id,
-        book.id,
+        // book.id,
+        books,
+        selectedWebAppCourse.image,
       )
       console.log(response);
+      if(typeof response === "string"){
+        throw response
+      }
+      onSuccess()
+      handleOnClose()
     } catch (error) {
       console.error(error)
     } finally {
       setIsLoading(false)
     }
   }
+
+  useMemo(() => {
+    if(webappBranchCourseList && branch && isOpen){
+      handleOnChangeWebappBranch(branch)
+      const courseByBranch = webappBranchCourseList.find(courseByBranch => courseByBranch.branch === branch)
+      const webAppCourse = courseByBranch.courses.find((webAppCourse:any) => `${webAppCourse.id}` === `${webappCourseId}`)
+      setSelectedWebAppCourse(webAppCourse)
+    }
+  }, [branch, webappCourseId, webappBranchCourseList, isOpen])
 
   return (
     <Modal
@@ -117,6 +122,7 @@ const ConectWebAppModal = ({
       classNames={{
         backdrop: `bg-backdrop`,
       }}
+      placement='top-center'
     >
       <ModalContent className={`p-app`}>
         <div className={`flex`}>
@@ -138,15 +144,21 @@ const ConectWebAppModal = ({
         </div>
         <Autocomplete
           aria-labelledby={`webappcourseBranch`}
-          className={`mt-app font-IBM-Thai-Looped`}
+          className={`mt-app font-serif`}
           placeholder="เลือกสาขา"
           onSelectionChange={handleOnChangeWebappBranch}
           defaultSelectedKey={selectedBranch}
+          inputProps={{
+            classNames: {
+              input: [`text-[1em]`],
+            },
+          }}
         >
           {webappBranchCourseList ? (
             webappBranchCourseList?.map((webappCourse, index) => {
               return (
                 <AutocompleteItem
+                  className={`font-serif`}
                   aria-labelledby={`webappcourseBranch${index}`}
                   key={webappCourse.branch}
                   value={webappCourse.branch}
@@ -166,12 +178,14 @@ const ConectWebAppModal = ({
           className={`mt-2 font-IBM-Thai-Looped`}
           onSelectionChange={handleOnChangeWebapp}
           placeholder="เลือกคอร์ส"
-          defaultSelectedKey={
-            !webappCourseList
-              ? ""
-              : webappCourseId?.toString()
-          }
+          disabledKeys={['webappCourseLoading']}
+          selectedKey={selectedWebAppCourse?.id.toString()}
           startContent={renderWebappImage(selectedWebAppCourse?.id)}
+          inputProps={{
+            classNames: {
+              input: [`text-[1em]`],
+            },
+          }}
         >
           {webappCourseList ? (
             webappCourseList?.map((webappCourse, index) => {

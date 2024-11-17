@@ -21,15 +21,9 @@ import {
 } from "@nextui-org/react";
 import { Danger } from "iconsax-react";
 import {
-   LuArrowRightLeft,
+
    LuArrowUpRight,
-   LuExternalLink,
-   LuImage,
-   LuMinus,
-   LuPackageCheck,
-   LuPlus,
-   LuScrollText,
-   LuSearch,
+
    LuX,
 } from "react-icons/lu";
 
@@ -79,7 +73,7 @@ const BookUsage = ({
                               src={`${book?.image}`}
                            />
                            <div className="flex flex-1 items-center">
-                              <p className="text-lg font-semibold">
+                              <p className="text-lg font-semibold font-sans">
                                  {/* หนังสือ Dynamics midterm vol.1 - 2/2566{" "} */}
                                  {book?.name}{" "}
                               </p>
@@ -98,19 +92,28 @@ const BookUsage = ({
                      </div>
 
                      <div className="col-span-2 flex flex-col gap-2">
-                        <p className="text-[#71717A] font-bold text-lg">
+                        <p className="text-[#71717A] font-bold text-lg font-serif">
                            รายการคอร์สที่ใช้งาน
                         </p>
                         <div className="ml-4   ">
-                           {courseList?.map((course, index) => (
-                              <Link key={`courseUsage${index}`} href={`/course?id=${course.id}&modal=true`}>
-                                 <div className="flex items-center">
-                                    <BulletPoint />
-                                    <p>{course.name}</p>
-                                    <LuArrowUpRight className="self-start" />
-                                 </div>
-                              </Link>
-                           ))}
+                           {courseList?.map((course, index) => {
+                              const mode = course.status === "noContent" ? `tutor` : `admin`
+                              const link = `/course?drawerCourse=${course.id}&mode=${mode}`
+                              return (
+                                 <Link
+                                    target="_blank"
+                                    key={`courseUsage${index}`}
+                                    // href={`/course?drawerCourse=${course.id}`}
+                                    href={link}
+                                 >
+                                    <div className="flex items-center font-serif">
+                                       <BulletPoint />
+                                       <p>{course.name}</p>
+                                       <LuArrowUpRight className="self-start" />
+                                    </div>
+                                 </Link>
+                              )
+                           })}
                            {/* <div className="flex items-center">
                               <BulletPoint />
                               <p> Dynamics midterm 2/2565</p>

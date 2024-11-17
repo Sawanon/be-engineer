@@ -25,47 +25,60 @@ import {
    LuTruck,
    LuX,
 } from "react-icons/lu";
-import dayjs from "dayjs";
 import { modalProps, stateProps } from "@/@type";
-import { Book, FileSignature, ScrollText } from "lucide-react";
+import { Book, ChevronDown, FileSignature, ScrollText } from "lucide-react";
 import { DocumentMode } from ".";
 const FormDocument = ({
    onAddDocument,
    onChangeMode,
    className,
+   onChangeSearch,
 }:{
    onAddDocument: () => void,
    onChangeMode: (mode: DocumentMode) => void,
    className: string,
+   onChangeSearch: (value: string) => void,
 }) => {
    return (
-      <section className={`grid grid-cols-12  gap-2  items-center ${className}`}>
+      <section className={`flex gap-2 md:flex-row flex-col items-center ${className}`}>
          <Input
             type="text"
             // label="Email"
-            placeholder="ชื่อผู้เรียน คอร์สเรียน หรือ ลำดับชื่อหนังสือ midterm/final เทอม ปีการศึกษา"
+            placeholder="ชื่อหนังสือ midterm/final เทอม ปีการศึกษา"
             // labelPlacement="outside"
             startContent={
-               <CiSearch className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
+               <CiSearch strokeWidth={1} className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
             }
             aria-label={`search document`}
-            className="col-span-12 md:col-span-8 order-1"
+            className={`font-serif`}
+            classNames={{
+               input: [`text-[1em]`],
+            }}
+            onChange={(e) => onChangeSearch(e.target.value)}
          />
-
-         <div className="flex gap-2 flex-1 order-2 md:col-span-4 col-span-12">
-            <StatusSelect
-               onChange={(mode) => {
-                  onChangeMode(mode.currentKey as DocumentMode)
-               }}
-            />
-            <Button
-               onClick={onAddDocument}
-               className="max-w-max flex-1 bg-default-foreground text-primary-foreground"
-               endContent={<LuPlus size={20} />}
-               aria-label="add document"
-            >
-               เพิ่ม
-            </Button>
+         <div className="flex gap-2 flex-1 order-2 w-full md:w-auto">
+            <div className={`flex-1`}>
+               <StatusSelect
+                  onChange={(mode) => {
+                     onChangeMode(mode.currentKey as DocumentMode)
+                  }}
+               />
+            </div>
+            <div className={`flex-1`}>
+               <Button
+                  onClick={onAddDocument}
+                  className={`md:max-w-max w-full font-sans font-medium bg-default-foreground text-primary-foreground`}
+                  endContent={<LuPlus size={20} />}
+                  aria-label="add document"
+               >
+                  <span className={`md:hidden`}>
+                     เพิ่มเอกสาร
+                  </span>
+                  <span className={`hidden md:block`}>
+                     เพิ่ม
+                  </span>
+               </Button>
+            </div>
          </div>
       </section>
    );
@@ -76,26 +89,30 @@ export default FormDocument;
 const StatusSelect = ({
    onChange,
 }:{
-   onChange: (mode: SharedSelection) => void
+   onChange: (mode: SharedSelection) => void,
 }) => {
    return (
       <Select
          placeholder="หนังสือ"
-         className={`max-w-[116px]`}
+         className={`font-sans md:max-w-[116px] w-full`}
          aria-label={`document`}
          classNames={{
-            value: "text-black",
+            value: "text-default-foreground font-medium",
             trigger: cn("flex items-center justify-center  "),
             base: cn("flex-1 "),
             popoverContent: [`w-max right-0 absolute`],
+            innerWrapper: [`w-max`],
+            selectorIcon: [`w-6 h-6 end-0 relative`],
          }}
          selectionMode={"single"}
+         selectorIcon={<ChevronDown size={24} />}
          onSelectionChange={onChange}
       >
          <SelectItem
             classNames={{
                base: cn("flex gap-1"),
             }}
+            className={`font-serif`}
             aria-label={`หนังสือ`}
             startContent={<Book size={16} />}
             key={"book"}
@@ -106,6 +123,7 @@ const StatusSelect = ({
             classNames={{
                base: cn("flex gap-1"),
             }}
+            className={`font-serif`}
             aria-label={`เอกสาร`}
             startContent={<ScrollText size={16} />}
             key={"sheet"}
@@ -116,6 +134,7 @@ const StatusSelect = ({
             classNames={{
                base: cn("flex gap-1"),
             }}
+            className={`font-serif`}
             aria-label={`pre-exam`}
             startContent={<FileSignature size={16} />}
             key={"pre-exam"}

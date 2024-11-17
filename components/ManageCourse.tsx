@@ -1,97 +1,57 @@
 "use client";
 import {
-  addCourse,
   deleteCourse,
+  duplicationCourseAction,
   listCourseAction,
   listCourseWebapp,
   searchImageByCourseName,
-  updateCourse,
 } from "@/lib/actions/course.actions";
 import { PlayList } from "@/lib/model/playlist";
 import { Course } from "@/lib/model/course";
 import React , { useMemo, useState } from "react";
 import CustomDrawer from "./Drawer";
 import {
-  ArrowDownUp,
   ArrowLeft,
-  Book,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardSignature,
   Copy,
   ExternalLink,
-  FileSignature,
-  FileText,
-  MoreHorizontal,
-  Plus,
   RefreshCcw,
-  ScrollText,
-  Search,
-  Tag,
-  Video as VideoLucide,
-  X,
 } from "lucide-react";
-import { Danger, PlayCircle, Video } from "iconsax-react";
 import {
-  Accordion,
-  AccordionItem,
-  Autocomplete,
-  AutocompleteItem,
   Button,
   Divider,
   Image,
-  Input,
-  Modal,
-  ModalContent,
-  Pagination,
   Popover,
   PopoverContent,
   PopoverTrigger,
-  Select,
-  SelectItem,
   Snippet,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-  Textarea,
 } from "@nextui-org/react";
 import ManageLesson from "./ManageLesson";
-import { div } from "framer-motion/client";
 import copy from "copy-to-clipboard";
 import { useQuery } from "@tanstack/react-query";
-import { Key } from "@react-types/shared";
 import StatusIcon from "./Course/StatusIcon";
-import { CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet } from "@prisma/client";
+import { CourseVideo } from "@prisma/client";
 import ConectWebAppModal from "./Course/ConectWebAppModal";
+import LessonAdminMode from "./Course/LessonAdminMode";
+import DeleteCourseDialog from "./Course/DeleteCourseDialog";
+import AddCourseForm from "./Course/AddCourseForm";
+import EditCourseForm from "./Course/EditCourseForm";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 const ManageCourse = ({
   isOpenDrawer,
   selectedCourse,
   onClose,
   onConfirmAdd,
-  tutorList,
-  playList,
   onFetch,
-  onDeleteCourse,
 }: {
   isOpenDrawer: boolean;
   selectedCourse: Course | undefined | null;
   onClose: () => void;
-  onConfirmAdd?: (courseId: number) => Promise<void>;
+  onConfirmAdd: (courseId: number) => Promise<void>;
   onFetch?: () => Promise<void>;
-  onDeleteCourse?: () => Promise<void>;
-  tutorList:
-    | {
-        id: number;
-        name: string;
-      }[]
-    | undefined;
-  playList: PlayList[] | undefined;
 }) => {
+  const searchParams = useSearchParams()
   const { data: webappBranchCourseList, isFetched } = useQuery({
     queryKey: [`listCourseWebapp`],
     queryFn: () => listCourseWebapp(),
@@ -109,18 +69,15 @@ const ManageCourse = ({
  });
   const [isAdd, setIsAdd] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+  const [manageCourseMode, setManageCourseMode] = useState<'add' | 'edit' | 'show'>('add')
+  
   const [isDelete, setIsDelete] = useState(false);
-  const [isSort, setIsSort] = useState(false);
-  const [courseName, setCourseName] = useState<string | undefined>();
-  const [courseDetail, setCourseDetail] = useState<string | undefined>();
-  const [courseTutorId, setCourseTutorId] = useState<number | undefined>();
-  const [clueLink, setCourseLink] = useState<string | undefined>();
-  const [playlist, setPlaylist] = useState<string | undefined>();
-  const [price, setPrice] = useState<number | undefined>();
-  const [addCourseError, setAddCourseError] = useState({
+  const [isDeleteCourse, setIsDeleteCourse] = useState(false);
+  const [errorDeleteCourse, setErrorDeleteCourse] = useState({
     isError: false,
-    message: "",
+    message: "ลบไม่สำเร็จ ดูเพิ่มเติมใน Console",
   });
+
   const [mode, setMode] = useState<"tutor" | "admin">("tutor");
   const [courseImageList, setCourseImageList] = useState<string[]>([]);
   const [webappCourseList, setWebappCourseList] = useState<
@@ -128,6 +85,7 @@ const ManageCourse = ({
     | undefined
   >();
   const [isOpenConectWebapp, setIsOpenConectWebapp] = useState(false)
+  const [isLoadingDuplicate, setIsLoadingDuplicate] = useState(false)
 
   const listImageCourse = async (courseName: string) => {
     const response = await searchImageByCourseName(courseName);
@@ -135,11 +93,20 @@ const ManageCourse = ({
   };
 
   useMemo(() => {
+    const mode = searchParams.get('mode')
+    if(mode){
+      const typeMode = mode === 'admin' ? 'admin' : 'tutor'
+      setMode(typeMode)
+    }
+  }, [searchParams.get('mode')])
+
+  useMemo(() => {
     if(!selectedCourse){
-      setMode("tutor")
+      setMode('tutor')
       setCourseImageList([])
     }
     setIsAdd(selectedCourse === undefined);
+    setManageCourseMode(selectedCourse === undefined ? 'add' : 'show')
     if (selectedCourse) {
       listImageCourse(selectedCourse.name);
     }
@@ -155,179 +122,20 @@ const ManageCourse = ({
     setWebappCourseList(webappCourseList);
   }, [isFetched, selectedCourse]);
 
-  useMemo(() => {
-    console.warn(webappCourseList);
-  }, [webappCourseList]);
-
-  const handleOnChangeCourseName = (value: string) => {
-    setCourseName(value);
-  };
-
-  const handleOnChangeCourseDetail = (value: string) => {
-    setCourseDetail(value);
-  };
-
-  const handleOnChangeCourseTutor = (value: string) => {
-    setCourseTutorId(parseInt(value));
-  };
-
-  const handleOnChangeCourseLink = (value: string) => {
-    setCourseLink(value);
-  };
-
-  const handleOnChangePlaylist = (value: string) => {
-    setPlaylist(value);
-  };
-
-  const handleOnChangePrice = (value: string) => {
-    setPrice(parseInt(value));
-  };
-
   const handleClose = () => {
     setIsEdit(false);
     setIsDelete(false);
     setIsAdd(true);
-    clearData();
     onClose();
   };
 
-  const clearData = () => {
-    setCourseName(undefined);
-    setCourseDetail(undefined);
-    setCourseTutorId(undefined);
-    setCourseLink(undefined);
-    setPlaylist(undefined);
-    setPrice(undefined);
-  };
-
-  const handleAddCourseConfirm = async () => {
-    try {
-      if (!onConfirmAdd) {
-        return;
-      }
-      const res = await submitAddCourse();
-      if (!res) return console.error(`can't add course ManagementCourse:140`);
-      await onConfirmAdd(res.id);
-      setIsAdd(false);
-    } catch (error) {
-      console.error(error);
-      if (error instanceof Error) {
-        setAddCourseError({
-          isError: true,
-          message: error.message,
-        });
-      }
-    } finally {
-      setAddCourseError({
-        isError: false,
-        message: "",
-      })
-    }
-  };
-
-  const submitAddCourse = async () => {
-    if (
-      !courseName ||
-      !price ||
-      !courseDetail ||
-      !courseTutorId ||
-      !clueLink ||
-      !playlist
-    ) {
-      throw Error(`กรุณากรอกข้อมูลให้ครบ`);
-    }
-    const res = await addCourse({
-      name: courseName,
-      detail: courseDetail,
-      tutor: courseTutorId,
-      clueLink: clueLink,
-      price: price,
-      status: "noContent",
-      playlist: playlist,
-    });
-    console.log(res);
-    return res;
-  };
-
   const handleDeleteCourse = async () => {
-    if (onDeleteCourse) {
-      onDeleteCourse();
-    }
-    // console.log(selectedCourse.id);
-
-    // return
-    // if(!selectedCourse){
-    //   return
-    // }
-    // const res = await deleteCourse(selectedCourse.id)
-    // console.log(res);
-    // setIsDelete(true)
-  };
-
-  const handleConfirmEditCourse = async () => {
-    if (!selectedCourse) return;
-    setIsEdit(false);
-    console.table({
-      courseName,
-      courseDetail,
-      courseTutorId,
-      clueLink,
-      price,
-      playlist,
-    });
-    let payload: any = {};
-    if (courseName !== undefined) payload.name = courseName;
-    if (courseDetail !== undefined) payload.detail = courseDetail;
-    if (courseTutorId !== undefined) payload.tutorId = courseTutorId;
-    if (clueLink !== undefined) payload.clueLink = clueLink;
-    if (price !== undefined) payload.price = price;
-    if (playlist !== undefined) payload.playlist = playlist;
-    console.log("🚀 ~ handleConfirmEditCourse ~ payload:", payload);
-    const response = await updateCourse(selectedCourse?.id, payload);
-    console.log("🚀 ~ handleConfirmEditCourse ~ response:", response);
-    await refetchCourse();
+    setIsDeleteCourse(true)
   };
 
   const handleSwitchMode = () => {
     setMode((prev) => (prev === "tutor" ? "admin" : "tutor"));
   };
-
-  const handleOnChangeWebappBranch = async (key: Key | null) => {
-    console.log(key);
-    if (!webappBranchCourseList) return;
-    const webappCourseList = webappBranchCourseList.find(
-      (webappBranch) => webappBranch.branch === key
-    )?.courses;
-    setWebappCourseList(webappCourseList);
-    if (!selectedCourse) return;
-    if (!key) return;
-    const response = await updateCourse(selectedCourse?.id, {
-      branch: key,
-    });
-    console.log(response);
-  };
-
-  const handleOnChangeWebapp = async (key: Key | null) => {
-    console.log(key);
-    if (!key || !selectedCourse) return;
-    const webappCourse = webappCourseList?.find((course) => `${course.id}` === `${key}`)
-    const response = await updateCourse(selectedCourse?.id, {
-      webappCourseId: parseInt(key.toString()),
-      status: webappCourse!.hasFeedback ? 'enterForm' : 'uploadWebapp'
-    });
-    console.log("🚀 ~ handleOnChangeWebapp ~ response:", response);
-    refetchCourse()
-  };
-
-  const renderWebappImage = (webappCourseId: number | null | undefined) => {
-    if(!webappCourseId) return <div></div>
-    if(!webappCourseList) return <div></div>
-    const imageUrl = webappCourseList.find(course => course.id === webappCourseId)
-    if(!imageUrl) return <div></div>
-    return (
-      <Image className={`min-w-6 rounded`} width={24} height={24} src={`${imageUrl.image}`} />
-    )
-  }
 
   const renderHourCourse = () => {
     if(!selectedCourse) return {hour: 0, minute: 0, totalHour: 0}
@@ -338,7 +146,6 @@ const ManageCourse = ({
         totalMinute += (courseVideo.hour*60) + (courseVideo.minute)
       })
     })
-    console.log("🚀 ~ renderHourCourse ~ totalMinute:", totalMinute)
     const hour = Math.floor(totalMinute / 60)
     const minute = totalMinute % 60
     let totalHour = 0
@@ -355,24 +162,77 @@ const ManageCourse = ({
   }
   const {hour, minute, totalHour} = renderHourCourse()
 
-  const renderLessonTime = (lesson: any) => {
-    const courseVideoList: CourseVideo[] = lesson.CourseVideo
-    console.log(courseVideoList);
-    let totalTime = 0
-    courseVideoList.forEach(courseVideo => {
-      totalTime += (courseVideo.hour * 60) + (courseVideo.minute)
-    })
-    const hour = Math.floor(totalTime / 60)
-    const minute = totalTime % 60
-    return `(${hour} ชม. ${minute} นาที)`
-  }
-
   const handleOnClickConectionWebapp = () => {
     setIsOpenConectWebapp(true)
   }
 
   const handleOnCloseConectionWebapp = () => {
     setIsOpenConectWebapp(false)
+  }
+
+  const renderWebappCourse = (courseId: number) => {
+    if(!webappCourseList) return <div>Loading...</div>
+    const webappCourse = webappCourseList.find(course => course.id === courseId)
+    return (
+      <div className={`flex items-center py-[6px] px-2 gap-1 flex-1`}>
+        <Image src={`${webappCourse?.image}`} className={`h-10 w-10 rounded`} />
+        <div className={`flex-1 font-IBM-Thai-Looped text-start`}>
+          <div className={`font-normal text-base text-default-foreground`}>
+            {webappCourse?.name}
+          </div>
+          <div className={`text-xs text-default-500`}>
+            {webappCourse?.term}
+          </div>
+          {selectedCourse?.branch === "KMITL" &&
+            <div className={`text-xs font-normal text-default-500 rounded bg-default-200 w-max px-1 py-[2px]`}>
+              KMITL
+            </div>
+          }
+        </div>
+      </div>
+    )
+  }
+
+  const confirmDeleteCourse = async () => {
+    if (!selectedCourse) {
+        return;
+    }
+    const res = await deleteCourse(selectedCourse.id);
+    console.log(res);
+    if (!res) {
+        setErrorDeleteCourse((prev) => ({ ...prev, isError: true }));
+        return;
+    }
+    setIsDeleteCourse(false);
+    handleClose();
+    refetchCourse();
+  };
+
+  const handleCloseDeleteCourseDialog = () => {
+    setErrorDeleteCourse((prev) => ({ ...prev, isError: false }));
+    setIsDeleteCourse(false);
+  };
+
+  const handleOnAddSuccess = async (courseId: number) => {
+    await onConfirmAdd(courseId)
+    setManageCourseMode('show')
+  }
+
+  const handleOnClickDuplicate = async () => {
+    try {
+      if(selectedCourse){
+        setIsLoadingDuplicate(true)
+        const responseDuplicate = await duplicationCourseAction(selectedCourse.id)
+        if(!responseDuplicate) throw `responseDuplicate is ${responseDuplicate}`
+        if(typeof responseDuplicate === "string") throw responseDuplicate
+        handleClose()
+        if(onFetch) onFetch()
+      }
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsLoadingDuplicate(false)
+    }
   }
 
   return (
@@ -384,6 +244,25 @@ const ManageCourse = ({
         }
       }}
     >
+      <DeleteCourseDialog
+        isOpen={isDeleteCourse}
+        title={`แน่ใจหรือไม่ ?`}
+        error={errorDeleteCourse}
+        onConfirm={async () => {
+          await confirmDeleteCourse()
+        }}
+        onCancel={handleCloseDeleteCourseDialog}
+        detail={
+          <>
+            <div>
+              คุณแน่ใจหรือไม่ที่จะลบ
+            </div>
+            <div>
+              คอร์ส {selectedCourse?.name}
+            </div>
+          </>
+        }
+      />
       <ConectWebAppModal
         isOpen={isOpenConectWebapp}
         onClose={handleOnCloseConectionWebapp}
@@ -391,6 +270,7 @@ const ManageCourse = ({
         webappCourseId={selectedCourse?.webappCourseId}
         courseId={selectedCourse?.id}
         books={books}
+        onSuccess={refetchCourse}
       />
       {/* <div className="block md:flex h-full w-auto overflow-auto"> */}
       <div className="block md:flex w-auto overflow-auto md:h-full">
@@ -408,16 +288,8 @@ const ManageCourse = ({
               {mode === "tutor" ? `แอดมิน` : `ติวเตอร์`}
             </Button>
           </div>
-          {addCourseError.isError && (
-            <div className="mt-2 rounded-lg bg-danger-50 text-danger-500 border-l-4 border-danger-500 flex items-center gap-2 py-2 px-[14px]">
-              <Danger variant="Bold" />
-              <div className="font-IBM-Thai-Looped font-normal">
-                {addCourseError.message}
-              </div>
-            </div>
-          )}
           {mode === "admin" ? (
-            // TODO: admin mode
+            // admin mode
             <div className={`mt-app`}>
               <div className={`flex gap-1 items-center`}>
                 <StatusIcon status={selectedCourse?.status!} />
@@ -439,17 +311,18 @@ const ManageCourse = ({
               <div className={`mt-2 flex gap-2 overflow-auto scrollbar-hide`}>
                 {courseImageList.map((imageUrl, index) => {
                   return (
-                    <div
-                      key={`imageCourse${index}`}
-                      className={`min-w-[100px] w-[100px] h-[100px]`}
-                    >
-                      <Image
-                        key={`courseImage${index}`}
-                        src={`${imageUrl}`}
-                        width={100}
-                        height={100}
-                      />
-                    </div>
+                    <Link key={`imageCourse${index}`} href={`${imageUrl}`} target="_blank">
+                      <div
+                        className={`min-w-[100px] w-[100px] h-[100px]`}
+                      >
+                        <Image
+                          key={`courseImage${index}`}
+                          src={`${imageUrl}`}
+                          width={100}
+                          height={100}
+                        />
+                      </div>
+                    </Link>
                   );
                 })}
               </div>
@@ -550,10 +423,10 @@ const ManageCourse = ({
                       className={`px-1 bg-default-50 rounded-lg`}
                       onClick={() => {
                         if (!selectedCourse) return;
-                        copy(selectedCourse.price.toString());
+                        copy(selectedCourse.price?.toString() ?? "");
                       }}
                     >
-                      {selectedCourse?.price.toLocaleString()}
+                      {selectedCourse?.price?.toLocaleString()}
                     </div>
                   </PopoverTrigger>
                   <PopoverContent>
@@ -564,75 +437,18 @@ const ManageCourse = ({
               <Divider className={`mt-app bg-default-200`} />
               <div className={`mt-app font-IBM-Thai-Looped`}>
                 <div className={`text-base font-bold`}>Web-app:</div>
-                <Autocomplete
-                  aria-labelledby={`webappcourseBranch`}
-                  className={`hidden mt-2 font-IBM-Thai-Looped`}
-                  placeholder="เลือกสาขา"
-                  onSelectionChange={handleOnChangeWebappBranch}
-                  defaultSelectedKey={selectedCourse?.branch!}
-                >
-                  {webappBranchCourseList ? (
-                    webappBranchCourseList?.map((webappCourse, index) => {
-                      return (
-                        <AutocompleteItem
-                          aria-labelledby={`webappcourseBranch${index}`}
-                          key={webappCourse.branch}
-                          value={webappCourse.branch}
-                        >
-                          {webappCourse.branch}
-                        </AutocompleteItem>
-                      );
-                    })
-                  ) : (
-                    <AutocompleteItem key={`webappCourseBranchLoading`}>
-                      loading...
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
                 <Button
-                  className={`min-h-11 bg-default-100 hover:bg-default-200 rounded-lg`}
+                  className={`min-h-11 p-0 h-max bg-default-100 hover:bg-default-200 rounded-lg`}
                   fullWidth
                   onClick={handleOnClickConectionWebapp}
                 >
-                  เลือกคอร์สใน Web-app
-                </Button>
-                <Autocomplete
-                  aria-labelledby={`webappcourse`}
-                  className={`hidden mt-2 font-IBM-Thai-Looped`}
-                  onSelectionChange={handleOnChangeWebapp}
-                  placeholder="เลือกคอร์ส"
-                  defaultSelectedKey={
-                    !webappCourseList
-                      ? ""
-                      : selectedCourse?.webappCourseId?.toString()
+                  {selectedCourse?.webappCourseId
+                  ?
+                  renderWebappCourse(selectedCourse.webappCourseId)
+                  :
+                  "เลือกคอร์สใน Web-app"
                   }
-                  startContent={renderWebappImage(selectedCourse?.webappCourseId)}
-                >
-                  {webappCourseList ? (
-                    webappCourseList?.map((webappCourse, index) => {
-                      return (
-                        <AutocompleteItem
-                          aria-labelledby={`webappcourse${index}`}
-                          key={webappCourse.id}
-                          value={webappCourse.id}
-                          textValue={webappCourse.name}
-                          startContent={<Image width={40} height={40} src={`${webappCourse.image}`} />}
-                        >
-                          <div className={`font-IBM-Thai-Looped text-default-foreground`}>
-                            {webappCourse.name}
-                          </div>
-                          <div className={`text-xs font-IBM-Thai-Looped text-default-500`}>
-                            {webappCourse.term}
-                          </div>
-                        </AutocompleteItem>
-                      );
-                    })
-                  ) : (
-                    <AutocompleteItem key={`webappCourseLoading`}>
-                      loading...
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
+                </Button>
                 <div className={`mt-2 flex gap-2 font-IBM-Thai`}>
                   <Button
                     className={`bg-default-100 font-medium`}
@@ -673,104 +489,7 @@ const ManageCourse = ({
                 </div>
               </div>
             </div>
-          ) : isEdit || isAdd ? (
-            <div className="mt-2">
-              <Input
-                size="lg"
-                defaultValue={isAdd ? undefined : `${selectedCourse?.name}`}
-                className="font-IBM-Thai-Looped text-lg font-medium"
-                classNames={{
-                  input: "font-IBM-Thai-Looped font-medium text-[1em]",
-                }}
-                placeholder="ชื่อวิชา"
-                onChange={(e) => handleOnChangeCourseName(e.target.value)}
-              />
-              <div id="textarea-wrapper">
-                <Textarea
-                  // defaultValue={isAdd ? undefined : `วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรี เนื้อหา midterm`}
-                  defaultValue={
-                    isAdd ? undefined : selectedCourse?.detail ?? "-"
-                  }
-                  classNames={{
-                    input: `text-[1em]`,
-                  }}
-                  className="mt-2 font-IBM-Thai-Looped"
-                  placeholder="วิชา MEE000 Engineering Mechanics II สำหรับ ม. พระจอมเกล้าธนบุรีเนื้อหา midterm"
-                  onChange={(e) => handleOnChangeCourseDetail(e.target.value)}
-                />
-              </div>
-              <Select
-                placeholder={`ติวเตอร์`}
-                defaultSelectedKeys={
-                  isAdd ? undefined : [`${selectedCourse?.tutorLink}`]
-                }
-                classNames={{
-                  value: `text-[1em]`,
-                }}
-                aria-label="ติวเตอร์"
-                className="font-IBM-Thai-Looped mt-2"
-                onChange={(e) => {
-                  handleOnChangeCourseTutor(e.target.value);
-                }}
-                // classNames={{
-                //   value: [
-                //     "font-bold",
-                //   ]
-                // }}
-                // renderValue={(items) => (<div>ติวเตอร์</div>)}
-              >
-                {tutorList ? (
-                  tutorList.map((tutor) => {
-                    return (
-                      <SelectItem
-                        className="font-IBM-Thai-Looped"
-                        aria-label={`${tutor.name}`}
-                        key={tutor.id}
-                      >
-                        {tutor.name}
-                      </SelectItem>
-                    );
-                  })
-                ) : (
-                  <SelectItem
-                    className="font-IBM-Thai-Looped"
-                    aria-label={`loading`}
-                    key={`loading`}
-                  >
-                    loading...
-                  </SelectItem>
-                )}
-              </Select>
-              <Input
-                defaultValue={selectedCourse?.clueLink ?? ""}
-                className="font-IBM-Thai-Looped mt-2"
-                classNames={{
-                  input: `text-[1em]`,
-                }}
-                placeholder="Link เฉลย"
-                onChange={(e) => handleOnChangeCourseLink(e.target.value)}
-              />
-              <Input
-                defaultValue={selectedCourse?.playlist ?? ""}
-                className={`font-IBM-Thai-Looped mt-2`}
-                classNames={{
-                  input: `text-[1em]`,
-                }}
-                placeholder={`Playlist`}
-                onChange={(e) => handleOnChangePlaylist(e.target.value)}
-              />
-              <Input
-                defaultValue={selectedCourse?.price?.toString()}
-                className="font-IBM-Thai-Looped mt-2"
-                classNames={{
-                  input: `text-[1em]`,
-                }}
-                placeholder="ราคา"
-                type="number"
-                onChange={(e) => handleOnChangePrice(e.target.value)}
-              />
-            </div>
-          ) : (
+          ) : manageCourseMode === "show" ? (
             <div className="mt-4">
               <div className="text-2xl font-bold font-IBM-Thai">
                 {/* Dynamics (CU) midterm */}
@@ -808,48 +527,36 @@ const ManageCourse = ({
                 <span className={`font-bold`}>ราคา:</span>
                 <span>
                   {selectedCourse?.price ?? "-"}
-                  {/* 2,400.- */}
                 </span>
               </div>
-            </div>
-          )}
-          {mode === "tutor" && (
-            <div className="mt-4">
-              {isAdd ? (
+              <div className={`flex gap-2 mt-2 pt-[6px]`}>
                 <Button
-                  onClick={() => handleAddCourseConfirm()}
-                  className="bg-default-foreground text-primary-foreground font-IBM-Thai font-medium"
-                  fullWidth
+                  className={`bg-default-100 font-sans font-medium px-4 py-2 min-w-0 text-base`}
+                  isLoading={isLoadingDuplicate}
+                  onClick={handleOnClickDuplicate}
                 >
-                  บันทึก
+                  ทำซ้ำ
                 </Button>
-              ) : isEdit ? (
-                <>
-                  <Button
-                    onClick={handleConfirmEditCourse}
-                    className="bg-default-foreground text-primary-foreground font-IBM-Thai font-medium"
-                    fullWidth
-                  >
-                    บันทึก
-                  </Button>
-                  <Button
-                    onClick={() => handleDeleteCourse()}
-                    className="bg-transparent text-danger-500 font-IBM-Thai font-medium mt-2"
-                    fullWidth
-                  >
-                    ลบ
-                  </Button>
-                </>
-              ) : (
                 <Button
-                  onClick={() => setIsEdit(true)}
-                  className="bg-default-100 font-IBM-Thai font-medium"
+                  onClick={() => setManageCourseMode('edit')}
+                  className="bg-default-100 font-sans font-medium text-base"
                   fullWidth
                 >
                   แก้ไข
                 </Button>
-              )}
+              </div>
             </div>
+          ) : (
+            manageCourseMode === "add" ?
+            <AddCourseForm
+              onConfirm={handleOnAddSuccess}
+            />
+            :
+            <EditCourseForm
+              onConfirm={handleOnAddSuccess}
+              course={selectedCourse as any}
+              onClickDelete={handleDeleteCourse}
+            />
           )}
         </div>
         {/* lesson */}
@@ -864,10 +571,18 @@ const ManageCourse = ({
           }}
           mode={mode}
         />
-        <div
+        <LessonAdminMode
+          books={books}
+          sheets={sheets}
+          preExam={preExam}
+          documentNumber={documentNumber}
+          mode={mode}
+          lessons={selectedCourse?.CourseLesson}
+        />
+        {/* <div
           className={`${
             mode === "tutor" ? `hidden` : ``
-          } bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto`}
+          } bg-default-100 p-[14px] md:min-w-[469px] md:w-[469px] overflow-y-auto hidden`}
         >
           <div className={`text-2xl font-bold font-IBM-Thai`}>สารบัญ</div>
           <div className={`mt-2 bg-content1 p-2 rounded-lg shadow space-y-2`}>
@@ -1086,7 +801,7 @@ const ManageCourse = ({
               }
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </CustomDrawer>
   );

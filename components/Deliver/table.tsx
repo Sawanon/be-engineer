@@ -347,7 +347,7 @@ const TableDeliver = ({
                                     onEditAddress(deliver);
                                  }}
                               >
-                                 <p className="w-[300px]">
+                                 <p className="w-[300px] font-serif">
                                     {deliver.updatedAddress}
                                  </p>
                               </button>

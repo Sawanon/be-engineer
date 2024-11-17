@@ -118,7 +118,9 @@ const AddDocumentToLesson = ({
       return <div></div>
     }
     const [id, type] = selectedKey.split(":")
-    const document:any = documentList.find(document => document.type === type)
+    const document:any = documentList.find(document => (document.id === parseInt(id) && document.type === type))
+    console.log("document", document);
+    
     if(!document){
       return <div></div>
     }
@@ -140,6 +142,12 @@ const AddDocumentToLesson = ({
   return (
     <Modal
     isOpen={open}
+    closeButton={<></>}
+    backdrop="blur"
+    classNames={{
+      backdrop: `bg-backdrop`,
+    }}
+    placement='top-center'
   >
     <ModalContent className={`p-app`} >
       <div className={`flex items-center`}>
@@ -158,6 +166,12 @@ const AddDocumentToLesson = ({
         <Autocomplete
           onSelectionChange={handleOnChangeDocument}
           startContent={renderStartContentSelected(selectedDocument)}
+          className={`font-serif`}
+          inputProps={{
+            classNames: {
+              input: ['text-[1em]'],
+            }
+          }}
         >
           {
             documentList?
