@@ -135,7 +135,7 @@ const FormDeliver = ({
          <div className="flex gap-2 order-2 col-span-12 md:order-4 md:col-span-5 ">
             <I18nProvider locale="en-GB">
                <DateRangePicker
-               color={`primary`}
+               // color={`primary`}
                   onChange={onChangeDate}
                   classNames={{
                      calendarContent: cn("w-[280px]  "),

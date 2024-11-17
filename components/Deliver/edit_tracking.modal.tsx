@@ -256,7 +256,7 @@ const EditTracking = ({
                                        name="trackingNumber"
                                        control={form.control}
                                        defaultValue=""
-                                       rules={{ required: true }}
+                                       // rules={{ required: true }}
                                        render={(e) => {
                                           // console.log("e", e);
                                           return (
@@ -278,7 +278,7 @@ const EditTracking = ({
 
                                     <Select
                                        {...register("delivery", {
-                                          required: true,
+                                          // required: true,
                                        })}
                                        color={errors.delivery && "danger"}
                                        placeholder="ขนส่ง"

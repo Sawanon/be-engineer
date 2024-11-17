@@ -67,8 +67,8 @@ const config: Config = {
          light: {
            // ...
            colors: {
-               // background: "#000000",
-            // foreground: "#ECEDEE",
+               background: "#000000",
+            // foreground: "#FFFFFF",
             primary: {
               //... 50 to 900
               foreground: "#FFFFFF",
