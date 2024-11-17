@@ -86,7 +86,7 @@ const LessonAdminMode = ({
             <PopoverTrigger className={`cursor-pointer`} onClick={() => copy(lesson.name)}>
               <div
                 tabIndex={0}
-                className={`px-1 w-max rounded-lg bg-default-100`}
+                className={`px-1 w-max rounded-lg bg-default-100 font-serif`}
               >
                 {lesson.name}
               </div>

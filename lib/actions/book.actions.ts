@@ -263,7 +263,7 @@ export const restoreBook = async (bookId: number, webAppCourseId: number) => {
       bookTransactions.push({
         startDate: delivery.approved ?? new Date(),
         endDate: delivery.approved ?? new Date(),
-        detail: 'deliver:restore from change web app',
+        detail: `deliver:restore from change web app:${new Date().toISOString()}`,
         qty: 1,
         bookId: bookId,
         deliverId: delivery.id,

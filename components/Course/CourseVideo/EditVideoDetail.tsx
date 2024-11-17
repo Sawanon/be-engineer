@@ -3,9 +3,13 @@ import { changeDescrioptionVideo, listVideoDescriptions } from '@/lib/actions/vi
 import Alert from '@/ui/alert'
 import { Autocomplete, AutocompleteItem, Button, Modal, ModalContent } from '@nextui-org/react'
 import { CourseVideo } from '@prisma/client'
-import { useQuery } from '@tanstack/react-query'
+import { AsyncListData, useAsyncList } from '@react-stately/data'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import axios from 'axios'
 import { FileText, Video, X } from 'lucide-react'
-import React, { Key, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Key } from '@react-types/shared/src/key'
+import DeleteVideoDescription from './DeleteVideoDescription'
 
 const EditVideoDetail = ({
   isOpen,
@@ -16,10 +20,36 @@ const EditVideoDetail = ({
   onClose: () => void,
   video?: CourseVideo,
 }) => {
+  const queryClient = useQueryClient()
   const {data: videoDescriptionList} = useQuery({
     queryKey: ['listVideoDescriptions'],
     queryFn: () => listVideoDescriptions()
   })
+
+  let list:AsyncListData<any> = useAsyncList({
+    async load({signal, filterText}) {
+       console.log("list", filterText);
+       const res = await axios({
+          url: `/api/video-description?search=${filterText}&defaultId=${video?.descriptionId}`,
+          method: 'GET',
+          signal,
+       })
+       return {
+          items: res.data,
+       };
+    },
+ });
+
+ useMemo(() => {
+  console.log("list", list.items);
+ }, [list])
+ 
+ useEffect(() => {
+  if(video){
+    setSelectedDescription(video.descriptionId)
+    list.reload()
+  }
+ }, [video])
 
   const [isLoading, setIsLoading] = useState(false)
   const [selectedDescription, setSelectedDescription] = useState<Key | null | undefined>()
@@ -27,6 +57,7 @@ const EditVideoDetail = ({
     isError: false,
     message: '',
   })
+  const [isOpenDelete, setIsOpenDelete] = useState(false)
 
   const handleOnClose = () => {
     setError({
@@ -35,10 +66,11 @@ const EditVideoDetail = ({
     })
     setSelectedDescription(undefined)
     onClose()
+    list.setFilterText("")
   }
 
   const handleOnDelete = () => {
-    
+    setIsOpenDelete(true)
   }
 
   const handleOnSubmit = async () => {
@@ -61,6 +93,7 @@ const EditVideoDetail = ({
         throw response
       }
       handleOnClose()
+      queryClient.invalidateQueries({queryKey: ['listCourseAction']})
     } catch (error) {
       setError({
         isError: true,
@@ -70,6 +103,10 @@ const EditVideoDetail = ({
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleOnCloseDelete = () => {
+    setIsOpenDelete(false)
   }
   return (
     <Modal
@@ -82,6 +119,14 @@ const EditVideoDetail = ({
       }}
     >
       <ModalContent className={`p-app`}>
+        <DeleteVideoDescription
+          isOpen={isOpenDelete}
+          onClose={handleOnCloseDelete}
+          descriptionId={video?.descriptionId}
+          contentName={video?.contentName}
+          videoId={video?.id}
+          onSuccess={handleOnClose}
+        />
         <div className={`flex items-center`}>
           <div className={`flex-1`}></div>
           <div className={`flex-1 text-center text-3xl font-semibold font-IBM-Thai`}>เนื้อหา</div>
@@ -112,22 +157,22 @@ const EditVideoDetail = ({
           </div>
           <Autocomplete
             aria-label='video description'
-            className={`mt-1`}
+            className={`mt-1 font-serif`}
             onSelectionChange={(key) => setSelectedDescription(key)}
             defaultSelectedKey={video?.descriptionId === null ? undefined : video?.descriptionId.toString()}
+            items={list.items}
+            // inputValue={list.filterText}
+            isLoading={list.isLoading}
+            onInputChange={list.setFilterText}
           >
-            {videoDescriptionList
-            ?
-            videoDescriptionList.map((description:any, index:number) => (
-              <AutocompleteItem key={`${description.id}`}>
+            {(description:any) => (
+              <AutocompleteItem
+                key={`${description.id}`}
+                className={`font-serif`}
+              >
                 {description.name}
               </AutocompleteItem>
-            ))
-            :
-            <AutocompleteItem key={`loading...`}>
-              Loading...
-            </AutocompleteItem>
-            }
+            )}
           </Autocomplete>
         </div>
         <div className={`mt-app`}>
