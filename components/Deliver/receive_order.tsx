@@ -5,6 +5,7 @@ import {
    useDeliverByIds,
    useUpdatePickup,
 } from "@/lib/query/delivery";
+import { openSheetPage } from "@/lib/util";
 import {
    Button,
    Image as NextUiImage,
@@ -108,7 +109,7 @@ const ReceiveOrder = ({
                      )}
                   {checkCourse?.sheetLesson &&
                      checkCourse.sheetLesson.length > 0 && (
-                        <div className="flex gap-2">
+                        <div className=" gap-2">
                            <p className="font-bold text-sm text-default-400 ">
                               เอกสาร
                            </p>
@@ -125,10 +126,16 @@ const ReceiveOrder = ({
                                           <p className="flex items-center gap-2">
                                              {d.DocumentSheet.name}
                                              <Button
+                                             variant="flat"
+                                             onClick={()=>{
+                                                openSheetPage(d.DocumentSheet.id)
+
+                                             }}
                                                 isIconOnly
-                                                color="secondary"
+                                                // color="secondary"
+                                                className="bg-default-100 text-default-foreground"
                                              >
-                                                <LuExternalLink size={32} />
+                                                <LuExternalLink size={24} />
                                              </Button>
                                           </p>
                                        </div>

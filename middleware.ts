@@ -37,6 +37,7 @@ export default withAuth(middleware, {
    callbacks: {
       authorized: (req) => {
          // TODO: JWT DATA
+         console.log("middleware auth");
          const { token } = req;
          const pathName = req.req.nextUrl.pathname;
 

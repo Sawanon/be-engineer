@@ -191,13 +191,13 @@ const DeliverComp = ({
 
    return (
       <div className="flex flex-col pt-0 md:pt-6 px-app  bg-background relative overflow-y-hidden md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 ">
-         {/* <button
+         <button
             onClick={async () => {
                await testAddBook();
             }}
          >
             test
-         </button> */}
+         </button>
 
          {newData && (
             <NotifyModal
@@ -209,7 +209,7 @@ const DeliverComp = ({
             />
          )}
          {/*  <div className="flex flex-col relative flex-1 font-IBM-Thai-Looped px-[14px] overflow-y-hidden  bg-default-50 h-screenDevice bg-green-500   "> */}
-         <h1 className="hidden md:block font-IBM-Thai text-[30px] text-default-foreground font-bold leading-9 py-2 ">
+         <h1 className="hidden md:block font-sans text-[30px] text-default-foreground font-bold leading-9 py-2 ">
             การจัดส่ง
          </h1>
          <PrintModal
@@ -240,8 +240,8 @@ const DeliverComp = ({
             refetch={refetch}
             onClose={onCloseSelect}
          />
-
-         <div className=" flex flex-col mb-4  overflow-hidden  max-w-[960px] ">
+{/* max-w-[960px]  */}
+         <div className=" flex flex-col mb-4  overflow-hidden  ">
             <FormDeliver
                onCloseSelect={onCloseSelect}
                searchState={[searchData, setSearchData]}

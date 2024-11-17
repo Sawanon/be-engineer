@@ -99,6 +99,12 @@ export const handleError = (error: unknown): ErrorMessageProps => {
    return parseStringify(errDetails as ErrorMessageProps);
 };
 
+export const openSheetPage = (id : number)=>{
+
+      window.open(`/document?sheetId=${id}`)
+
+}
+
 // export const classifyCourseByBranch = (courseListByBranch: [], courseListInNewDB: any[]) => {
 // //   const courseList: {
 // //     branch: string;

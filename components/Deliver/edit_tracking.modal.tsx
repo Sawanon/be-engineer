@@ -1,4 +1,4 @@
-import { cn } from "@/lib/util";
+import { cn, openSheetPage } from "@/lib/util";
 import Alert from "@/ui/alert";
 import {
    Button,
@@ -184,27 +184,27 @@ const EditTracking = ({
                                  หนังสือ
                               </p>
                               <div className="space-y-1">
-                                    {checkCourse.bookRecord.map((d) => {
-                                       return d.DocumentBook?.image ? (
-                                          <div
-                                             className="flex gap-2 items-center"
-                                             key={d.DocumentBook.id}
-                                          >
-                                             <Image
-                                                className="rounded-sm"
-                                                width={24}
-                                                height={34}
-                                                alt="NextUI hero Image"
-                                                src={d.DocumentBook.image}
-                                             />
-                                             <p key={d.DocumentBook?.id}>
-                                                {d.DocumentBook?.name}
-                                             </p>
-                                          </div>
-                                       ) : (
-                                          <></>
-                                       );
-                                    })}
+                                 {checkCourse.bookRecord.map((d) => {
+                                    return d.DocumentBook?.image ? (
+                                       <div
+                                          className="flex gap-2 items-center"
+                                          key={d.DocumentBook.id}
+                                       >
+                                          <Image
+                                             className="rounded-sm"
+                                             width={24}
+                                             height={34}
+                                             alt="NextUI hero Image"
+                                             src={d.DocumentBook.image}
+                                          />
+                                          <p key={d.DocumentBook?.id}>
+                                             {d.DocumentBook?.name}
+                                          </p>
+                                       </div>
+                                    ) : (
+                                       <></>
+                                    );
+                                 })}
                               </div>
                            </div>
                         )}
@@ -225,8 +225,15 @@ const EditTracking = ({
                                              <div className="flex items-center gap-2">
                                                 <p>{d.DocumentSheet?.name} </p>
                                                 <Button
-                                                   variant={`flat`}
-                                                   isIconOnly={true}
+                                                   variant="flat"
+                                                   onClick={() => {
+                                                      openSheetPage(
+                                                         d.DocumentSheet?.id!
+                                                      );
+                                                   }}
+                                                   isIconOnly
+                                                   // color="secondary"
+                                                   className="bg-default-100 text-default-foreground"
                                                 >
                                                    <LuExternalLink size={24} />
                                                 </Button>
@@ -256,7 +263,7 @@ const EditTracking = ({
                                        name="trackingNumber"
                                        control={form.control}
                                        defaultValue=""
-                                       rules={{ required: true }}
+                                       // rules={{ required: true }}
                                        render={(e) => {
                                           // console.log("e", e);
                                           return (
@@ -278,7 +285,7 @@ const EditTracking = ({
 
                                     <Select
                                        {...register("delivery", {
-                                          required: true,
+                                          // required: true,
                                        })}
                                        color={errors.delivery && "danger"}
                                        placeholder="ขนส่ง"

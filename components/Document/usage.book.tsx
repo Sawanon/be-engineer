@@ -21,15 +21,9 @@ import {
 } from "@nextui-org/react";
 import { Danger } from "iconsax-react";
 import {
-   LuArrowRightLeft,
+
    LuArrowUpRight,
-   LuExternalLink,
-   LuImage,
-   LuMinus,
-   LuPackageCheck,
-   LuPlus,
-   LuScrollText,
-   LuSearch,
+
    LuX,
 } from "react-icons/lu";
 
