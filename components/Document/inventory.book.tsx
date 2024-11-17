@@ -93,16 +93,18 @@ const BookInventory = ({
    const renderDetail = (detail: string) => {
       if(detail.includes(`deliver`)){
          const arrDeliverDetail = detail.split(`:`)
+         const [type, label, date] = arrDeliverDetail
          const deliverText = `คำสั่งซื้อ`
          const restoreFromChangeWebapp = {
             value: `restore from change web app`,
-            text: `ดึงหนังสือคืนจากการเปลี่ยน Web-app course`,
+            text: `เปลี่ยนหนังสือในคอร์ส`,
          }
+         const dateStr = date ? dayjs(date).format(`DD MMM YYYY`) : ''
          if(arrDeliverDetail.length > 1){
-            if(arrDeliverDetail[1] === restoreFromChangeWebapp.value){
-               return restoreFromChangeWebapp.text
+            if(label === restoreFromChangeWebapp.value){
+               return `${restoreFromChangeWebapp.text} ${dateStr}`
             }
-            return `boom !`
+            return `-`
          }
          return `${deliverText}`
       }

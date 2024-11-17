@@ -15,24 +15,24 @@ const AddDocumentToLesson = ({
   lessonId,
 }:{
   open: boolean,
-  onConfirm: () => void,
+  onConfirm: (type: string) => void,
   onClose: () => void,
   lessonId?: number,
 }) => {
   const { data: sheetList } = useQuery({
     queryKey: ['listSheetsAction'],
     queryFn: () => listSheetsAction(),
-    enabled: lessonId !== undefined,
+    // enabled: lessonId !== undefined,
   })
   const {data: bookList} = useQuery({
     queryKey: ["listBooksAction"],
     queryFn: () => listBooksAction(),
-    enabled: lessonId !== undefined,
+    // enabled: lessonId !== undefined,
   })
   const {data: preExamList} = useQuery({
     queryKey: ["listPreExamAction"],
     queryFn: () => listPreExamAction(),
-    enabled: lessonId !== undefined,
+    // enabled: lessonId !== undefined,
   })
   const [selectedDocument, setSelectedDocument] = useState<string | undefined>()
   const [error, setError] = useState({
@@ -87,7 +87,7 @@ const AddDocumentToLesson = ({
         const response = await addPreExamToLessonAction(parseInt(id), lessonId)
         console.log("🚀 ~ submitAddDocumentToLesson ~ response:", response)
       }
-      onConfirm()
+      onConfirm(type)
       handleOnClose()
     } catch (error) {
       console.error(error)
@@ -172,12 +172,16 @@ const AddDocumentToLesson = ({
               input: ['text-[1em]'],
             }
           }}
+          listboxProps={{
+            className: 'font-serif',
+          }}
         >
           {
             documentList?
             documentList?.map((document, index) => {
             return (
               <AutocompleteItem
+                className={`font-serif`}
                 key={`${document.id}:${document.type}`}
                 startContent={renderStartContent(document)}
               >
@@ -186,7 +190,7 @@ const AddDocumentToLesson = ({
             )
           })
         : (
-          <AutocompleteItem key={`loading`}>
+          <AutocompleteItem className={`font-serif`} key={`loading`}>
             loading...
           </AutocompleteItem>
         )}

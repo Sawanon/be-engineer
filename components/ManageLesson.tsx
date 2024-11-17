@@ -38,6 +38,7 @@ import EditLessonName from "./Course/Lesson/EditLessonName";
 import DeleteLesson from "./Course/Lesson/DeleteLesson";
 import AddLesson from "./Course/Lesson/AddLesson";
 import EditDocument from "./Course/Document/EditDocument";
+import { listBooksAction } from "@/lib/actions/book.actions";
 
 const ManageLesson = ({
   courseId,
@@ -58,6 +59,14 @@ const ManageLesson = ({
       queryKey: ["listCourseAction"],
       queryFn: () => listCourseAction(),
   });
+
+  const {
+    refetch: refetchBookList,
+  } = useQuery({
+    queryKey: ["listBooksAction"],
+    queryFn: () => listBooksAction(),
+ })
+
   const [isSort, setIsSort] = useState(false);
   const [lessonError, setLessonError] = useState({
     isError: false,
@@ -66,10 +75,7 @@ const ManageLesson = ({
   const [isAddLesson, setIsAddLesson] = useState(false);
   const [isEditLesson, setIsEditLesson] = useState(false);
   const [isDeleteLesson, setIsDeleteLesson] = useState(false);
-  const [lessonName, setLessonName] = useState<string | undefined>();
   const [editLessonContent, setEditLessonContent] = useState(false);
-  const [videoList, setVideoList] = useState([]);
-  const [selectedVideoPlaylist, setSelectedVideoPlaylist] = useState<any>();
   const [videoListInLesson, setVideoListInLesson] = useState<any[]>([]);
   const [selectedLesson, setSelectedLesson] = useState<any | undefined>();
   
@@ -142,9 +148,12 @@ const ManageLesson = ({
     setIsSort(false)
   }
 
-  const handleOnConfirmAddDocument = () => {
+  const handleOnConfirmAddDocument = (type: string) => {
     setSelectedLesson(undefined)
     refetchCourse()
+    if(type === "book"){
+      refetchBookList()
+    }
   }
 
   const handleOnOpenVideoDetail = (courseVideo: CourseVideo) => {
@@ -175,6 +184,13 @@ const ManageLesson = ({
     setIsOpenEditDocument(true)
   }
 
+  const handleOnEditDocumentSuccess = (type: string) => {
+    refetchCourse()
+    if(type === "book"){
+      refetchBookList()
+    }
+  }
+
   return (
     <div className={`bg-default-100 p-app md:min-w-[469px] md:w-[469px] overflow-y-auto ${className}`}>
       <EditVideoDetail
@@ -186,7 +202,7 @@ const ManageLesson = ({
         isOpen={isOpenEditDocument}
         document={selectedDocument}
         onClose={() => setIsOpenEditDocument(false)}
-        onConfirm={refetchCourse}
+        onConfirm={handleOnEditDocumentSuccess}
         lessonId={selectedLesson?.id}
       />
       <AddDocumentToLesson

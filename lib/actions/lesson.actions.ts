@@ -108,6 +108,27 @@ export const addDocumentToLesson = async (documentId: number, lessonId: number) 
   }
 }
 
+export const removeDocumentSheetInLessonAction = async (sheetId: number, lessonId: number) => {
+  try {
+    const response = await prisma.lessonOnDocumentSheet.delete({
+      where: {
+        lessonId_sheetId: {
+          sheetId: sheetId,
+          lessonId: lessonId,
+        }
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
 export const addBookToLessonAction = async (bookId: number, lessonId: number) => {
   try {
     const lesson = await prisma.courseLesson.findFirst({
@@ -173,6 +194,27 @@ export const addPreExamToLessonAction = async (preExamId: number, lessonId: numb
       data: {
         lessonId: lessonId,
         preExamId: preExamId,
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const removeDocumentPreExamInLessonAction = async (preExamId: number, lessonId: number) => {
+  try {
+    const response = await prisma.lessonOnDocument.delete({
+      where: {
+        lessonId_preExamId: {
+          preExamId: preExamId,
+          lessonId: lessonId,
+        }
       }
     })
     return response

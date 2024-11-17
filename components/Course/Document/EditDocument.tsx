@@ -18,7 +18,7 @@ const EditDocument = ({
 }:{
   isOpen: boolean,
   onClose: () => void,
-  onConfirm: () => void,
+  onConfirm: (type: string) => void,
   lessonId?: number,
   document: any,
 }) => {
@@ -105,7 +105,7 @@ const EditDocument = ({
         // const response = await addPreExamToLessonAction(parseInt(id), lessonId)
         // console.log("🚀 ~ submitAddDocumentToLesson ~ response:", response)
       }
-      onConfirm()
+      onConfirm(type)
       handleOnClose()
     } catch (error) {
       console.error(error)
@@ -210,8 +210,8 @@ const EditDocument = ({
             document={document}
             onClose={() => setIsOpenDisconnect(false)}
             lessonId={lessonId}
-            onSuccess={() => {
-              onConfirm()
+            onSuccess={(type) => {
+              onConfirm(type)
               handleOnClose()
             }}
           />

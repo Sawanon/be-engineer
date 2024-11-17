@@ -36,10 +36,12 @@ const DocumentComp = () => {
    const {
       data: bookListData,
       isLoading: isLoadingBook,
+      refetch: refetchBook,
    } = useQuery({
       queryKey: ["listBooksAction"],
       queryFn: () => listBooksAction(),
-      refetchOnWindowFocus: true,
+      // refetchOnWindowFocus: true,
+      refetchOnMount: true,
    })
    const { data: sheetListData, refetch: refetchSheets } = useQuery({
       queryKey: ["listSheetsAction"],

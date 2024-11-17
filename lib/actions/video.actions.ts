@@ -198,3 +198,23 @@ export const changeDescrioptionVideo = async (videoId: number, descriptionId: nu
     prisma.$disconnect()
   }
 }
+
+export const deleteVideoDescription = async (videoId: number) => {
+  try {
+    const response = await prisma.courseVideo.update({
+      where: {
+        id: videoId,
+      },
+      data: {
+        descriptionId: null,
+        contentName: null,
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError) return error.message
+  } finally {
+    prisma.$disconnect()
+  }
+}

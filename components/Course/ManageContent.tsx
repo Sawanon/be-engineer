@@ -7,8 +7,16 @@ import {
    Button,
    Checkbox,
    Divider,
+   getKeyValue,
    Modal,
    ModalContent,
+   Selection,
+   Table,
+   TableBody,
+   TableCell,
+   TableColumn,
+   TableHeader,
+   TableRow,
 } from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
 import { FileText, Search, Video, X } from "lucide-react";
@@ -27,6 +35,7 @@ import {
 import { listCourseAction } from "@/lib/actions/course.actions";
 import axios from "axios";
 import {AsyncListData, useAsyncList} from "@react-stately/data";
+import _ from 'lodash'
 
 const ManageContent = ({
    isOpen,
@@ -123,7 +132,7 @@ const ManageContent = ({
          
          if (cloneVideo[`${video.id}`]) {
             cloneVideo[`${video.id}`].action = "inDB";
-            cloneVideo[`${video.id}`].position = (lastPosition[0].position ?? objKeys.length) + 1
+            cloneVideo[`${video.id}`].position = (lastPosition[0]?.position ?? objKeys.length) + 1
             return cloneVideo;
          }
          const contentName =
@@ -138,7 +147,7 @@ const ManageContent = ({
                hour: video.hour_length,
                minute: video.minute_length,
                lessonId: lesson.id,
-               position: (lastPosition[0].position ?? objKeys.length) + 1,
+               position: (lastPosition[0]?.position ?? objKeys.length) + 1,
                videoLink: video.link,
                webappVideoId: video.id,
                action: "create",
@@ -169,6 +178,65 @@ const ManageContent = ({
          return cloneVideo;
       });
    };
+
+   const addVideo = (video: VideoWebapp) => {
+      const cloneVideo = { ...videoInLesson };
+      const objKeys = Object.keys(cloneVideo)
+      const lastPosition = objKeys.sort((a, b) => {
+         const prevVideo = videoInLesson[a];
+         const nextVideo = videoInLesson[b];
+         if(prevVideo.position! < nextVideo.position!){
+            return 1
+         }else if(prevVideo.position! > nextVideo.position!){
+            return -1
+         }
+         return 0
+      }).map((key) => cloneVideo[key])
+      
+      if (cloneVideo[`${video.id}`] && cloneVideo[`${video.id}`].action !== "create") {
+         cloneVideo[`${video.id}`].action = "inDB";
+         cloneVideo[`${video.id}`].position = (lastPosition[0]?.position ?? objKeys.length) + 1
+         return cloneVideo;
+      }
+      const contentName =
+         video.video_library_onlinevideoplaylistmediaitemcontent
+            ? video.video_library_onlinevideoplaylistmediaitemcontent.name
+            : null;
+      return {
+         ...videoInLesson,
+         [`${video.id}`]: {
+            name: video.name,
+            descriptionId: video.desc_id,
+            hour: video.hour_length,
+            minute: video.minute_length,
+            lessonId: lesson.id,
+            position: (lastPosition[0]?.position ?? objKeys.length) + 1,
+            videoLink: video.link,
+            webappVideoId: video.id,
+            action: "create",
+            playlistName: selectedVideoPlaylist.name,
+            contentName: contentName,
+         },
+      };
+   }
+
+   const removeVideo = (video: VideoPlaylist | VideoWebapp, videoInLesson: {[x: string]: VideoPlaylist}) => {
+      const videoId = "webappVideoId" in video ? video.webappVideoId : video.id;
+      const cloneVideo = { ...videoInLesson };
+      if (!cloneVideo[`${videoId}`]) return videoInLesson;
+      if (
+         cloneVideo[`${videoId}`].action === "inDB" ||
+         cloneVideo[`${videoId}`].action === "removeInDB"
+      ) {
+         cloneVideo[`${videoId}`] = {
+            ...cloneVideo[`${videoId}`],
+            action: "removeInDB",
+         };
+         return cloneVideo;
+      }
+      delete cloneVideo[`${videoId}`];
+      return cloneVideo;
+   }
 
    const defaultSelectedVideo = (video: VideoWebapp) => {
       if (!videoInLesson[`${video.id}`]) return false;
@@ -208,6 +276,39 @@ const ManageContent = ({
       }
    };
 
+   const handleOnSelecteCell = (keys: Selection) => {
+      {
+         const arrKeys = Array.from(keys)
+         const videoInLessonArrKeys = Object.keys(videoInLesson)
+         if(arrKeys.length > videoInLessonArrKeys.length){
+            // add
+            let arrVideo = {}
+            arrKeys.forEach(key => {
+               const video = videoList.find(video => video.id === parseInt(key.toString()))
+               const preAddVideo = addVideo(video!)
+               arrVideo = {
+                  ...arrVideo,
+                  ...preAddVideo,
+               }
+               return preAddVideo
+            })
+            setVideoInLesson(arrVideo)
+         }else{
+            // remove
+            let cloneVideo = _.cloneDeep(videoInLesson)
+            videoInLessonArrKeys.forEach(videoId => {
+               const foundKey = arrKeys.find(tableVideoId => tableVideoId.toString() === videoId)
+               if(foundKey === undefined){
+                  const video = videoInLesson[videoId]
+                  const preRemoveVideo = removeVideo(video, cloneVideo)
+                  cloneVideo = preRemoveVideo
+               }
+            })
+            setVideoInLesson(cloneVideo)
+         }
+      }
+   }
+
    let list:AsyncListData<PlayList> = useAsyncList({
       async load({signal, filterText}) {
          console.log("list", filterText);
@@ -220,7 +321,7 @@ const ManageContent = ({
             items: res.data as PlayList[],
          };
       },
-    });
+   });
 
    return (
       <Modal
@@ -228,7 +329,7 @@ const ManageContent = ({
          size="4xl"
          closeButton={<></>}
          backdrop="blur"
-         scrollBehavior="inside"
+         scrollBehavior="outside"
          className={`h-full`}
          classNames={{
             backdrop: ['bg-default-foreground/25'],
@@ -259,7 +360,6 @@ const ManageContent = ({
                   <div className={`mt-3 gap-3 flex md:flex-row flex-col flex-1 overflow-auto`}>
                      <div className={`flex-1 flex flex-col`}>
                         <Autocomplete
-                           // className="max-w-xs"
                            placeholder={`Playlist`}
                            startContent={
                               <Search className={`text-foreground-400`} />
@@ -272,21 +372,15 @@ const ManageContent = ({
                                  input: ['text-[1em]']
                               }
                            }}
+                           listboxProps={{
+                              className: 'font-serif',
+                           }}
                            selectedKey={selectedPlaylistId}
                            onSelectionChange={handleOnChangePlayList}
-                           // onInputChange={handleOnChangePlayListInput}
-                           // onInputChange={(value) => {
-                           //   if(value === "") return
-                           //   setSearchPlayListText(value)
-                           // }}
-                           // statr with
-                           // defaultItems={playListData}
                            inputValue={list.filterText}
                            isLoading={list.isLoading}
                            onInputChange={list.setFilterText}
                            items={list.items}
-                           // items={playListData?.splice(0, 100)}
-                           // defaultFilter={myFilter}
                         >
                            {(playList) => (
                               <AutocompleteItem
@@ -315,7 +409,70 @@ const ManageContent = ({
                 )} */}
                         </Autocomplete>
                         <div className={`mt-2 flex-1 relative overflow-auto`}>
-                           <div className={`absolute inset-0`}>
+                           <Table
+                              isStriped
+                              aria-label="Controlled table example with dynamic content"
+                              selectionMode="multiple"
+                              hideHeader
+                              // selectedKeys={Object.keys(videoInLesson)}
+                              defaultSelectedKeys={Object.keys(videoInLesson)}
+                              onSelectionChange={handleOnSelecteCell}
+                              className={`shadow-none`}
+                              classNames={{
+                                 td: ['', 'p-0 m-0'],
+                                 wrapper: ['rounded-none', 'shadow-none']
+                              }}
+                              checkboxesProps={{
+                                 className: 'p-0 m-0'
+                              }}
+                           >
+                              <TableHeader>
+                                 <TableColumn>label</TableColumn>
+                                 <TableColumn>hour</TableColumn>
+                              </TableHeader>
+                              <TableBody items={videoList}>
+                              {(video) => (
+                                 <TableRow key={video.id}>
+                                    <TableCell>
+                                       <div
+                                          className={`flex gap-1 text-foreground-400 text-xs font-medium font-IBM-Thai-Looped`}
+                                       >
+                                          <div className={`w-4 h-4`}></div>
+                                          {selectedVideoPlaylist.name}
+                                       </div>
+                                       <div
+                                          className={`flex items-center gap-1`}
+                                       >
+                                          <Video size={16} />
+                                          <div
+                                             className={`text-base text-default-foreground font-IBM-Thai-Looped`}
+                                          >
+                                             {video.name}
+                                          </div>
+                                       </div>
+                                       <div className={`flex items-center gap-1`}>
+                                          <FileText className={`text-foreground-400`} size={16} />
+                                          <div
+                                             className={`text-sm text-foreground-400 font-serif`}
+                                          >
+                                             {video.video_library_onlinevideoplaylistmediaitemcontent?.name ?? "-"}
+                                          </div>
+                                       </div>
+                                    </TableCell>
+                                    <TableCell>
+                                       <div
+                                          className={`text-foreground-400 font-IBM-Thai-Looped text-sm`}
+                                       >
+                                          {video.hour_length * 60 +
+                                             video.minute_length}{" "}
+                                          นาที
+                                       </div>
+                                    </TableCell>
+                                 </TableRow>
+                              )}
+                              </TableBody>
+                           </Table>
+                           <div className={`absolute inset-0 hidden`}>
                               {videoList.map((video) => {
                                  return (
                                     <div
@@ -393,6 +550,7 @@ const ManageContent = ({
                                     key={`videoLesson${index}`}
                                     className={`font-serif bg-default-100 ${
                                        action === "removeInDB" ? `hidden` : `flex gap-1`
+                                       // `flex gap-1`
                                     } items-center p-2 border-2 border-default-foreground rounded-lg`}
                                  >
                                     <div className={`text-default-400`}>

@@ -1,6 +1,6 @@
 import { restoreBook } from '@/lib/actions/book.actions'
 import { countBookInCourse, getCourseById, listCourseAction } from '@/lib/actions/course.actions'
-import { getLessonById, removeBookLessonAction } from '@/lib/actions/lesson.actions'
+import { getLessonById, removeBookLessonAction, removeDocumentPreExamInLessonAction, removeDocumentSheetInLessonAction } from '@/lib/actions/lesson.actions'
 import Alert from '@/ui/alert'
 import { Button, Modal, ModalContent } from '@nextui-org/react'
 import { CourseLesson } from '@prisma/client'
@@ -19,14 +19,9 @@ const DisconnectDocument = ({
   onClose: () => void,
   document: any,
   lessonId: number,
-  onSuccess: () => void,
+  onSuccess: (type: string) => void,
 }) => {
 
-  const {refetch: refetchCourse} = useQuery({
-    queryKey: ["listCourseAction"],
-    queryFn: () => listCourseAction(),
-    enabled: false,
-  });
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState({
     isError: false,
@@ -67,17 +62,29 @@ const DisconnectDocument = ({
             const responseRemoveBook = await removeBookLessonAction(bookId, lessonId)
             console.log("🚀 ~ submitDeleteDocument ~ responseRemoveBook:", responseRemoveBook)
           }
-          onSuccess()
+          onSuccess(document.type)
           handleOnClose()
           return
         }
         console.log("remove now ! not connect");
         const response = await removeBookLessonAction(bookId, lessonId)
         console.log("🚀 ~ submitDeleteDocument ~ response:", response)
-        onSuccess()
-        handleOnClose()
-        return
+      }else if(document.type === "sheet"){
+        const sheetId =  document.DocumentSheet.id
+        const responseRemoveSheet = await removeDocumentSheetInLessonAction(sheetId, lessonId)
+        console.log("🚀 ~ submitDeleteDocument ~ responseRemoveSheet:", responseRemoveSheet)
+        if(!responseRemoveSheet) throw `responseRemoveSheet is ${responseRemoveSheet}`
+        if(typeof responseRemoveSheet === "string") throw responseRemoveSheet
+      }else if(document.type === "preExam"){
+        console.log("document", document);
+        const preExamId =  document.DocumentPreExam.id
+        const responseRemovePreExam = await removeDocumentPreExamInLessonAction(preExamId, lessonId)
+        console.log("🚀 ~ submitDeleteDocument ~ responseRemovePreExam:", responseRemovePreExam)
+        if(!responseRemovePreExam) throw `responseRemovePreExam is ${responseRemovePreExam}`
+        if(typeof responseRemovePreExam === "string") throw responseRemovePreExam
       }
+      onSuccess(document.type)
+      handleOnClose()
       setError({
         isError: false,
         message: ``,
