@@ -34,6 +34,7 @@ import { modalProps, stateProps } from "@/@type";
 import CustomInput from "../CustomInput";
 import { multiTrackDialog } from ".";
 import { DeliverRes, deliveryPrismaProps } from "@/lib/actions/deliver.actions";
+import { Calendar } from "iconsax-react";
 export type DeliverFilter = {
    input?: string | undefined;
    status?: string | undefined;
@@ -133,10 +134,14 @@ const FormDeliver = ({
             />
          </div>
          <div className="flex gap-2 order-2 col-span-12 md:order-4 md:col-span-5 ">
+            <div className={`text-primary-foreground`}>
+               test
+            </div>
             <I18nProvider locale="en-GB">
                <DateRangePicker
-               color={`primary`}
+                  color={`primary`}
                   onChange={onChangeDate}
+                  className={`font-serif`}
                   classNames={{
                      calendarContent: cn("w-[280px]  "),
                      calendar: cn("w-[280px] "),
@@ -151,14 +156,14 @@ const FormDeliver = ({
                           }
                         : null
                   }
+                  endContent={<Calendar className={`text-default-400`} variant="Bold" size={18} />}
                   calendarProps={{
                      classNames: {
                         cellButton: [
                            // default text color
                            // "text-red-300",
                            // selected case
-
-                           "data-[selectionStart=true]:bg-red-500",
+                           // "data-[selectionStart=true]:bg-red-500",
                            // "data-[selection-end=true]:bg-red-500",
                            // "data-[selected=true]:bg-default-foreground",
                            // "data-[selected=true]:text-default-foreground",

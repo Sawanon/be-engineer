@@ -198,12 +198,10 @@ const CourseComponent = ({
         uniqueBooks,
       }
     })
-    const currentCourses = courseWithUniqueBooks?.slice(startIndex, endIndex);
+    // const currentCourses = courseWithUniqueBooks?.slice(startIndex, endIndex);
+    // const currentCourses = courseWithUniqueBooks
     
-    if (courses) {
-      setPageSize(Math.ceil(courses.length / rowsPerPage));
-    }
-    let courseFromSearch = currentCourses
+    let courseFromSearch = courseWithUniqueBooks
     if(searchCourse !== ""){
       courseFromSearch = courseFromSearch?.filter(course => course.name.toLowerCase().startsWith(searchCourse))
     }
@@ -214,7 +212,11 @@ const CourseComponent = ({
     if(searchCourseByTutorId && searchCourseByTutorId.size > 0) {
       courseFromSearch = courseFromSearch?.filter(course => course.Tutor?.id === parseInt(searchCourseByTutorId.currentKey))
     }
-    return courseFromSearch;
+    
+    if (courseFromSearch) {
+      setPageSize(Math.ceil(courseFromSearch.length / rowsPerPage));
+    }
+    return courseFromSearch?.slice(startIndex, endIndex);
   }, [page, courses, isLoading, searchCourse, filterStatusCourse, searchCourseByTutorId]);
 
   const replacePath = () => {
@@ -370,7 +372,7 @@ const CourseComponent = ({
             >
               {Object.keys(courseStatus).map((key, index) => {
                 return (
-                  <SelectItem key={`${key}`} startContent={courseStatus[key].icon}>
+                  <SelectItem className={`font-serif`} key={`${key}`} startContent={courseStatus[key].icon}>
                     {courseStatus[key].name}
                   </SelectItem>
                 );

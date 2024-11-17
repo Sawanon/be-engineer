@@ -1,6 +1,5 @@
 import {
    getDetailPlayList,
-   listPlayList,
 } from "@/lib/actions/playlist.actions";
 import {
    Autocomplete,
@@ -12,24 +11,22 @@ import {
    ModalContent,
 } from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Video, X } from "lucide-react";
-import React, { useContext, useMemo, useState } from "react";
+import { FileText, Search, Video, X } from "lucide-react";
+import React, { useMemo, useState } from "react";
 import { Key } from "@react-types/shared/src/key";
 import { PlayList } from "@/lib/model/playlist";
 import {
    VideoPlaylist,
-   VideoPlayListInProcess,
    VideoWebapp,
 } from "@/lib/model/videoPlaylist";
-import { CourseLesson, CourseVideo } from "@prisma/client";
+import { CourseVideo } from "@prisma/client";
 import {
    addCourseVideoMany,
    deleteCourseVideoMany,
 } from "@/lib/actions/video.actions";
-// import CourseContext from "@/app/course/provider";
-// import { useCourse } from "./courseHook";
-import SortableComponent from "../Sortable";
 import { listCourseAction } from "@/lib/actions/course.actions";
+import axios from "axios";
+import {AsyncListData, useAsyncList} from "@react-stately/data";
 
 const ManageContent = ({
    isOpen,
@@ -50,23 +47,15 @@ const ManageContent = ({
         queryKey: ["listCourseAction"],
         queryFn: () => listCourseAction(),
     });
-   // const [refetchCourse] = useCourse();
    const [isLoading, setIsLoading] = useState(false)
    const [videoList, setVideoList] = useState<VideoWebapp[]>([]);
-   const [searchPlayListText, setSearchPlayListText] = useState("");
    const [selectedPlaylistId, setSelectedPlaylistId] = useState<Key | null>();
-   // const [playList, setPlayList] = useState<PlayList[] | undefined>()
    const [selectedVideoPlaylist, setSelectedVideoPlaylist] = useState({
       name: "",
    });
    const [videoInLesson, setVideoInLesson] = useState<{
       [x: string]: VideoPlaylist;
    }>({});
-
-   const { data: playListData } = useQuery({
-      queryKey: ["listPlayList"],
-      queryFn: () => listPlayList(),
-   });
 
    useMemo(() => {
       if (!lesson?.CourseVideo) return;
@@ -121,9 +110,20 @@ const ManageContent = ({
       setVideoInLesson((prev) => {
          const cloneVideo = { ...prev };
          const objKeys = Object.keys(cloneVideo)
+         const lastPosition = objKeys.sort((a, b) => {
+            const prevVideo = videoInLesson[a];
+            const nextVideo = videoInLesson[b];
+            if(prevVideo.position! < nextVideo.position!){
+               return 1
+            }else if(prevVideo.position! > nextVideo.position!){
+               return -1
+            }
+            return 0
+         }).map((key) => cloneVideo[key])
+         
          if (cloneVideo[`${video.id}`]) {
             cloneVideo[`${video.id}`].action = "inDB";
-            cloneVideo[`${video.id}`].position = objKeys.length + 1
+            cloneVideo[`${video.id}`].position = (lastPosition[0].position ?? objKeys.length) + 1
             return cloneVideo;
          }
          const contentName =
@@ -138,7 +138,7 @@ const ManageContent = ({
                hour: video.hour_length,
                minute: video.minute_length,
                lessonId: lesson.id,
-               position: objKeys.length + 1,
+               position: (lastPosition[0].position ?? objKeys.length) + 1,
                videoLink: video.link,
                webappVideoId: video.id,
                action: "create",
@@ -208,6 +208,20 @@ const ManageContent = ({
       }
    };
 
+   let list:AsyncListData<PlayList> = useAsyncList({
+      async load({signal, filterText}) {
+         console.log("list", filterText);
+         const res = await axios({
+            url: `/api/playlist?search=${filterText}`,
+            method: 'GET',
+            signal,
+         })
+         return {
+            items: res.data as PlayList[],
+         };
+      },
+    });
+
    return (
       <Modal
          isOpen={isOpen}
@@ -218,6 +232,12 @@ const ManageContent = ({
          className={`h-full`}
          classNames={{
             backdrop: ['bg-default-foreground/25'],
+            base: [
+               // 'bg-red-400', 
+               'md:min-h-0 min-h-dvh',
+               'md:min-w-0 min-w-full',
+               'm-0'
+            ],
          }}
       >
          <ModalContent className={`h-full`}>
@@ -260,7 +280,11 @@ const ManageContent = ({
                            //   setSearchPlayListText(value)
                            // }}
                            // statr with
-                           defaultItems={playListData}
+                           // defaultItems={playListData}
+                           inputValue={list.filterText}
+                           isLoading={list.isLoading}
+                           onInputChange={list.setFilterText}
+                           items={list.items}
                            // items={playListData?.splice(0, 100)}
                            // defaultFilter={myFilter}
                         >
@@ -269,6 +293,7 @@ const ManageContent = ({
                                  aria-labelledby={`playlist${playList.id}`}
                                  key={playList.id}
                                  value={playList.id}
+                                 className={`font-serif`}
                               >
                                  {playList.name}
                               </AutocompleteItem>
@@ -366,22 +391,29 @@ const ManageContent = ({
                               return (
                                  <div
                                     key={`videoLesson${index}`}
-                                    className={`font-serif bg-default-200 ${
-                                       action === "removeInDB" ? `hidden` : `flex`
+                                    className={`font-serif bg-default-100 ${
+                                       action === "removeInDB" ? `hidden` : `flex gap-1`
                                     } items-center p-2 border-2 border-default-foreground rounded-lg`}
                                  >
-                                    <div className={`flex-1`}>
-                                       <div
-                                          className={`text-foreground-400 text-xs`}
-                                       >
-                                          {video.playlistName}
-                                       </div>
-                                       <div className={`flex items-center gap-1`}>
+                                    <div className={`text-default-400`}>
+                                       <div className={`w-4 h-4`}>
                                           <Video size={16} />
-                                          <div>{video.name}</div>
+                                       </div>
+                                       <div className={`w-4 h-4`}>
+                                          {video.contentName &&
+                                             <FileText size={16} />
+                                          }
                                        </div>
                                     </div>
-                                    <div className={`text-sm text-foreground-400`}>
+                                    <div className={`flex-1`}>
+                                       <div
+                                          className={`text-default-400 text-xs`}
+                                       >
+                                          {video.playlistName} {video.position}
+                                       </div>
+                                       <div>{video.name}</div>
+                                    </div>
+                                    <div className={`text-sm text-default-400`}>
                                        {video.hour! * 60 + video.minute!} นาที
                                     </div>
                                     <div

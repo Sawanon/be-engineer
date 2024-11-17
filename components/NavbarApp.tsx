@@ -87,7 +87,7 @@ const NavbarApp = () => {
             {menuItems.map((item, index) => (
               <NavbarMenuItem key={`${item.name}-${index}`}>
                 <div>
-                  <Link href={`${item.path}`}>
+                  <Link onClick={() => setIsOpen(false)} href={`${item.path}`}>
                     <div
                       className={`flex gap-2 items-center rounded-lg w-max p-1 ${
                         isMenuActive(item)
