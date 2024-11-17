@@ -78,17 +78,6 @@ const ManageCourse = ({
     message: "ลบไม่สำเร็จ ดูเพิ่มเติมใน Console",
   });
 
-  const [isSort, setIsSort] = useState(false);
-  const [courseName, setCourseName] = useState<string | undefined>();
-  const [courseDetail, setCourseDetail] = useState<string | undefined>();
-  const [courseTutorId, setCourseTutorId] = useState<number | undefined>();
-  const [clueLink, setCourseLink] = useState<string | undefined>();
-  const [playlist, setPlaylist] = useState<string | undefined>();
-  const [price, setPrice] = useState<number | undefined>();
-  const [addCourseError, setAddCourseError] = useState({
-    isError: false,
-    message: "",
-  });
   const [mode, setMode] = useState<"tutor" | "admin">("tutor");
   const [courseImageList, setCourseImageList] = useState<string[]>([]);
   const [webappCourseList, setWebappCourseList] = useState<
@@ -113,6 +102,7 @@ const ManageCourse = ({
 
   useMemo(() => {
     if(!selectedCourse){
+      setMode('tutor')
       setCourseImageList([])
     }
     setIsAdd(selectedCourse === undefined);
@@ -136,17 +126,7 @@ const ManageCourse = ({
     setIsEdit(false);
     setIsDelete(false);
     setIsAdd(true);
-    clearData();
     onClose();
-  };
-
-  const clearData = () => {
-    setCourseName(undefined);
-    setCourseDetail(undefined);
-    setCourseTutorId(undefined);
-    setCourseLink(undefined);
-    setPlaylist(undefined);
-    setPrice(undefined);
   };
 
   const handleDeleteCourse = async () => {

@@ -16,15 +16,15 @@ const config: Config = {
       },
       extend: {
          colors: {
-            primary: {
-               DEFAULT: "var(--nextui-default-foreground)",
-               foreground: "#FFFFFF",
-               warning  : "#F5A524"
-            },
-            secondary: {
-               DEFAULT: "var(--secondary)",
-               foreground: "#00000",
-            },
+            // primary: {
+            //    DEFAULT: "var(--nextui-default-foreground)",
+            //    foreground: "#FFFFFF",
+            //    warning  : "#F5A524"
+            // },
+            // secondary: {
+            //    DEFAULT: "var(--secondary)",
+            //    foreground: "#00000",
+            // },
             'secondary-default': `#393E44`,
             'secondary-light': `#6C7074`,
             background: "var(--background)",
@@ -57,14 +57,6 @@ const config: Config = {
    darkMode: "class",
    plugins: [nextui({
       addCommonColors: true,
-      //TODO: config color primary calendar this here
-      // themes: {
-      //    light: {
-      //       colors: {
-      //          default: 'black',
-      //       }
-      //    }
-      // }
       themes: {
          light: {
            // ...
@@ -72,19 +64,18 @@ const config: Config = {
                // background: "#000000",
             // foreground: "#ECEDEE",
             primary: {
-              //... 50 to 900
-              foreground: "#FFFFFF",
-              DEFAULT: "#000000",
-            //   50:   "#000000",
-            //   100:  "#000000",
-            //   200:  "#000000",
-            //   300:  "#000000",
-            //   400:  "#000000",
-            //   500:  "#000000",
-            //   600:  "#000000",
-            //   700:  "#000000",
-            //   800:  "#000000",
-            //   900:  "#000000",
+               50: "#FAFAFA",
+               100: "#F4F4F5",
+               200: "#E4E4E7",
+               300: "#D4D4D8",
+               400: "#A1A1AA",
+               500: "#71717A",
+               600: "#52525B",
+               700: "#3F3F46",
+               800: "#27272A",
+               900: "#000000",
+               foreground: "#000000",
+               DEFAULT: "#000000",
             },
 
            },

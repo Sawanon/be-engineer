@@ -285,7 +285,7 @@ const EditBookModal = ({
                   <input {...getInputProps()} multiple={false} />
                   {imagePreview ? (
                     <Image
-                      className={`object-cover w-28 h-[148px]`}
+                      className={`object-cover w-28 h-[148px] data-[loaded=true]:hover:opacity-80`}
                       src={`${imagePreview}`}
                       alt="book image"
                     />
