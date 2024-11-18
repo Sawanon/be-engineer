@@ -162,29 +162,25 @@ const SingleTrack = ({
                      // defaultValue="ได้ Calculus ไปแล้ว ขาด Physics กัับ Chemistry จะส่งให้วันพฤหัสที่ 8 ธ.ค. นะครับ"
                   />
                </div>
-               <div className="py-2 grid grid-cols-3 gap-2">
+               <div className="py-2 flex flex-col-reverse md:flex-row gap-2 md:gap-0">
                   <Button
-                     fullWidth
                      onClick={() =>
                         onChangeType({ detail: data!, type: "pickup" })
                      }
                      color="default"
                      variant="light"
-                     className="text-base font-medium font-sans flex gap-3 order-2 md:order-1 md:col-span-1 col-span-3"
+                     className="text-base px-4 min-w-max font-medium font-sans flex gap-3"
+                     startContent={<LuArrowRightLeft size={24} className="min-w-6 min-h-6" />}
                   >
-                     <LuArrowRightLeft size={24} className="text-[24px]" />
-                     <p>รับที่สถาบัน</p>
+                     รับที่สถาบัน
                   </Button>
-
-              
-
                   <Button
                      isLoading={addTracking.isPending}
                      type="submit"
                      fullWidth
                      color="primary"
                      variant="solid"
-                     className="flex-shrink-0 font-sans  text-base font-medium md:col-span-2 col-span-3 order-1 md:order-2 "
+                     className="font-sans text-base font-medium"
                   >
                      บันทึก
                   </Button>

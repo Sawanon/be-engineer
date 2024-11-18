@@ -102,7 +102,6 @@ const ManageCourse = ({
 
   useMemo(() => {
     if(!selectedCourse){
-      setMode('tutor')
       setCourseImageList([])
     }
     setIsAdd(selectedCourse === undefined);
@@ -127,6 +126,7 @@ const ManageCourse = ({
     setIsDelete(false);
     setIsAdd(true);
     onClose();
+    setMode('tutor')
   };
 
   const handleDeleteCourse = async () => {

@@ -25,6 +25,7 @@ import { Button } from "@nextui-org/react";
 import { Refresh } from "iconsax-react";
 import { LuX } from "react-icons/lu";
 import EditTracking from "./edit_tracking.modal";
+import { X } from "lucide-react";
 
 export type multiTrackDialog = {
    key: Set<number>;
@@ -200,13 +201,15 @@ const DeliverComp = ({
          </button> */}
 
          {newData && (
-            <NotifyModal
-               onRefresh={() => {
-                  // refetchData();
-                  router.refresh();
-               }}
-               onClose={() => setNewData(false)}
-            />
+            <div className={`flex justify-center md:justify-end absolute right-4 bottom-4 z-50 w-full`}>
+               <NotifyModal
+                  onRefresh={() => {
+                     // refetchData();
+                     router.refresh();
+                  }}
+                  onClose={() => setNewData(false)}
+               />
+            </div>
          )}
          {/*  <div className="flex flex-col relative flex-1 font-IBM-Thai-Looped px-[14px] overflow-y-hidden  bg-default-50 h-screenDevice bg-green-500   "> */}
          <h1 className="hidden md:block font-sans text-[30px] text-default-foreground font-bold leading-9 py-2 ">
@@ -275,21 +278,21 @@ const NotifyModal = ({
    onClose: () => void;
 }) => {
    return (
-      <div className="rounded-lg font-IBM-Thai-Looped bg-black opacity-70 flex items-center gap-2 py-2 md:py-3 px-4 absolute right-4 bottom-4 z-50">
+      <div className="backdrop-blur-md shadow-nextui-md bg-black/70 rounded-lg font-serif flex items-center gap-2 py-2 md:py-app px-4">
          <p className="text-default-100">มีคำสั่งซื้อใหม่เข้ามา</p>
          <Button
             onClick={onRefresh}
-            endContent={<Refresh className="text-default-foreground" />}
-            className="bg-default-100 text-default-foreground"
+            endContent={<Refresh strokeWidth={1.5} size={20} className="text-default-foreground" />}
+            className="bg-default-100 text-default-foreground text-base font-medium"
          >
             Refresh
          </Button>
          <Button
             onClick={onClose}
             isIconOnly
-            className="bg-transparent text-default-foreground"
+            className="bg-transparent text-default-foreground min-w-0 w-6 h-6 p-1"
          >
-            <LuX className="text-default-100 " />
+            <X size={16} className="text-default-100 " />
          </Button>
       </div>
    );

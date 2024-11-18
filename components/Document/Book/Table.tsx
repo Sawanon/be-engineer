@@ -47,8 +47,8 @@ const TableBooks = ({
         <Button
           onClick={() => onViewUsage(courseList, book)}
           isIconOnly
-          color="secondary"
-          className={`bg-default-100 min-w-0 w-8 h-8`}
+          // color="secondary"
+          className={`bg-default-100 text-default-foreground min-w-0 w-8 h-8`}
         >
           <LuListTree size={24} />
         </Button>

@@ -20,13 +20,15 @@ import { addSheetAction, listSheetsAction } from "@/lib/actions/sheet.action";
 import { useQuery } from "@tanstack/react-query";
 import { listBooksAction } from "@/lib/actions/book.actions";
 import TableBooks from "./Book/Table";
-import { DocumentBook, DocumentSheet } from "@prisma/client";
+import { DocumentBook, DocumentPreExam, DocumentSheet } from "@prisma/client";
 import { addPreExamAction, listPreExamAction } from "@/lib/actions/pre-exam.actions";
 import TablePreExam from "./PreExam/Table";
 import EditBookModal from "./Book/EditBook.modal";
 import _ from 'lodash'
 import { usePathname, useSearchParams } from "next/navigation";
 import EditSheeModal from "./Sheet/EditSheeModal";
+import SheetUsage from "./Sheet/SheetUsage";
+import PreExamUsage from "./PreExam/PreExamUsage";
 
 export type DocumentMode = "book" | "sheet" | "pre-exam";
 
@@ -86,6 +88,11 @@ const DocumentComp = () => {
    const [page, setPage] = useState(1)
    const [pageSize, setPageSize] = useState(30)
    const rowPerPage = 30
+
+   const [isOpenSheetViewUsage, setIsOpenSheetViewUsage] = useState(false)
+
+   const [isOpenPreExamViewUsage, setIsOpenPreExamViewUsage] = useState(false)
+   const [selectedPreExam, setSelectedPreExam] = useState<DocumentPreExam | undefined>()
    
    // book search
    const bookList = useMemo(() => {
@@ -268,6 +275,30 @@ const DocumentComp = () => {
       setIsOpenEditSheet(true)
    }
 
+   const handleOnOpenSheetViewUsage = (courseList: any[], sheet: DocumentSheet) => {
+      setIsOpenSheetViewUsage(true)
+      setSelectedSheet(sheet)
+      setCourseList(courseList)
+   }
+
+   const handleOnCloseSheetViewUsage = () => {
+      setIsOpenSheetViewUsage(false)
+      setSelectedSheet(undefined)
+      setCourseList([])
+   }
+
+   const handleOnOpenPreExamViewUsage = (courseList: any[], preExam: DocumentPreExam) => {
+      setIsOpenPreExamViewUsage(true)
+      setSelectedPreExam(preExam)
+      setCourseList(courseList)
+   }
+
+   const handleOnClosePreExamViewUsage = () => {
+      setIsOpenPreExamViewUsage(false)
+      setSelectedPreExam(undefined)
+      setCourseList([])
+   }
+
    return (
       <div className="relative pt-6 px-app h-screenDevice flex flex-col">
          <BookInventory
@@ -301,6 +332,18 @@ const DocumentComp = () => {
          />
          {/* <ConfirmBook open={isDelete} onClose={() => setIsDelete(false)} /> */}
          <BookUsage courseList={courseList} book={selectedBook} open={isViewUsage} onClose={() => setIsViewUsage(false)} />
+         <SheetUsage
+            open={isOpenSheetViewUsage}
+            courseList={courseList}
+            sheet={selectedSheet}
+            onClose={handleOnCloseSheetViewUsage}
+         />
+         <PreExamUsage
+            open={isOpenPreExamViewUsage}
+            courseList={courseList}
+            preExam={selectedPreExam}
+            onClose={handleOnClosePreExamViewUsage}
+         />
          <Modal
             isOpen={isOpenAddDocumentSheet}
             closeButton={<></>}
@@ -447,14 +490,12 @@ const DocumentComp = () => {
                <TableDocument
                   documentList={sheetItems}
                   onEditSheet={handleOnClickEditSheet}
-                  onViewUsage={() => setIsViewUsage(true)}
+                  onViewUsage={handleOnOpenSheetViewUsage}
                />
             }
             {documentMode === "pre-exam" &&
                <TablePreExam
-                  onViewUsage={() => {
-                     console.log("asd");
-                  }}
+                  onViewUsage={handleOnOpenPreExamViewUsage}
                   // preExamList={preExamList}
                   preExamList={preExamItems}
                />

@@ -85,8 +85,9 @@ const AddBook = ({
       onClientUploadComplete: () => {
          console.log('uploaded successfully!')
       },
-      onUploadError: () => {
+      onUploadError: (e) => {
          alert("error occurred while uploading");
+         console.error(e)
       },
       onUploadBegin: (file) => {
          console.log("upload has begun for", file);
