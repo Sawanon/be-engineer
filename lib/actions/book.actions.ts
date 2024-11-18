@@ -82,6 +82,7 @@ export const listBooksAction = async () => {
                   select: {
                     id: true,
                     name: true,
+                    status: true,
                   }
                 },
               }

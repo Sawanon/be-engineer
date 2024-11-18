@@ -24,12 +24,32 @@ const TablePreExam = ({
    preExamList? :DocumentPreExam[],
   //  onViewStock: (book: DocumentBook) => void,
   //  onEditBook: () => void,
-   onViewUsage: () => void,
+   onViewUsage: (courseList: any[], book: DocumentPreExam) => void,
 }) => {
 
-  // const handleOnViewStock = (book: DocumentBook) => {
-  //   onViewStock(book)
-  // }
+   const renderCourseUsage = (preExam: DocumentPreExam | any) => {
+      const LessonOnDocument: any[] = preExam.LessonOnDocument
+      const courseMap: Map<string, any> = new Map();
+      LessonOnDocument.forEach((lessonOnDocument) => {
+         const courseLesson = lessonOnDocument.CourseLesson;
+         const course: any = courseLesson.Course;
+         courseMap.set(course.id, course);
+       });
+       const courseList = Array.from(courseMap.values());
+      return (
+         <div className="flex gap-2 font-serif items-center">
+            <p className="text-sm">{courseList.length}</p>
+            <Button
+               onClick={() => onViewUsage(courseList, preExam)}
+               isIconOnly
+               className={`bg-default-100 text-default-foreground min-w-0 w-8 h-8`}
+            >
+               <LuListTree size={24} />
+            </Button>
+         </div>
+      )
+   }
+
    return (
       <Table
          classNames={tableClassnames}
@@ -66,12 +86,7 @@ const TablePreExam = ({
                       </Button>
                      </TableCell>
                      <TableCell>
-                        <div className="flex gap-2  items-center">
-                           <p className="text-sm">1</p>
-                           <Button onClick={onViewUsage} isIconOnly color="secondary">
-                              <LuListTree size={24} />
-                           </Button>
-                        </div>{" "}
+                        {renderCourseUsage(preExam)}
                      </TableCell>
                   </TableRow>
                )

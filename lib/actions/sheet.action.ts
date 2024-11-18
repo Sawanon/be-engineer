@@ -23,6 +23,23 @@ export const listSheetsAction = async (): Promise<
 > => {
    try {
       const response = await prisma.documentSheet.findMany({
+         include: {
+            LessonOnDocumentSheet: {
+               include: {
+                  CourseLesson: {
+                     include: {
+                        Course: {
+                           select: {
+                              id: true,
+                              name: true,
+                              status: true,
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         },
          orderBy: {
             createdAt: "desc",
          },

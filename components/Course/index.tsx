@@ -24,16 +24,9 @@ import {
 } from "@/lib/actions/course.actions";
 import { useQuery } from "@tanstack/react-query";
 import { listTutor } from "@/lib/actions/tutor.actions";
-import { listPlayList } from "@/lib/actions/playlist.actions";
-import { PlayList } from "@/lib/model/playlist";
-import ManageLesson from "@/components/ManageLesson";
 import ManageCourse from "@/components/ManageCourse";
-import ErrorBox from "@/components/ErrorBox";
-import DeleteCourseDialog from "@/components/Course/DeleteCourseDialog";
-// import CourseContext from "@/app/course/provider";
 import { CourseLesson, Course as CoursePrisma, DocumentBook, DocumentPreExam, DocumentSheet, LessonOnDocument, LessonOnDocumentBook, LessonOnDocumentSheet} from '@prisma/client'
-import { useParams, usePathname, useSearchParams } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { usePathname, useSearchParams } from "next/navigation";
 import _ from 'lodash'
 
 const Status = ({ course }: { course: CourseT }) => {
@@ -116,7 +109,7 @@ const CourseComponent = ({
         setIsOpenDrawer(true)
       }
     }
-   }, [searchParam.get('drawerCourse'), courses, searchParam.get('mode')])
+   }, [searchParam.get('drawerCourse'), courses])
 
    const findUniqueDocument = (course: any) => {
     const uniqueSheets = Array.from(

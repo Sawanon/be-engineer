@@ -244,7 +244,7 @@ const TableDeliver = ({
       <>
          <div className="py-2 flex flex-col flex-1  overflow-y-hidden">
             <Table
-               color={"secondary"}
+               // color={"secondary"}
                disabledKeys={
                   selectState.open ? Object.keys(deliverItem.disable) : ""
                }
@@ -258,7 +258,19 @@ const TableDeliver = ({
                   base: "flex-1 min-h-[600px] mb-4  overflow-y-auto",
                   // tbody : "overflow-scroll scrollbar-hide",
                   table: " flex-1 ",
-                  th: "font-serif",
+                  th: [
+                     "font-serif",
+                     "bg-default-100",
+                     "border-b-1",
+                     "first:rounded-none",
+                     "last:rounded-none",
+                  ],
+                  td: [
+                     "first:before:rounded-l-none",
+                     "rtl:first:before:rounded-r-none",
+                     "last:before:rounded-r-none",
+                     "rtl:last:before:rounded-l-none",
+                  ],
                }}
                aria-label="deliver-table"
                selectedKeys={selectKeys.key}
@@ -293,7 +305,7 @@ const TableDeliver = ({
                   // )}
                   items={deliverItem.data}
                   // isLoading={query.isFetching}
-                  loadingContent={<div>loading...</div>}
+                  loadingContent={<Spinner />}
                   className=""
                >
                   {(deliver) => {
@@ -325,7 +337,7 @@ const TableDeliver = ({
                                              className="font-serif text-base font-medium "
                                              key={course?.id}
                                           >
-                                             {course?.name} ({deliver.branch}
+                                             {course?.name} ({deliver.branch})
                                              <p className="ml-5 whitespace-nowrap text-sm font-normal">
                                                 {course?.term}
                                              </p>
@@ -352,7 +364,7 @@ const TableDeliver = ({
                                  </p>
                               </button>
                            </TableCell>
-                           <TableCell>
+                           <TableCell className={`font-serif`}>
                               {dayjs(deliver.approved).format("MMM-DD HH:mm")}
                            </TableCell>
                            <TableCell className=" ">
@@ -385,7 +397,7 @@ const TableDeliver = ({
             <Pagination
                total={allPage}
                page={page}
-               className="p-0 m-0"
+               className="p-0 m-0 font-serif"
                classNames={{
                   cursor: "bg-default-foreground",
                }}
@@ -411,11 +423,11 @@ const TrackingDetail = ({
       <>
          {checkType === "ship" && (
             <div className="leading-3">
-               <p className="text-secondary-fade text-xs">
+               <p className="text-secondary-fade text-xs font-serif">
                   ส่งวันที่ {dayjs(tracking?.createdAt).format("DD MMM YYYY")}
                </p>
 
-               <div className="flex gap-2 items-center text-secondary font-semibold">
+               <div className="flex gap-2 items-center text-secondary-default text-base font-semibold font-serif">
                   <p>{tracking?.trackingCode}</p>
 
                   <Button
@@ -439,18 +451,18 @@ const TrackingDetail = ({
                      <LuBookCopy className="" size={24} />
                   </Button>
                </div>
-               <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning ">
+               <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning font-serif">
                   {tracking?.note}
                </p>
             </div>
          )}
          {checkType === "pickup" && (
             <>
-               <p className="text-secondary-fade text-xs">
+               <p className="text-secondary-fade text-xs font-serif">
                   {dayjs(tracking?.createdAt).format("HH:mm น.")} โดย{" "}
                   {tracking?.webappAdminUsername}
                </p>
-               <p className="text-secondary font-semibold ">
+               <p className="text-secondary-default font-semibold font-serif text-base">
                   รับวันที่ {dayjs(tracking?.createdAt).format("DD MMM YYYY")}
                </p>
                <Button
@@ -462,7 +474,7 @@ const TrackingDetail = ({
                >
                   <LuBookCopy className="" size={24} />
                </Button>
-               <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning ">
+               <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning font-serif text-base">
                   {tracking?.note}
                </p>
             </>
@@ -492,7 +504,7 @@ const AddTrackDetail = ({
                <Button
                   color="default"
                   variant="flat"
-                  className="flex-shrink-0  text-base font-medium"
+                  className="flex-shrink-0 text-base font-medium font-sans bg-default-100"
                   size="sm"
                   startContent={<LuPackage size={20} />}
                   onClick={() => onAddTrackings(deliver, deliveryType)}
@@ -502,7 +514,7 @@ const AddTrackDetail = ({
                <Button
                   color="default"
                   variant="flat"
-                  className="flex-shrink-0  text-base font-medium"
+                  className="flex-shrink-0  text-base font-medium font-sans bg-default-100"
                   size="sm"
                   startContent={<LuPrinter size={20} />}
                   onClick={() => onPrint([deliver])}
@@ -516,7 +528,7 @@ const AddTrackDetail = ({
                <Button
                   color="default"
                   variant="flat"
-                  className="flex-shrink-0  text-base font-medium"
+                  className="flex-shrink-0 font-sans text-base font-medium bg-default-100"
                   size="sm"
                   startContent={<LuFileSignature size={20} />}
                   onClick={() => onAddTrackings(deliver, deliveryType)}

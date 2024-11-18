@@ -26,6 +26,7 @@ const config: Config = {
             //    foreground: "#00000",
             // },
             'secondary-default': `#393E44`,
+            'secondary-fade': `#9098A2`,
             'secondary-light': `#6C7074`,
             background: "var(--background)",
             foreground: "var(--foreground)",
@@ -50,6 +51,7 @@ const config: Config = {
             'nextui-large': `0px 0px 1px 0px rgba(0,0,0,0.3), 0px 2px 30px 0px rgba(0,0,0,0.08), 0px 0px 15px 0px rgba(0,0,0,0.03)`,
             'neutral-sm-app': `0px 1px 2px 0px rgba(0,0,0,0.05)`,
             'neutral-base': `0px 1px 2px 0px rgba(0,0,0,0.06), 0px 1px 3px 0px rgba(0,0,0,0.1)`,
+            'nextui-md': `0px 2px 30px 0px rgba(0,0,0,0.08), 0px 0px 1px 0px rgba(0,0,0,0.3), 0px 0px 15px 0px rgba(0,0,0,0.03)`,
          }
       },
    },
