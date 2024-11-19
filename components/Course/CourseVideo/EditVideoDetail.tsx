@@ -39,10 +39,6 @@ const EditVideoDetail = ({
        };
     },
  });
-
- useMemo(() => {
-  console.log("list", list.items);
- }, [list])
  
  useEffect(() => {
   if(video){

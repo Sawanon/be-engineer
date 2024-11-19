@@ -42,7 +42,7 @@ const Status = ({ course }: { course: CourseT }) => {
          textColor = "text-success-500";
          break;
       case "enterForm":
-         textColor = "text-primary-500";
+         textColor = "text-primary_blue-500";
          break;
       default:
          textColor = "text-gray-400";
