@@ -78,13 +78,18 @@ const BookInventory = ({
       console.log("endDate:", endDate);
       console.log('startDayjs:', `${startDayjs}`);
       console.log('endDayjs:', `${endDayjs}`);
+      console.log('date start', startDayjs.date());
+      console.log('date end', endDayjs.date());
+      console.log('date start format', startDayjs.format('DD'));
+      console.log('date end format', endDayjs.format('DD'));
+      
       
       if(startDayjs.isSame(endDayjs, 'date')){
-         return `${startDayjs.date()} ${startDayjs.format('MMM')} ${startDayjs.year()}`
+         return `${startDayjs.format('DD')} ${startDayjs.format('MMM')} ${startDayjs.year()}`
       }else if(startDayjs.isSame(endDayjs, 'month')){
-         return `${startDayjs.date()} - ${endDayjs.date()} ${startDayjs.format('MMM')} ${startDayjs.year()}`
+         return `${startDayjs.format('DD')} - ${endDayjs.format('DD')} ${startDayjs.format('MMM')} ${startDayjs.year()}`
       }else{
-         return `${startDayjs.date()} ${startDayjs.format('MMM')} ${startDayjs.year()} - ${endDayjs.date()} ${endDayjs.format('MMM')} ${endDayjs.year()}`
+         return `${startDayjs.format('DD')} ${startDayjs.format('MMM')} ${startDayjs.year()} - ${endDayjs.format('DD')} ${endDayjs.format('MMM')} ${endDayjs.year()}`
       }
    }
 
