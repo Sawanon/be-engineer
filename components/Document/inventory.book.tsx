@@ -70,14 +70,14 @@ const BookInventory = ({
    }, [bookTransactionsList, page])
 
    const renderStartEndDate = (startDate: Date, endDate: Date) => {
-      const startDayjs = dayjs(startDate)
-      const endDayjs = dayjs(endDate)
+      const startDayjs = dayjs(startDate).startOf('date')
+      const endDayjs = dayjs(endDate).startOf('date')
       console.log(new Date().getTimezoneOffset());
       
-      console.log(`start date: ${startDayjs}`);
+      console.log(`start date startOf: ${startDayjs.startOf('date')}`);
       console.log(`start date: ${startDayjs.date()}`);
-      console.log(`end date: ${endDayjs}`);
-      console.log(`start date: ${endDayjs.date()}`);
+      console.log(`end date startOf: ${endDayjs.startOf('date')}`);
+      console.log(`end date: ${endDayjs.date()}`);
       
       if(startDayjs.isSame(endDayjs, 'date')){
          return `${startDayjs.date()} ${startDayjs.format('MMM')} ${startDayjs.year()}`
