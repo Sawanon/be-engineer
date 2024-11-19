@@ -72,6 +72,11 @@ const BookInventory = ({
    const renderStartEndDate = (startDate: Date, endDate: Date) => {
       const startDayjs = dayjs(startDate)
       const endDayjs = dayjs(endDate)
+      console.log(`start date: ${startDayjs}`);
+      console.log(`start date: ${startDayjs.date()}`);
+      console.log(`end date: ${endDayjs}`);
+      console.log(`start date: ${endDayjs.date()}`);
+      
       if(startDayjs.isSame(endDayjs, 'date')){
          return `${startDayjs.date()} ${startDayjs.format('MMM')} ${startDayjs.year()}`
       }else if(startDayjs.isSame(endDayjs, 'month')){

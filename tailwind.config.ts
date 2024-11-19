@@ -79,6 +79,20 @@ const config: Config = {
                foreground: "#FFFFFF",
                DEFAULT: "#000000",
             },
+            primary_blue:{
+               50: "#001731",
+               100: "#002e62",
+               200: "#004493",
+               300: "#005bc4",
+               400: "#006FEE",
+               500: "#338ef7",
+               600: "#66aaf9",
+               700: "#99c7fb",
+               800: "#cce3fd",
+               900: "#e6f1fe",
+               foreground: "#FFFFFF",
+               DEFAULT: "#006FEE",
+            }
 
            },
          },

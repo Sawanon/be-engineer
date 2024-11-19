@@ -36,6 +36,7 @@ import { listCourseAction } from "@/lib/actions/course.actions";
 import axios from "axios";
 import {AsyncListData, useAsyncList} from "@react-stately/data";
 import _ from 'lodash'
+import TestTable from "../Test/table";
 
 const ManageContent = ({
    isOpen,
@@ -65,6 +66,7 @@ const ManageContent = ({
    const [videoInLesson, setVideoInLesson] = useState<{
       [x: string]: VideoPlaylist;
    }>({});
+   const [selectedKeysVideo, setSelectedKeysVideo] = useState<Set<Key>>(new Set([]))
 
    useMemo(() => {
       if (!lesson?.CourseVideo) return;
@@ -74,6 +76,7 @@ const ManageContent = ({
          return acc;
       }, {} as Record<number, any>);
       setVideoInLesson(result);
+      setSelectedKeysVideo(new Set(videoList.map(video => `${video.webappVideoId}`)))
    }, [lesson]);
 
    const handleOnConfirm = async () => {
@@ -82,6 +85,10 @@ const ManageContent = ({
 
    const handleOnCancel = async () => {
       onCancel();
+      setSelectedPlaylistId(undefined)
+      setSelectedKeysVideo(new Set([]))
+      setVideoList([])
+      list.setFilterText('')
    };
 
    const handleOnChangePlayList = async (playlistId: Key | null) => {
@@ -100,86 +107,9 @@ const ManageContent = ({
       });
    };
 
-   const handleOnSelectVideo = (video: VideoWebapp, isSelected: boolean) => {
-      // console.log(video);
-      // console.log(isSelected);
-      if (isSelected) {
-         // add video
-         addVideoToLesson(video);
-      } else {
-         // delete video
-         removeVideoToLesson(video);
-      }
-      // if(videoInLesson['']){
-
-      // }
-   };
-
-   const addVideoToLesson = (video: VideoWebapp) => {
-      setVideoInLesson((prev) => {
-         const cloneVideo = { ...prev };
-         const objKeys = Object.keys(cloneVideo)
-         const lastPosition = objKeys.sort((a, b) => {
-            const prevVideo = videoInLesson[a];
-            const nextVideo = videoInLesson[b];
-            if(prevVideo.position! < nextVideo.position!){
-               return 1
-            }else if(prevVideo.position! > nextVideo.position!){
-               return -1
-            }
-            return 0
-         }).map((key) => cloneVideo[key])
-         
-         if (cloneVideo[`${video.id}`]) {
-            cloneVideo[`${video.id}`].action = "inDB";
-            cloneVideo[`${video.id}`].position = (lastPosition[0]?.position ?? objKeys.length) + 1
-            return cloneVideo;
-         }
-         const contentName =
-            video.video_library_onlinevideoplaylistmediaitemcontent
-               ? video.video_library_onlinevideoplaylistmediaitemcontent.name
-               : null;
-         return {
-            ...prev,
-            [`${video.id}`]: {
-               name: video.name,
-               descriptionId: video.desc_id,
-               hour: video.hour_length,
-               minute: video.minute_length,
-               lessonId: lesson.id,
-               position: (lastPosition[0]?.position ?? objKeys.length) + 1,
-               videoLink: video.link,
-               webappVideoId: video.id,
-               action: "create",
-               playlistName: selectedVideoPlaylist.name,
-               contentName: contentName,
-            },
-         };
-      });
-   };
-
-   const removeVideoToLesson = (video: VideoPlaylist | VideoWebapp) => {
-      const videoId = "webappVideoId" in video ? video.webappVideoId : video.id;
-
-      setVideoInLesson((prevVideo) => {
-         const cloneVideo = { ...prevVideo };
-         if (!cloneVideo[`${videoId}`]) return prevVideo;
-         if (
-            cloneVideo[`${videoId}`].action === "inDB" ||
-            cloneVideo[`${videoId}`].action === "removeInDB"
-         ) {
-            cloneVideo[`${videoId}`] = {
-               ...cloneVideo[`${videoId}`],
-               action: "removeInDB",
-            };
-            return cloneVideo;
-         }
-         delete cloneVideo[`${videoId}`];
-         return cloneVideo;
-      });
-   };
-
    const addVideo = (video: VideoWebapp) => {
+      console.log("video", video);
+      
       const cloneVideo = { ...videoInLesson };
       const objKeys = Object.keys(cloneVideo)
       const lastPosition = objKeys.sort((a, b) => {
@@ -222,7 +152,7 @@ const ManageContent = ({
 
    const removeVideo = (video: VideoPlaylist | VideoWebapp, videoInLesson: {[x: string]: VideoPlaylist}) => {
       const videoId = "webappVideoId" in video ? video.webappVideoId : video.id;
-      const cloneVideo = { ...videoInLesson };
+      const cloneVideo = _.cloneDeep(videoInLesson)
       if (!cloneVideo[`${videoId}`]) return videoInLesson;
       if (
          cloneVideo[`${videoId}`].action === "inDB" ||
@@ -280,11 +210,14 @@ const ManageContent = ({
       {
          const arrKeys = Array.from(keys)
          const videoInLessonArrKeys = Object.keys(videoInLesson)
-         if(arrKeys.length > videoInLessonArrKeys.length){
+         const videoFilterRemove = Object.keys(videoInLesson).map(key => videoInLesson[key]).filter(video => (video.action !== "removeInDB" && video.action !== "remove"))
+         
+         if(arrKeys.length > videoFilterRemove.length){
             // add
             let arrVideo = {}
+            
             arrKeys.forEach(key => {
-               const video = videoList.find(video => video.id === parseInt(key.toString()))
+               const video = videoList.find(video => parseInt(video.id.toString()) === parseInt(key.toString()))
                const preAddVideo = addVideo(video!)
                arrVideo = {
                   ...arrVideo,
@@ -293,20 +226,34 @@ const ManageContent = ({
                return preAddVideo
             })
             setVideoInLesson(arrVideo)
+            setSelectedKeysVideo(keys as Set<string>)
          }else{
             // remove
-            let cloneVideo = _.cloneDeep(videoInLesson)
-            videoInLessonArrKeys.forEach(videoId => {
-               const foundKey = arrKeys.find(tableVideoId => tableVideoId.toString() === videoId)
-               if(foundKey === undefined){
-                  const video = videoInLesson[videoId]
-                  const preRemoveVideo = removeVideo(video, cloneVideo)
-                  cloneVideo = preRemoveVideo
-               }
-            })
-            setVideoInLesson(cloneVideo)
+            removeVideoAndKeys(videoInLessonArrKeys, keys as Set<string>)
          }
       }
+   }
+
+   const removeVideoAndKeys = (videoInLessonArrKeys: string[], keys: Set<Key>, video?: VideoPlaylist | VideoWebapp) => {
+      const arrKeys = Array.from(keys)
+      let cloneVideo = _.cloneDeep(videoInLesson)
+      const keysSet = new Set(keys)
+      if(video){
+         const videoId = "webappVideoId" in video ? video.webappVideoId : video.id;
+         console.log("keysSet.delete(videoId)", keysSet.delete(`${videoId!}`));
+         cloneVideo = removeVideo(video, cloneVideo)
+      }else{
+         videoInLessonArrKeys.forEach(videoId => {
+            const foundKey = arrKeys.find(tableVideoId => tableVideoId.toString() === videoId)
+            if(foundKey === undefined){
+               const video = videoInLesson[videoId]
+               const preRemoveVideo = removeVideo(video, cloneVideo)
+               cloneVideo = preRemoveVideo
+            }
+         })
+      }
+      setSelectedKeysVideo(keysSet)
+      setVideoInLesson(cloneVideo)
    }
 
    let list:AsyncListData<PlayList> = useAsyncList({
@@ -335,7 +282,7 @@ const ManageContent = ({
             backdrop: ['bg-default-foreground/25'],
             base: [
                // 'bg-red-400', 
-               'md:min-h-0 min-h-dvh',
+               'md:min-h-0 min-h-dvh md:max-h-[calc(100dvh-8rem)]',
                'md:min-w-0 min-w-full',
                'm-0'
             ],
@@ -392,21 +339,6 @@ const ManageContent = ({
                                  {playList.name}
                               </AutocompleteItem>
                            )}
-                           {/* {playListData ? (
-                  playListData.splice(0, 10).map((playList) => (
-                    <AutocompleteItem
-                      aria-labelledby={`playlist${playList.id}`}
-                      key={playList.id}
-                      value={playList.id}
-                    >
-                      {playList.name}
-                    </AutocompleteItem>
-                  ))
-                ) : (
-                  <AutocompleteItem key={"loading"} value={"loading"}>
-                    loading...
-                  </AutocompleteItem>
-                )} */}
                         </Autocomplete>
                         <div className={`mt-2 flex-1 relative overflow-auto`}>
                            <Table
@@ -415,7 +347,9 @@ const ManageContent = ({
                               selectionMode="multiple"
                               hideHeader
                               // selectedKeys={Object.keys(videoInLesson)}
-                              defaultSelectedKeys={Object.keys(videoInLesson)}
+                              selectedKeys={selectedKeysVideo}
+                              selectionBehavior="toggle"
+                              // defaultSelectedKeys={Object.keys(videoInLesson)}
                               onSelectionChange={handleOnSelecteCell}
                               className={`shadow-none`}
                               classNames={{
@@ -472,7 +406,7 @@ const ManageContent = ({
                               )}
                               </TableBody>
                            </Table>
-                           <div className={`absolute inset-0 hidden`}>
+                           {/* <div className={`absolute inset-0 hidden`}>
                               {videoList.map((video) => {
                                  return (
                                     <div
@@ -526,7 +460,7 @@ const ManageContent = ({
                                     </div>
                                  );
                               })}
-                           </div>
+                           </div> */}
                         </div>
                      </div>
                      <Divider className={`hidden md:block`} orientation="vertical" />
@@ -577,8 +511,9 @@ const ManageContent = ({
                                     <div
                                        className={`w-8 h-8 flex items-center justify-center cursor-pointer`}
                                        onClick={() => {
-                                          removeVideoToLesson(videoInLesson[key]);
+                                          // removeVideoToLesson(videoInLesson[key]);
                                           // handleDeleteVideo(videoInLesson, index);
+                                          removeVideoAndKeys(Object.keys(videoInLesson), selectedKeysVideo, video)
                                        }}
                                     >
                                        <X />
