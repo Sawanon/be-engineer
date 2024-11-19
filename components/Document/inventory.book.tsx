@@ -72,6 +72,8 @@ const BookInventory = ({
    const renderStartEndDate = (startDate: Date, endDate: Date) => {
       const startDayjs = dayjs(startDate)
       const endDayjs = dayjs(endDate)
+      console.log(new Date().getTimezoneOffset());
+      
       console.log(`start date: ${startDayjs}`);
       console.log(`start date: ${startDayjs.date()}`);
       console.log(`end date: ${endDayjs}`);
