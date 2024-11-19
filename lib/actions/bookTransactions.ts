@@ -89,7 +89,7 @@ export const listBookTransactionByBookIdGroupByYearMonth = async (bookId: number
       qty: data.total_amount,
       detail: data.detail,
       startDate: dayjs(`${data.year_months}-01`),
-      endDate: dayjs(`${data.year_months}-01`).endOf('month'),
+      endDate: dayjs(`${data.year_months}-01`).endOf('month').startOf('date'),
     }))
     allResponse = [...responseWithoutDeliver, ...formattedResponse]
     return allResponse as {
