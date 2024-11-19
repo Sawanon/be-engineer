@@ -36,7 +36,6 @@ import { listCourseAction } from "@/lib/actions/course.actions";
 import axios from "axios";
 import {AsyncListData, useAsyncList} from "@react-stately/data";
 import _ from 'lodash'
-import TestTable from "../Test/table";
 
 const ManageContent = ({
    isOpen,
