@@ -11,6 +11,9 @@ export const ourFileRouter = {
   imageUploader: f({ image: { maxFileSize: "4MB" } })
     // Set permissions and file types for this FileRoute
     .middleware(async ({ req }) => {
+      const UPLOADTHING_TOKEN = process.env.UPLOADTHING_TOKEN
+      console.log(`middleware uploadthing:14: ${UPLOADTHING_TOKEN}`);
+      
       // This code runs on your server before upload
       const user = await auth(req);
 
@@ -19,6 +22,10 @@ export const ourFileRouter = {
 
       // Whatever is returned here is accessible in onUploadComplete as `metadata`
       return { userId: user.id };
+    })
+    .onUploadError(({error}) => {
+      console.error(error)
+      console.error(error.message)
     })
     .onUploadComplete(async ({ metadata, file }) => {
       // This code RUNS ON YOUR SERVER after upload

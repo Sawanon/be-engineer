@@ -21,7 +21,12 @@ import dayjs from "dayjs";
 import _ from "lodash";
 import { useMemo, useRef, useState } from "react";
 import { HiOutlineTruck } from "react-icons/hi";
-import { LuFileSignature, LuPackage, LuPrinter } from "react-icons/lu";
+import {
+   LuBookCopy,
+   LuFileSignature,
+   LuPackage,
+   LuPrinter,
+} from "react-icons/lu";
 import { DeliverFilter } from "./form";
 type dataItem = {
    data: DeliverRes["data"];
@@ -32,7 +37,7 @@ const TableDeliver = ({
    data,
    // query,
    state,
-
+   onOpenEditTracking,
    onAddTrackings,
    onEditAddress,
    tableSelect,
@@ -50,8 +55,11 @@ const TableDeliver = ({
    }>;
    // query: ReturnType<typeof useDeliver>;
    state: stateProps<modalProps>;
-
-   onAddTrackings: (data: deliveryPrismaProps, type: deliveryTypeProps) => void;
+   onOpenEditTracking: (data: DeliverRes["data"][0]) => void;
+   onAddTrackings: (
+      data: DeliverRes["data"][0],
+      type: deliveryTypeProps
+   ) => void;
    onEditAddress: (data: DeliverRes["data"][0] | undefined) => void;
 }) => {
    const [deliverItem, setDeliverItem] = useState<dataItem>({
@@ -67,7 +75,7 @@ const TableDeliver = ({
    const [page, setPage] = useState(1);
    const [allPage, setAllPage] = useState(10);
    const [currentPage, setCurrentPage] = useState(1);
-   const [rowsPerPage, setRowsPerPage] = useState(10);
+   const [rowsPerPage, setRowsPerPage] = useState(100);
 
    // const [loaderRef, scrollerRef] = useInfiniteScroll({
    //    hasMore: query.hasNextPage,
@@ -107,10 +115,9 @@ const TableDeliver = ({
    useMemo(() => {
       const startIndex = (page - 1) * rowsPerPage;
       const endIndex = startIndex + rowsPerPage + 1;
-      // console.table({
-      //    startIndex,
-      //    endIndex,
-      // });
+      const disabledKeys: Record<string, DeliverRes["data"][0]> = {};
+      const deliverMap: Record<string, DeliverRes["data"][0]> = {};
+
       // console.table({
       //    endDate: !_.isEmpty(search.endDate),
       //    input: !_.isEmpty(search.input),
@@ -125,31 +132,30 @@ const TableDeliver = ({
          (!_.isEmpty(search.status) && search.status !== "") ||
          !_.isEmpty(search.university)
       ) {
-         // const deliverMap: Record<string, DeliverRes["data"][0]> = {};
          const statusSearch = search.status
             ? (search.status.split(",") as (keyof typeof checkStatus)[])
             : [];
          const ArrData: DeliverRes["data"] = [];
          data.data.forEach((deliver) => {
+            const checkType = deliver?.type;
+            if (checkType === "pickup" || deliver?.status === "success") {
+               disabledKeys[deliver.id.toString()] = deliver;
+            }
+            deliverMap[deliver.id.toString()] = deliver;
+            const inputSearch = search.input ?? "";
+
             const checkInput =
                _.isEmpty(search.input) ||
-               deliver.member?.toLowerCase().includes(search?.input!) ||
+               deliver.member?.toLowerCase().includes(inputSearch) ||
                deliver.webappOrderId
                   ?.toString()
                   .toLowerCase()
-                  .includes(search?.input!) ||
+                  .includes(inputSearch) ||
                deliver.Delivery_WebappCourse?.some((course) =>
                   course.WebappCourse?.name
                      ?.toLowerCase()
-                     .includes(search?.input!)
+                     .includes(inputSearch.toLowerCase())
                );
-            //  ||
-            // //test
-            // deliver.Delivery_WebappCourse?.some((course) =>
-            //    course.WebappCourse?.name
-            //       ?.toLowerCase()
-            //       .includes(search?.input!)
-            // );
 
             const checkStatusSearch =
                _.isEmpty(search.status) ||
@@ -161,14 +167,27 @@ const TableDeliver = ({
                });
             const checkStartDate =
                _.isEmpty(search.startDate) ||
-               dayjs(search.startDate).isSameOrBefore(dayjs(deliver.approved));
+               dayjs(search.startDate)
+                  .startOf("date")
+                  .isSameOrBefore(dayjs(deliver.approved));
 
             const checkEndDate =
                _.isEmpty(search.endDate) ||
-               dayjs(search.endDate).isSameOrAfter(dayjs(deliver.approved));
+               dayjs(search.endDate)
+                  .endOf("date")
+                  .isSameOrAfter(dayjs(deliver.approved));
             const checkUniversity =
                _.isEmpty(search.university) ||
                deliver.branch?.toLowerCase().includes(search?.university!);
+
+            if (deliver.id === 2560) {
+               console.table({
+                  startDate: search.startDate,
+                  endDate: search.endDate,
+                  checkStartDate,
+                  checkEndDate,
+               });
+            }
             if (
                checkInput &&
                checkStatusSearch &&
@@ -177,27 +196,17 @@ const TableDeliver = ({
                checkEndDate
             ) {
                ArrData.push(deliver);
-               // deliverMap[deliver.id.toString()] = deliver;
             }
          });
-         // const keys = Object.keys(deliverMap).slice(startIndex, endIndex);
-         // const slicedObject = _.pick(deliverMap, keys);
 
          setAllPage(Math.ceil(ArrData.length / rowsPerPage));
-         setDeliverItem((prev) => ({
-            ...prev,
+         setDeliverItem({
             data: ArrData.slice(startIndex, endIndex),
-         }));
+            disable: disabledKeys,
+            allData: deliverMap,
+         });
       } else {
-         const deliverMap: Record<string, DeliverRes["data"][0]> = {};
-         const disabledKeys: Record<string, DeliverRes["data"][0]> = {};
-
          if (!_.isEmpty(deliverItem.allData)) {
-            // const keys = Object.keys(deliverItem.allData).slice(
-            //    startIndex,
-            //    endIndex
-            // );
-            // const slicedObject = _.pick(deliverItem.allData, keys);
             setDeliverItem((prev: dataItem) => {
                return {
                   ...prev,
@@ -235,7 +244,7 @@ const TableDeliver = ({
       <>
          <div className="py-2 flex flex-col flex-1  overflow-y-hidden">
             <Table
-               color={"secondary"}
+               // color={"secondary"}
                disabledKeys={
                   selectState.open ? Object.keys(deliverItem.disable) : ""
                }
@@ -246,9 +255,22 @@ const TableDeliver = ({
                selectionMode={selectState.open ? "multiple" : "none"}
                classNames={{
                   ...tableClassnames,
-                  base: "flex-1 min-h-[600px]  overflow-y-auto",
+                  base: "flex-1 min-h-[600px] mb-4  overflow-y-auto",
                   // tbody : "overflow-scroll scrollbar-hide",
                   table: " flex-1 ",
+                  th: [
+                     "font-serif",
+                     "bg-default-100",
+                     "border-b-1",
+                     "first:rounded-none",
+                     "last:rounded-none",
+                  ],
+                  td: [
+                     "first:before:rounded-l-none",
+                     "rtl:first:before:rounded-r-none",
+                     "last:before:rounded-r-none",
+                     "rtl:last:before:rounded-l-none",
+                  ],
                }}
                aria-label="deliver-table"
                selectedKeys={selectKeys.key}
@@ -266,7 +288,7 @@ const TableDeliver = ({
                // }
             >
                <TableHeader>
-                  <TableColumn>ลำดับ</TableColumn>
+                  <TableColumn className="font-sans">ลำดับ</TableColumn>
                   <TableColumn>ผู้เรียน</TableColumn>
                   <TableColumn>คอร์สเรียน</TableColumn>
                   <TableColumn className={""}>จัดส่ง</TableColumn>
@@ -283,7 +305,7 @@ const TableDeliver = ({
                   // )}
                   items={deliverItem.data}
                   // isLoading={query.isFetching}
-                  loadingContent={<div>loading...</div>}
+                  loadingContent={<Spinner />}
                   className=""
                >
                   {(deliver) => {
@@ -293,30 +315,37 @@ const TableDeliver = ({
                      return (
                         <TableRow key={deliver?.id}>
                            <TableCell>
-                              <p>{deliver?.webappOrderId}</p>({deliver.id})
+                              <p className="font-serif">
+                                 {deliver?.webappOrderId}
+                              </p>
+                              {/* ({deliver.id}) */}
                            </TableCell>
                            <TableCell>
-                              <p className="whitespace-nowrap">
+                              <p className="font-serif whitespace-nowrap">
                                  {deliver.member}
                               </p>
                            </TableCell>
                            <TableCell>
-                              {deliver.Delivery_WebappCourse.map(
-                                 (Delivery_WebappCourse) => {
-                                    const course =
-                                       Delivery_WebappCourse.WebappCourse;
-                                    return (
-                                       <div key={course?.id}>
-                                          <p>
-                                             - {course?.name} ({deliver.branch})
-                                          </p>
-                                          <p className="whitespace-nowrap">
-                                             {course?.term}
-                                          </p>
-                                       </div>
-                                    );
-                                 }
-                              )}
+                              <div className="list-disc list-outside">
+                                 {deliver.Delivery_WebappCourse.map(
+                                    (Delivery_WebappCourse) => {
+                                       const course =
+                                          Delivery_WebappCourse.WebappCourse;
+                                       // console.log("course", course);
+                                       return (
+                                          <li
+                                             className="font-serif text-base font-medium "
+                                             key={course?.id}
+                                          >
+                                             {course?.name} ({deliver.branch})
+                                             <p className="ml-5 whitespace-nowrap text-sm font-normal">
+                                                {course?.term}
+                                             </p>
+                                          </li>
+                                       );
+                                    }
+                                 )}
+                              </div>
                            </TableCell>
                            <TableCell>
                               <button
@@ -330,17 +359,18 @@ const TableDeliver = ({
                                     onEditAddress(deliver);
                                  }}
                               >
-                                 <p className="w-[300px]">
+                                 <p className="w-[300px] font-serif">
                                     {deliver.updatedAddress}
                                  </p>
                               </button>
                            </TableCell>
-                           <TableCell>
+                           <TableCell className={`font-serif`}>
                               {dayjs(deliver.approved).format("MMM-DD HH:mm")}
                            </TableCell>
                            <TableCell className=" ">
                               {status === "success" ? (
                                  <TrackingDetail
+                                    onOpenEditTracking={onOpenEditTracking}
                                     checkType={
                                        deliver.type as deliveryTypeProps
                                     }
@@ -367,7 +397,7 @@ const TableDeliver = ({
             <Pagination
                total={allPage}
                page={page}
-               className="p-0 m-0"
+               className="p-0 m-0 font-serif"
                classNames={{
                   cursor: "bg-default-foreground",
                }}
@@ -383,44 +413,69 @@ export default TableDeliver;
 const TrackingDetail = ({
    tracking,
    checkType,
+   onOpenEditTracking,
 }: {
+   onOpenEditTracking: (d: DeliverRes["data"][0]) => void;
    checkType: deliveryTypeProps;
-   tracking?: deliveryPrismaProps;
+   tracking?: DeliverRes["data"][0];
 }) => {
    return (
       <>
          {checkType === "ship" && (
-            <>
-               <p className="text-secondary-fade text-xs">
-                  ส่งวันที่ {dayjs(tracking?.createdAt).format("DD MMMM YYYY")}
+            <div className="leading-3">
+               <p className="text-secondary-fade text-xs font-serif">
+                  ส่งวันที่ {dayjs(tracking?.createdAt).format("DD MMM YYYY")}
                </p>
-               <div className="flex gap-2 items-center text-secondary font-semibold">
+
+               <div className="flex gap-2 items-center text-secondary-default text-base font-semibold font-serif">
                   <p>{tracking?.trackingCode}</p>
 
-                  <Button isIconOnly className="bg-default-100">
-                     <HiOutlineTruck size={24} />
+                  <Button
+                     onClick={() => {
+                        window.open(
+                           `${tracking?.DeliverShipService?.trackingUrl}${tracking?.trackingCode}`
+                        );
+                     }}
+                     isIconOnly
+                     className="bg-default-100"
+                  >
+                     <HiOutlineTruck className="" size={24} />
+                  </Button>
+                  <Button
+                     onClick={() => {
+                        onOpenEditTracking(tracking!);
+                     }}
+                     isIconOnly
+                     className="bg-default-100"
+                  >
+                     <LuBookCopy className="" size={24} />
                   </Button>
                </div>
-               <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning ">
-                  {!_.isEmpty(tracking?.note)
-                     ? tracking?.note
-                     : "หมายเหตุ​​ (ถ้ามี)"}
+               <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning font-serif">
+                  {tracking?.note}
                </p>
-            </>
+            </div>
          )}
          {checkType === "pickup" && (
             <>
-               <p className="text-secondary-fade text-xs">
-                  {dayjs(tracking?.createdAt).format("HH:mm น.")} โดย ...
+               <p className="text-secondary-fade text-xs font-serif">
+                  {dayjs(tracking?.createdAt).format("HH:mm น.")} โดย{" "}
+                  {tracking?.webappAdminUsername}
                </p>
-               <p className="text-secondary font-semibold ">
-                  รับวันที่ {dayjs(tracking?.createdAt).format("DD MMMM YYYY")}
+               <p className="text-secondary-default font-semibold font-serif text-base">
+                  รับวันที่ {dayjs(tracking?.createdAt).format("DD MMM YYYY")}
                </p>
-
-               <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning ">
-                  {tracking?.note !== ""
-                     ? tracking?.note
-                     : "หมายเหตุ​​ (ถ้ามี)"}
+               <Button
+                  onClick={() => {
+                     onOpenEditTracking(tracking!);
+                  }}
+                  isIconOnly
+                  className="bg-default-100"
+               >
+                  <LuBookCopy className="" size={24} />
+               </Button>
+               <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning font-serif text-base">
+                  {tracking?.note}
                </p>
             </>
          )}
@@ -435,7 +490,10 @@ const AddTrackDetail = ({
    deliveryType,
 }: {
    deliveryType: deliveryTypeProps;
-   onAddTrackings: (data: deliveryPrismaProps, type: deliveryTypeProps) => void;
+   onAddTrackings: (
+      data: DeliverRes["data"][0],
+      type: deliveryTypeProps
+   ) => void;
    deliver: DeliverRes["data"][0];
    onPrint: (data: DeliverRes["data"]) => void;
 }) => {
@@ -444,14 +502,20 @@ const AddTrackDetail = ({
          {deliveryType === "ship" && (
             <>
                <Button
-                  className="bg-default-100"
+                  color="default"
+                  variant="flat"
+                  className="flex-shrink-0 text-base font-medium font-sans bg-default-100"
+                  size="sm"
                   startContent={<LuPackage size={20} />}
                   onClick={() => onAddTrackings(deliver, deliveryType)}
                >
                   เพิ่ม Track no.
                </Button>
                <Button
-                  className="bg-default-100"
+                  color="default"
+                  variant="flat"
+                  className="flex-shrink-0  text-base font-medium font-sans bg-default-100"
+                  size="sm"
                   startContent={<LuPrinter size={20} />}
                   onClick={() => onPrint([deliver])}
                >
@@ -462,7 +526,10 @@ const AddTrackDetail = ({
          {deliveryType === "pickup" && (
             <>
                <Button
-                  className="bg-default-100"
+                  color="default"
+                  variant="flat"
+                  className="flex-shrink-0 font-sans text-base font-medium bg-default-100"
+                  size="sm"
                   startContent={<LuFileSignature size={20} />}
                   onClick={() => onAddTrackings(deliver, deliveryType)}
                >

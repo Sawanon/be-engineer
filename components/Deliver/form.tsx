@@ -34,6 +34,8 @@ import { modalProps, stateProps } from "@/@type";
 import CustomInput from "../CustomInput";
 import { multiTrackDialog } from ".";
 import { DeliverRes, deliveryPrismaProps } from "@/lib/actions/deliver.actions";
+import { Calendar } from "iconsax-react";
+import { ChevronDown } from "lucide-react";
 export type DeliverFilter = {
    input?: string | undefined;
    status?: string | undefined;
@@ -128,17 +130,20 @@ const FormDeliver = ({
                type="text"
                placeholder="ชื่อผู้เรียน คอร์สเรียน หรือ ลำดับ"
                startContent={
-                  <CiSearch className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
+                  <CiSearch strokeWidth={1} className=" text-2xl text-default-400 pointer-events-none flex-shrink-0" />
                }
             />
          </div>
          <div className="flex gap-2 order-2 col-span-12 md:order-4 md:col-span-5 ">
             <I18nProvider locale="en-GB">
                <DateRangePicker
+                  color={`primary`}
                   onChange={onChangeDate}
+                  className={`font-serif`}
                   classNames={{
-                     calendarContent: cn("w-[280px]  "),
-                     calendar: cn("w-[280px] "),
+                     calendarContent: cn("w-[280px] font-serif"),
+                     base: cn('text-red-400'),
+                     calendar: cn("w-[280px]"),
                      input: cn("text-black"),
                   }}
                   value={
@@ -150,14 +155,16 @@ const FormDeliver = ({
                           }
                         : null
                   }
+                  endContent={<Calendar className={`text-default-400`} variant="Bold" size={18} />}
                   calendarProps={{
                      classNames: {
                         cellButton: [
+                           // `before:bg-primary-200`,
+                           `data-[selected=true]:data-[range-selection=true]:before:bg-primary-200`,
                            // default text color
                            // "text-red-300",
                            // selected case
-
-                           "data-[selectionStart=true]:bg-red-500",
+                           // "data-[selectionStart=true]:bg-red-500",
                            // "data-[selection-end=true]:bg-red-500",
                            // "data-[selected=true]:bg-default-foreground",
                            // "data-[selected=true]:text-default-foreground",
@@ -177,7 +184,7 @@ const FormDeliver = ({
                               onClickButtonCalendar(0);
                            }}
                            size="sm"
-                           className="bg-default-100"
+                           className="bg-default-100 text-default-foreground font-sans text-base font-medium"
                         >
                            Today
                         </Button>
@@ -186,7 +193,7 @@ const FormDeliver = ({
                               onClickButtonCalendar(2);
                            }}
                            size="sm"
-                           className="bg-default-100"
+                           className="bg-default-100 text-default-foreground font-sans text-base font-medium"
                         >
                            2 days
                         </Button>
@@ -195,7 +202,7 @@ const FormDeliver = ({
                               onClickButtonCalendar(30);
                            }}
                            size="sm"
-                           className="bg-default-100"
+                           className="bg-default-100 text-default-foreground font-sans text-base font-medium"
                         >
                            30 days
                         </Button>
@@ -236,9 +243,14 @@ const FormDeliver = ({
                <LuCopyCheck className="text-black h-6 w-6 block md:hidden" />{" "}
             </Button>
             <Button
-               className={cn("bg-default-100 hidden md:flex", {
-                  "hidden md:hidden": selectState.open,
-               })}
+               color="default"
+               variant="flat"
+               className={cn(
+                  "flex-shrink-0 hidden md:flex text-base font-medium",
+                  {
+                     "hidden md:hidden": selectState.open,
+                  }
+               )}
                onClick={onOpenSelect}
             >
                <p className="font-IBM-Thai font-medium">เลือก</p>
@@ -249,9 +261,14 @@ const FormDeliver = ({
                })}
             >
                <Button
-                  className={cn("bg-default-100 hidden font-IBM-Thai", {
-                     "md:flex  ": selectState.open,
-                  })}
+                  className={cn(
+                     "flex-shrink-0 text-base  hidden font-medium font-sans",
+                     {
+                        "md:flex  ": selectState.open,
+                     }
+                  )}
+                  color="default"
+                  variant="flat"
                   onClick={onCloseSelect}
                >
                   <p className="md:block hidden">ยกเลิก</p>
@@ -268,18 +285,23 @@ const FormDeliver = ({
                </Button>
                <Button
                   className={cn(
-                     "font-medium flex-1 bg-default-100 font-IBM-Thai",
-                     {}
+                     "flex-shrink-0 text-base  hidden font-medium font-sans",
+                     {
+                        "flex  ": selectState.open,
+                     }
                   )}
+                  color="default"
+                  variant="flat"
                   onClick={onAddTrackings}
                >
                   <LuTruck size={24} />
                   <p className="">ใส่เลข Track</p>
                </Button>
                <Button
-                  // color={"primary"}
+                  color={"primary"}
+                  variant="solid"
                   className={cn(
-                     "font-medium flex-1 bg-default-foreground text-primary-foreground font-IBM-Thai",
+                     "flex-shrink-0 text-base font-medium flex-1 font-sans",
                      {}
                   )}
                   onClick={() => {
@@ -305,7 +327,7 @@ const FormDeliver = ({
                }
             )}
          >
-            <div className="flex  gap-2 flex-1 ">
+            <div className="flex flex-1 gap-2 ">
                <StatusSelect value={search.status} onChange={onChangeSearch} />
                <StatusInstitution onChange={onChangeSearch} />
             </div>
@@ -328,20 +350,27 @@ const StatusSelect = ({
          placeholder="สถานะ"
          // className="w-[18dvh]"
          classNames={{
-            value: "text-black font-IBM-Thai",
+            value: ["text-default-foreground font-medium font-sans text-base"],
             trigger: cn("flex items-center justify-center    "),
-            base: cn("flex-1  rounded-[12px]"),
+            base: cn("flex-1  rounded-xl"),
+            selectorIcon: [`relative end-0 w-6 h-6`],
          }}
+         selectorIcon={<ChevronDown size={24} />}
          onChange={(e) => {
             onChange("status", e.target.value);
          }}
+         color="default"
+         variant="flat"
+         className={cn(
+            "flex-shrink-0 md:flex text-base font-sans font-medium"
+         )}
          selectedKeys={value?.split(",")}
          renderValue={(items) => <div>สถานะ</div>}
          selectionMode={"multiple"}
       >
          <SelectItem
             classNames={{
-               base: cn("flex gap-1"),
+               base: cn("flex gap-1 font-serif text-base"),
             }}
             startContent={<LuTruck />}
             key={"ship"}
@@ -350,7 +379,7 @@ const StatusSelect = ({
          </SelectItem>
          <SelectItem
             classNames={{
-               base: cn("flex gap-1"),
+               base: cn("flex gap-1 font-serif text-base"),
             }}
             startContent={<LuPackageCheck />}
             key={"shipped"}
@@ -359,7 +388,7 @@ const StatusSelect = ({
          </SelectItem>
          <SelectItem
             classNames={{
-               base: cn("flex gap-1"),
+               base: cn("flex gap-1 font-serif text-base"),
             }}
             startContent={<LuHelpingHand />}
             key={"pickup"}
@@ -368,7 +397,7 @@ const StatusSelect = ({
          </SelectItem>
          <SelectItem
             classNames={{
-               base: cn("flex gap-1"),
+               base: cn("flex gap-1 font-serif text-base"),
             }}
             startContent={<LuBookOpenCheck />}
             key={"received"}
@@ -390,17 +419,24 @@ const StatusInstitution = ({
             onChange("university", e.target.value);
          }}
          placeholder={`สถาบัน`}
-         className="w-[18dvh] font-IBM-Thai"
          classNames={{
-            value: "text-black",
+            value: ["text-default-foreground font-medium font-sans text-base"],
             trigger: cn("flex items-center justify-center  "),
             base: cn("flex-1 rounded-[12px]"),
+            selectorIcon: [`relative end-0 w-6 h-6`]
          }}
+         selectorIcon={<ChevronDown size={24} />}
+         color="default"
+         variant="flat"
+         className={cn(
+            "w-[18dvh] flex-shrink-0 md:flex text-base font-sans font-medium"
+         )}
+
          // selectionMode={"multiple"}
       >
          <SelectItem
             classNames={{
-               base: cn("flex gap-1"),
+               base: cn("flex gap-1 font-serif"),
             }}
             key={"kmitl"}
          >
@@ -409,7 +445,7 @@ const StatusInstitution = ({
 
          <SelectItem
             classNames={{
-               base: cn("flex gap-1"),
+               base: cn("flex gap-1 font-serif"),
             }}
             key={"odm"}
          >

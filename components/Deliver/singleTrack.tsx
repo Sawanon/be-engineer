@@ -12,6 +12,7 @@ import { useForm, Controller } from "react-hook-form";
 import { LuArrowRightLeft, LuX } from "react-icons/lu";
 import CustomInput from "../CustomInput";
 import { deliveryPrismaProps } from "@/lib/actions/deliver.actions";
+import { useSession } from "next-auth/react";
 type createProp = {
    trackingNumber: string;
    delivery: deliverShipServiceKey;
@@ -35,6 +36,8 @@ const SingleTrack = ({
    }) => void;
    onClose: () => void;
 }) => {
+   const auth = useSession();
+
    const form = useForm<createProp>({
       defaultValues: {
          trackingNumber: "",
@@ -51,6 +54,8 @@ const SingleTrack = ({
          trackingCode: props.trackingNumber,
          id: data?.id!,
          service: props.delivery,
+         webappAdminId: auth.data?.user.id,
+         webappAdminUsername: auth.data?.user.username!,
          // courseId  : data?.courses.map(d=> d.id.toString())!
       });
    };
@@ -157,21 +162,25 @@ const SingleTrack = ({
                      // defaultValue="ได้ Calculus ไปแล้ว ขาด Physics กัับ Chemistry จะส่งให้วันพฤหัสที่ 8 ธ.ค. นะครับ"
                   />
                </div>
-               <div className="py-2 grid grid-cols-3 gap-2">
+               <div className="py-2 flex flex-col-reverse md:flex-row gap-2 md:gap-0">
                   <Button
-                     fullWidth
-                     className="bg-transparent flex gap-3 bg-white order-2 md:order-1 md:col-span-1 col-span-3 font-IBM-Thai"
                      onClick={() =>
                         onChangeType({ detail: data!, type: "pickup" })
                      }
+                     color="default"
+                     variant="light"
+                     className="text-base px-4 min-w-max font-medium font-sans flex gap-3"
+                     startContent={<LuArrowRightLeft size={24} className="min-w-6 min-h-6" />}
                   >
-                     <LuArrowRightLeft /> รับที่สถาบัน
+                     รับที่สถาบัน
                   </Button>
                   <Button
+                     isLoading={addTracking.isPending}
                      type="submit"
                      fullWidth
                      color="primary"
-                     className="font-IBM-Thai md:col-span-2 col-span-3 order-1 md:order-2 bg-default-foreground text-primary-foreground"
+                     variant="solid"
+                     className="font-sans text-base font-medium"
                   >
                      บันทึก
                   </Button>

@@ -14,7 +14,7 @@ const StatusIcon = ({
     case "uploadWebapp":
       return <PlayCircle className={`text-success-500`} size={20} variant="Bold" />
     case "enterForm":
-      return <TickCircle className={`text-primary-500`} size={20} variant="Bold" />
+      return <TickCircle className={`text-primary_blue-500`} size={20} variant="Bold" />
     default:
       return <></>;
   }

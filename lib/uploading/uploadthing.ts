@@ -11,3 +11,4 @@ export const UploadDropzone = generateUploadDropzone<OurFileRouter>();
 
 export const { useUploadThing, uploadFiles } =
   generateReactHelpers<OurFileRouter>();
+

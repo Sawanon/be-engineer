@@ -25,16 +25,6 @@ const SortableComponent = ({
       >
         <div className={`bg-default-100 p-1 rounded-md`}>
           <Colume courseVideoList={courseVideoList} />
-          {/* {lessons.map((lesson, index) => {
-            return (
-              <div
-                key={lesson.id}
-                className='border border-gray-400 p-4 mt-2'
-              >
-                {lesson.title}
-              </div>
-            )
-          })} */}
         </div>
       </DndContext>
     </div>

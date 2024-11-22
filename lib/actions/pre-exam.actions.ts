@@ -6,7 +6,28 @@ const prisma = new PrismaClient()
 
 export const listPreExamAction = async () => {
   try {
-    const response = await prisma.documentPreExam.findMany()
+    const response = await prisma.documentPreExam.findMany({
+      include: {
+        LessonOnDocument: {
+          include: {
+            CourseLesson: {
+              include: {
+                Course: {
+                  select: {
+                    id: true,
+                    name: true,
+                    status: true,
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
     return response
   } catch (error) {
     console.error(error)

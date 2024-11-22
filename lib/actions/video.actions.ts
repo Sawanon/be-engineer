@@ -1,9 +1,12 @@
 "use server";
 
-import { Course, CourseVideo, PrismaClient } from "@prisma/client";
+import { Course, CourseVideo, Prisma, PrismaClient } from "@prisma/client";
 import { VideoPlaylist } from "../model/videoPlaylist";
+import axios from "axios";
 
 const prisma = new PrismaClient();
+const B_API_KEY = process.env.B_API_KEY
+const ENDPOINT_BE_ENGINEER_URL = process.env.ENDPOINT_BE_ENGINEER_URL
 
 export const deleteCourseVideo = async ({
   id
@@ -154,6 +157,63 @@ export const changePositionVideoAction = async (videoId: number, newPosition: nu
     return response
   } catch (error) {
     console.error(error)
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const listVideoDescriptions = async () => {
+  try {
+    const response = await axios({
+      url: `${ENDPOINT_BE_ENGINEER_URL}/api/video-description`,
+      method: "GET",
+      headers: {
+        'B-API-KEY' : B_API_KEY,
+      }
+    })
+    return response.data
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export const changeDescrioptionVideo = async (videoId: number, descriptionId: number, contentName: string) => {
+  try {
+    const response = await prisma.courseVideo.update({
+      where: {
+        id: videoId,
+      },
+      data: {
+        descriptionId: descriptionId,
+        contentName: contentName,
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const deleteVideoDescription = async (videoId: number) => {
+  try {
+    const response = await prisma.courseVideo.update({
+      where: {
+        id: videoId,
+      },
+      data: {
+        descriptionId: null,
+        contentName: null,
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError) return error.message
   } finally {
     prisma.$disconnect()
   }

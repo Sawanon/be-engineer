@@ -7,12 +7,16 @@ import { Button } from "@nextui-org/react";
 import { LuLogIn } from "react-icons/lu";
 import { Controller, useForm } from "react-hook-form";
 import { getProviders, signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 type loginProps = {
    username: string;
    password: string;
 };
 
 const LoginForm = () => {
+   // const { data: session, status } = useSession();
+   // console.log("session", session, status);
+   const router = useRouter();
    const { data: session, status } = useSession();
    console.log("session", session, status);
    const [isVisible, setIsVisible] = useState(false);
@@ -26,8 +30,13 @@ const LoginForm = () => {
 
          callbackUrl: "/",
       });
+      console.log(response)
+      if (response?.ok) {
+         router.replace("/");
+      }
       console.log("response", response);
    };
+
    return (
       <div className="space-y-2 ">
          <form className="space-y-2" onSubmit={form.handleSubmit(onSubmit)}>
@@ -93,6 +102,7 @@ const LoginForm = () => {
             />
 
             <Button
+               isLoading={form.formState.isSubmitting}
                type="submit"
                fullWidth
                className="mt-2 bg-default-foreground text-default-100"

@@ -1,4 +1,4 @@
-import { listBookTransactionByBookId } from "@/lib/actions/bookTransactions";
+import { listBookTransactionByBookId, listBookTransactionByBookIdGroupByYearMonth } from "@/lib/actions/bookTransactions";
 import { tableClassnames } from "@/lib/res/const";
 import { cn } from "@/lib/util";
 import {
@@ -23,7 +23,7 @@ import {
 import { DocumentBook } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
    LuArrowLeft,
    LuClipboardList,
@@ -45,21 +45,51 @@ const BookInventory = ({
    book?: DocumentBook
 }) => {
 
+   // const {data: bookTransactionsList} =  useQuery({
+   //    queryKey: ["listBookTransactionByBookId", book?.id],
+   //    queryFn: () => listBookTransactionByBookId(book!.id),
+   //    enabled: book !== undefined
+   // })
    const {data: bookTransactionsList} =  useQuery({
-      queryKey: ["listBookTransactionByBookId", book?.id],
-      queryFn: () => listBookTransactionByBookId(book!.id),
+      queryKey: ["listBookTransactionByBookIdGroupByYearMonth", book?.id],
+      queryFn: () => listBookTransactionByBookIdGroupByYearMonth(book!.id),
       enabled: book !== undefined
    })
+   
+   const rowPerPage = 10
+   const [page, setPage] = useState(1)
+   const [pageSize, setPageSize] = useState(5)
+
+   const booTransactionItems = useMemo(() => {
+      const startIndex = (page - 1) * rowPerPage;
+      const endIndex = startIndex + rowPerPage;
+      if(bookTransactionsList){
+         setPageSize(Math.ceil(bookTransactionsList.length / rowPerPage))
+      }
+      return bookTransactionsList?.slice(startIndex, endIndex);
+   }, [bookTransactionsList, page])
 
    const renderStartEndDate = (startDate: Date, endDate: Date) => {
+      dayjs.tz.setDefault('Asia/Bangkok')
       const startDayjs = dayjs(startDate)
       const endDayjs = dayjs(endDate)
+      console.log(new Date().getTimezoneOffset());
+      console.log("startDate:", startDate);
+      console.log("endDate:", endDate);
+      console.log('startDayjs:', `${startDayjs}`);
+      console.log('endDayjs:', `${endDayjs}`);
+      console.log('date start', startDayjs.date());
+      console.log('date end', endDayjs.date());
+      console.log('date start format', startDayjs.format('DD'));
+      console.log('date end format', endDayjs.format('DD'));
+      
+      
       if(startDayjs.isSame(endDayjs, 'date')){
-         return `${startDayjs.date()} ${startDayjs.format('MMM')} ${startDayjs.year()}`
+         return `${startDayjs.format('DD')} ${startDayjs.format('MMM')} ${startDayjs.year()}`
       }else if(startDayjs.isSame(endDayjs, 'month')){
-         return `${startDayjs.date()} - ${endDayjs.date()} ${startDayjs.format('MMM')} ${startDayjs.year()}`
+         return `${startDayjs.format('DD')} - ${endDayjs.format('DD')} ${startDayjs.format('MMM')} ${startDayjs.year()}`
       }else{
-         return `${startDayjs.date()} ${startDayjs.format('MMM')} ${startDayjs.year()} - ${endDayjs.date()} ${endDayjs.format('MMM')} ${endDayjs.year()}`
+         return `${startDayjs.format('DD')} ${startDayjs.format('MMM')} ${startDayjs.year()} - ${endDayjs.format('DD')} ${endDayjs.format('MMM')} ${endDayjs.year()}`
       }
    }
 
@@ -70,6 +100,27 @@ const BookInventory = ({
          totalQty += bookTransaction.qty
       })
       return `${totalQty}`
+   }
+
+   const renderDetail = (detail: string) => {
+      if(detail.includes(`deliver`)){
+         const arrDeliverDetail = detail.split(`:`)
+         const [type, label, date] = arrDeliverDetail
+         const deliverText = `คำสั่งซื้อ`
+         const restoreFromChangeWebapp = {
+            value: `restore from change web app`,
+            text: `เปลี่ยนหนังสือในคอร์ส`,
+         }
+         const dateStr = date ? dayjs(date).format(`DD MMM YYYY`) : ''
+         if(arrDeliverDetail.length > 1){
+            if(label === restoreFromChangeWebapp.value){
+               return `${restoreFromChangeWebapp.text} ${dateStr}`
+            }
+            return `-`
+         }
+         return `${deliverText}`
+      }
+      return detail
    }
 
    return (
@@ -118,8 +169,8 @@ const BookInventory = ({
                                  </p>
                                  <p className="text-[#393E44]">
                                     <span className={`text-lg font-semibold font-IBM-Thai`}>
-                                       {/* {book?.inStock}{" "} */}
-                                       {renderQty()}{" "}
+                                       {book?.inStock}{" "}
+                                       {/* {renderQty()}{" "} */}
                                     </span>
                                     <span className={`text-xs font-IBM-Thai-Looped`}>ชุด</span>
                                  </p>
@@ -137,26 +188,30 @@ const BookInventory = ({
                         </div>
                      </Button>
                      <div className="flex flex-col justify-between  flex-1 py-2  ">
-                        <Table color={"primary"} classNames={{
-                           ...tableClassnames,
-                           th: [
-                              ...tableClassnames.th,
-                              "first:rounded-l-lg",
-                              "last:rounded-r-lg",
-                           ],
-                           table: 'rounded-none',
-                           wrapper: ["p-0", "shadow-none", "rounded-none"],
-                        }}>
+                        <Table
+                           isStriped
+                           color={"primary"}
+                           classNames={{
+                              ...tableClassnames,
+                              th: [
+                                 ...tableClassnames.th,
+                                 "first:rounded-l-lg",
+                                 "last:rounded-r-lg",
+                              ],
+                              table: 'rounded-none',
+                              wrapper: ["p-0", "shadow-none", "rounded-none"],
+                           }}
+                        >
                            <TableHeader>
-                              <TableColumn>วันที่</TableColumn>
-                              <TableColumn width={227} className="text-start">รายการ</TableColumn>
-                              <TableColumn className="text-end">จำนวน</TableColumn>
+                              <TableColumn className={`font-sans`}>วันที่</TableColumn>
+                              <TableColumn width={227} className="text-start font-sans">รายการ</TableColumn>
+                              <TableColumn className="text-end font-sans">จำนวน</TableColumn>
                            </TableHeader>
                            <TableBody>
-                              {bookTransactionsList
+                              {booTransactionItems
                               ?
-                              bookTransactionsList!.map((bookTransaction, index) => (
-                                 <TableRow key={`bookTransactionRow${index}`}>
+                              booTransactionItems!.map((bookTransaction, index) => (
+                                 <TableRow key={`bookTransactionRow${index}`} className={`font-serif`}>
                                     <TableCell>
                                        <div className="flex gap-2 items-center">
                                           <p>{renderStartEndDate(bookTransaction.startDate, bookTransaction.endDate)}</p>
@@ -164,7 +219,7 @@ const BookInventory = ({
                                     </TableCell>
                                     <TableCell width={227} className="">
                                        <div className="flex gap-2  items-center">
-                                          <p className="">{bookTransaction.detail}</p>
+                                          <p className="">{renderDetail(bookTransaction.detail)}</p>
                                        </div>
                                     </TableCell>
                                     <TableCell>
@@ -202,9 +257,9 @@ const BookInventory = ({
                               }}
                               showShadow
                               color="primary"
-                              page={1}
-                              total={10}
-                              // onChange={(page) => setPage(page)}
+                              page={page}
+                              total={pageSize}
+                              onChange={(page) => setPage(page)}
                            />
                         </div>
                      </div>

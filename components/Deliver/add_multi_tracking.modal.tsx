@@ -16,10 +16,6 @@ import {
 } from "@nextui-org/react";
 import { Danger } from "iconsax-react";
 import {
-   LuArrowRightLeft,
-   LuExternalLink,
-   LuPackageCheck,
-   LuScrollText,
    LuSearch,
    LuX,
 } from "react-icons/lu";
@@ -53,6 +49,7 @@ import ChangeReceiveType from "./change_type.modal";
 import ReceiveOrder from "./receive_order";
 import { multiTrackDialog } from ".";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 type formDetail = Record<string, any> & {
    delivery: deliverShipServiceKey;
 };
@@ -65,6 +62,7 @@ const AddMultiTracking = ({
    refetch: () => void;
    onClose: () => void;
 }) => {
+   const auth = useSession();
    const router = useRouter();
    const { open, data } = dialogState;
    const handleClose = () => {
@@ -128,6 +126,8 @@ const AddMultiTracking = ({
          service: deliveryService,
          ids: webappOrderIds,
          courseIds: courseId,
+         webappAdminId: auth.data?.user.id,
+         webappAdminUsername: auth.data?.user.username!,
       });
    };
 
@@ -160,6 +160,7 @@ const AddMultiTracking = ({
                               เพิ่มเลข Tracking
                            </p>
                            <Button
+                           disabled={addTrack.isPending}
                               variant="flat"
                               isIconOnly
                               className="bg-transparent text-black absolute right-1 top-1"
@@ -270,7 +271,7 @@ const AddMultiTracking = ({
                                                 <p>{delivery?.member}</p>
                                              </div>
                                           </PopoverTrigger>
-                                          <PopoverContent >
+                                          <PopoverContent>
                                              <p>{delivery?.updatedAddress}</p>
                                           </PopoverContent>
                                        </Popover>
@@ -311,9 +312,12 @@ const AddMultiTracking = ({
                      </div>
                      <div className="py-2 px-3 grid grid-cols-3 gap-2">
                         <Button
+                           isLoading={addTrack.isPending}
                            type="submit"
                            fullWidth
-                           className="col-span-3 bg-default-foreground  text-primary-foreground"
+                           color="primary"
+                           variant="solid"
+                           className="flex-shrink-0 font-sans  text-base font-medium col-span-3 bg-default-foreground  text-primary-foreground"
                         >
                            บันทึก
                         </Button>

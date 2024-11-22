@@ -2,41 +2,20 @@ import { cn } from "@/lib/util";
 import Alert from "@/ui/alert";
 import {
    Button,
-   Input,
    Modal,
    ModalBody,
    ModalContent,
-   Popover,
-   PopoverContent,
-   PopoverTrigger,
-   Select,
-   SelectItem,
-   Textarea,
-   Image as NextUiImage,
    Tab,
    Tabs,
-   Card,
-   CardBody,
-   DateRangePicker,
-   CalendarDate,
-   RangeValue,
    DateValue,
+   DatePicker,
 } from "@nextui-org/react";
-import { Danger } from "iconsax-react";
 import {
-   LuArrowRightLeft,
-   LuExternalLink,
-   LuImage,
    LuMinus,
-   LuPackageCheck,
    LuPlus,
-   LuScrollText,
-   LuSearch,
    LuX,
 } from "react-icons/lu";
 
-import thaipost from "../../assets/thaipost.png";
-import Image from "next/image";
 import CustomInput from "../CustomInput";
 import { DocumentBook } from "@prisma/client";
 import { useState } from "react";
@@ -44,6 +23,7 @@ import dayjs from "dayjs";
 import { addBookTransactionAction, listBookTransactionByBookId } from "@/lib/actions/bookTransactions";
 import { useQuery } from "@tanstack/react-query";
 import { listBooksAction } from "@/lib/actions/book.actions";
+import { DateValue as DateVal, parseDate } from '@internationalized/date';
 
 const EditInventory = ({
    open,
@@ -63,7 +43,10 @@ const EditInventory = ({
       queryKey: ["listBooksAction"],
       queryFn: () => listBooksAction(),
    })
-   const [date, setDate] = useState<{startDate:DateValue | undefined, endDate: DateValue | undefined}>()
+   const [date, setDate] = useState<{startDate:DateValue | undefined, endDate: DateValue | undefined}>({
+      startDate: parseDate(dayjs().format("YYYY-MM-DD")),
+      endDate: parseDate(dayjs().format("YYYY-MM-DD")),
+   })
    const [detail, setDetail] = useState<string>("")
    const [qty, setQty] = useState<number | undefined>()
    const [direction, setDirection] = useState<"+" | "-">("+")
@@ -71,11 +54,12 @@ const EditInventory = ({
       isError: false,
       message: ``
    })
+   const [isLoading, setIsLoading] = useState(false)
 
-   const handleOnChangeDate = (date: RangeValue<DateValue>) => {
+   const handleOnChangeDate = (date: DateValue) => {
       setDate({
-         startDate: date.start,
-         endDate: date.end,
+         startDate: date,
+         endDate: date,
       })
    }
 
@@ -91,34 +75,44 @@ const EditInventory = ({
    }
 
    const submitAddBookTransaction = async () => {
-      if(!validForm()){
-         return
-      }
-      const startDate = dayjs(`${date?.startDate?.year}-${date?.startDate?.month}-${date?.startDate?.day}`)
-      const endDate = dayjs(`${date?.endDate?.year}-${date?.endDate?.month}-${date?.endDate?.day}`)
-      const volume = direction === "-" ? qty! * -1 : qty!
-      const response = await addBookTransactionAction({
-         bookId: book!.id,
-         detail: detail,
-         startDate: startDate.toDate(),
-         endDate: endDate.toDate(),
-         qty: volume,
-      })
-      if(!response){
+      try {
+         if(!validForm()){
+            return
+         }
+         const startDate = dayjs(`${date?.startDate?.year}-${date?.startDate?.month}-${date?.startDate?.day}`)
+         const endDate = dayjs(`${date?.endDate?.year}-${date?.endDate?.month}-${date?.endDate?.day}`)
+         const volume = direction === "-" ? qty! * -1 : qty!
+         setIsLoading(true)
+         const response = await addBookTransactionAction({
+            bookId: book!.id,
+            detail: detail,
+            startDate: startDate.toDate(),
+            endDate: endDate.toDate(),
+            qty: volume,
+         })
+         if(typeof response === "string"){
+            throw response
+         }
+         handleOnClose()
+         refetchBookTransaction()
+         refetchBookList()
+      } catch (error) {
+         console.error(error)
          setError({
             isError: true,
             message: `เกิดข้อผิดพลาดบางอย่าง ดูเพิ่มเติมใน Console`,
          })
-         return
+      } finally {
+         setIsLoading(false)
       }
-      handleOnClose()
-      refetchBookTransaction()
-      refetchBookList()
    }
 
    const handleOnClose = () => {
       onClose()
-      setDate(undefined)
+      setDate({
+         startDate: parseDate(dayjs().format("YYYY-MM-DD")),
+         endDate: parseDate(dayjs().format("YYYY-MM-DD")),
+      })
       setDetail("")
       setQty(undefined)
       setError({
@@ -149,13 +143,22 @@ const EditInventory = ({
                            onSelectionChange={(e) => {
                               setDirection(e === "add" ? "+" : "-")
                            }}
+                           aria-label="tabTransaction"
+                           className={`bg-white`}
+                           classNames={{
+                              // tabList: [`group-data-[selected=true]:bg-white`],
+                              // tab: [`group-data-[selected=true]:text-red-400`],
+                              cursor: [`group-data-[selected=true]:bg-white`],
+                              // tabContent: [`group-data-[selected=true]:bg-white`],
+                           }}
+                           color="secondary"
                         >
                            <Tab
                               key="add"
                               title={
                                  <div className="flex items-center space-x-2">
-                                    <LuPlus />
-                                    <span>เพิ่ม</span>
+                                    <LuPlus size={24} className={`group-data-[selected=true]:text-default-foreground`} />
+                                    <span className={`group-data-[selected=true]:text-secondary-default text-secondary-light font-sans font-medium text-lg`}>เพิ่ม</span>
                                  </div>
                               }
                            />
@@ -163,8 +166,8 @@ const EditInventory = ({
                               key="delete"
                               title={
                                  <div className="flex items-center space-x-2">
-                                    <LuMinus />
-                                    <span>ลด</span>
+                                    <LuMinus size={24} className={`group-data-[selected=true]:text-default-foreground text-secondary-light`} />
+                                    <span className={`group-data-[selected=true]:text-secondary-default text-secondary-light font-sans font-medium text-lg`}>ลด</span>
                                  </div>
                               }
                            />
@@ -180,17 +183,25 @@ const EditInventory = ({
                         </Button>
                      </div>
                      {error.isError &&
-                        <Alert />
+                        <Alert label={error.message} />
                      }
 
                      <div className="col-span-2 flex flex-col gap-2">
                         {/* <CustomInput placeholder="วันที่" /> */}
-                        <DateRangePicker
+                        {/* <DateRangePicker
                            label={`วันที่`}
                            onChange={handleOnChangeDate}
+                        /> */}
+                        <DatePicker
+                           label={`วันที่`}
+                           className={`font-serif`}
+                           onChange={handleOnChangeDate}
+                           defaultValue={parseDate(`${dayjs().format(`YYYY-MM-DD`)}`)}
+                           aria-label="datepickerTransaction"
                         />
-                        <CustomInput onChange={(e) => setDetail(e.target.value)} placeholder="รายการ" />{" "}
+                        <CustomInput aria-label="transactionName" onChange={(e) => setDetail(e.target.value)} placeholder="รายการ" />{" "}
                         <CustomInput
+                           aria-label="numberTransaction"
                            type="number"
                            onChange={(e) => setQty(parseInt(e.target.value))}
                            endContent="ชุด"
@@ -198,7 +209,7 @@ const EditInventory = ({
                         />
                      </div>
                      <div className="py-2 flex gap-2">
-                        <Button onClick={submitAddBookTransaction} fullWidth className={`bg-default-foreground text-primary-foreground font-IBM-Thai font-medium`}>
+                        <Button isLoading={isLoading} onClick={submitAddBookTransaction} fullWidth className={`bg-default-foreground text-primary-foreground font-IBM-Thai font-medium`}>
                            บันทึก
                         </Button>
                      </div>

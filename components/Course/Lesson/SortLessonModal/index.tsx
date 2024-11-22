@@ -15,10 +15,11 @@ const SortLessonModal = ({
   isOpen: boolean;
   lessonList: CourseLesson[];
   onDragEnd?: (event: DragEndEvent) => void;
-  onConfirm: (newLessonList: CourseLesson[]) => void;
+  onConfirm: (newLessonList: CourseLesson[]) => Promise<void>;
   onClose: () => void;
 }) => {
   const [cloneLessonList, setCloneLessonList] = useState<CourseLesson[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
   useMemo(() => {
     setCloneLessonList(lessonList)
@@ -42,8 +43,10 @@ const SortLessonModal = ({
     onClose()
   }
 
-  const handleOnConfirm = () => {
-    onConfirm(cloneLessonList)
+  const handleOnConfirm = async () => {
+    setIsLoading(true)
+    await onConfirm(cloneLessonList)
+    setIsLoading(false)
   }
 
   return (
@@ -57,7 +60,7 @@ const SortLessonModal = ({
     >
       <ModalContent>
         {() => (
-          <div className={`p-app`}>
+          <div className={`p-app overflow-hidden`}>
             <DndContext collisionDetection={closestCorners} onDragEnd={handleOnDragEnd}>
               <div className={`bg-default-100 p-1 rounded-md`}>
                 <ColumeLesson lessonList={cloneLessonList} />
@@ -67,7 +70,7 @@ const SortLessonModal = ({
               <Button onClick={handleOnClose} className={`bg-default-100 text-default-foreground font-medium text-base font-IBM-Thai`}>
                 ยกเลิก
               </Button>
-              <Button onClick={handleOnConfirm} className={`bg-default-foreground text-primary-foreground font-medium text-base font-IBM-Thai`}>
+              <Button isLoading={isLoading} onClick={handleOnConfirm} className={`bg-default-foreground text-primary-foreground font-medium text-base font-IBM-Thai`}>
                 ตกลง
               </Button>
             </div>

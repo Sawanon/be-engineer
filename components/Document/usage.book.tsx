@@ -21,15 +21,9 @@ import {
 } from "@nextui-org/react";
 import { Danger } from "iconsax-react";
 import {
-   LuArrowRightLeft,
+
    LuArrowUpRight,
-   LuExternalLink,
-   LuImage,
-   LuMinus,
-   LuPackageCheck,
-   LuPlus,
-   LuScrollText,
-   LuSearch,
+
    LuX,
 } from "react-icons/lu";
 
@@ -38,33 +32,22 @@ import BulletPoint from "@/ui/bullet_point";
 import { DocumentBook } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { getCourseUsageBook } from "@/lib/actions/book.actions";
+import Link from "next/link";
 
 const BookUsage = ({
    open,
    onClose,
    book,
+   courseList,
 }:{
    open: boolean,
    onClose: () => void,
    book?: DocumentBook,
+   courseList: any[],
 }) => {
-   const {data: bookList} =  useQuery({
-      queryKey: ["getCourseUsageBook", book?.id],
-      queryFn: () => getCourseUsageBook(book!.id),
-      enabled: book !== undefined
-   })
-
-   const courseList = bookList?.LessonOnDocumentBook.map(lessOnBook => {
-      lessOnBook.CourseLesson.Course
-      return {
-         name: lessOnBook.CourseLesson.Course.name,
-      }
-   })
    
    return (
       <Modal
-         //  size={"full"}
-         // className=" bg-white"
          isOpen={open}
          classNames={{
             base: "top-0 p-0 m-0 absolute md:relative w-screen   md:w-[428px] bg-white m-0  max-w-full ",
@@ -90,7 +73,7 @@ const BookUsage = ({
                               src={`${book?.image}`}
                            />
                            <div className="flex flex-1 items-center">
-                              <p className="text-lg font-semibold">
+                              <p className="text-lg font-semibold font-sans">
                                  {/* หนังสือ Dynamics midterm vol.1 - 2/2566{" "} */}
                                  {book?.name}{" "}
                               </p>
@@ -109,17 +92,28 @@ const BookUsage = ({
                      </div>
 
                      <div className="col-span-2 flex flex-col gap-2">
-                        <p className="text-[#71717A] font-bold text-lg">
+                        <p className="text-[#71717A] font-bold text-lg font-serif">
                            รายการคอร์สที่ใช้งาน
                         </p>
                         <div className="ml-4   ">
-                           {courseList?.map((course, index) => (
-                              <div key={`courseUsage${index}`} className="flex items-center">
-                                 <BulletPoint />
-                                 <p>{course.name}</p>
-                                 <LuArrowUpRight className="self-start" />
-                              </div>
-                           ))}
+                           {courseList?.map((course, index) => {
+                              const mode = course.status === "noContent" ? `tutor` : `admin`
+                              const link = `/course?drawerCourse=${course.id}&mode=${mode}`
+                              return (
+                                 <Link
+                                    target="_blank"
+                                    key={`courseUsage${index}`}
+                                    // href={`/course?drawerCourse=${course.id}`}
+                                    href={link}
+                                 >
+                                    <div className="flex items-center font-serif">
+                                       <BulletPoint />
+                                       <p>{course.name}</p>
+                                       <LuArrowUpRight className="self-start" />
+                                    </div>
+                                 </Link>
+                              )
+                           })}
                            {/* <div className="flex items-center">
                               <BulletPoint />
                               <p> Dynamics midterm 2/2565</p>

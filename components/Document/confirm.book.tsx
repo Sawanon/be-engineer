@@ -2,36 +2,40 @@ import { cn } from "@/lib/util";
 import Alert from "@/ui/alert";
 import {
    Button,
-   Input,
    Modal,
    ModalBody,
    ModalContent,
-   Select,
-   SelectItem,
-   Textarea,
 } from "@nextui-org/react";
-import { Danger } from "iconsax-react";
+import { useState } from "react";
 import {
-   LuArrowRightLeft,
-   LuPackageCheck,
    LuTrash2,
    LuX,
 } from "react-icons/lu";
 
-import thaipost from "../../assets/thaipost.png";
-import Image from "next/image";
-
 const ConfirmBook = ({
    open,
    onClose,
+   error,
+   onConfirm,
+   bookName,
 }:{
    open: boolean,
    onClose: () => void,
+   onConfirm: () => Promise<void>,
+   error: {
+      isError: boolean,
+      message: string,
+   },
+   bookName: string,
 }) => {
+   const [isLoading, setIsLoading] = useState(false)
+   const handleOnConfirm = async () => {
+      setIsLoading(true)
+      await onConfirm()
+      setIsLoading(false)
+   }
    return (
       <Modal
-         //  size={"full"}
-         // className=" bg-white"
          isOpen={open}
          classNames={{
             base: "bottom-0 absolute md:relative w-screen md:w-[428px] bg-white m-0 ",
@@ -57,16 +61,22 @@ const ConfirmBook = ({
                            <LuX size={24} />
                         </Button>
                      </div>
-                     <Alert label="ลบไม่สำเร็จ ดูเพิ่มเติมใน Console" />
+                     {error.isError &&
+                        <Alert label={error.message} />
+                        // <Alert label="ลบไม่สำเร็จ ดูเพิ่มเติมใน Console" />
+                     }
                      <p>คุณแน่ใจหรือไม่ที่จะลบ</p>
                      <p className="">
-                        หนังสือ Dynamics midterm 1/2567 vol.1
+                        หนังสือ {bookName}
                      </p>{" "}
                      <div className="py-2 grid grid-cols-2 md:flex md:justify-end gap-2">
-                        <Button onClick={onClose} color="secondary" className="">
+                        <Button onClick={onClose} className={`bg-default-100`}>
                            ยกเลิก
                         </Button>
-                        <Button  color="secondary" className="text-[#F31260]">
+                        <Button
+                           isLoading={isLoading}
+                           onClick={handleOnConfirm} color="secondary" className="text-danger-500 bg-default-100"
+                        >
                            <LuTrash2 size={20} /> ลบ
                         </Button>
                      </div>
