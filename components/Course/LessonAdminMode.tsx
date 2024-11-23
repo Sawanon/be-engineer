@@ -92,7 +92,7 @@ const LessonAdminMode = ({
               </div>
             </PopoverTrigger>
             <PopoverContent className={`rounded-full py-1 h-6`}>
-              <div className="px-1 py-2">Copied</div>
+              <div className="px-1 py-2 font-serif">Copied</div>
             </PopoverContent>
           </Popover>
         );
@@ -143,7 +143,7 @@ const LessonAdminMode = ({
                               </div>
                             </PopoverTrigger>
                             <PopoverContent>
-                              <div className="px-1 py-2">Copied</div>
+                              <div className="px-1 py-2 font-serif">Copied</div>
                             </PopoverContent>
                           </Popover>
                         </div>
@@ -159,7 +159,7 @@ const LessonAdminMode = ({
                               </div>
                             </PopoverTrigger>
                             <PopoverContent>
-                              <div className="px-1 py-2">Copied</div>
+                              <div className="px-1 py-2 font-serif">Copied</div>
                             </PopoverContent>
                           </Popover>
                           <div className={`text-foreground-400`}>
@@ -172,7 +172,7 @@ const LessonAdminMode = ({
                               </div>
                             </PopoverTrigger>
                             <PopoverContent>
-                              <div className="px-1 py-2">Copied</div>
+                              <div className="px-1 py-2 font-serif">Copied</div>
                             </PopoverContent>
                           </Popover>
                           <div className={`text-foreground-400`}>
@@ -185,7 +185,7 @@ const LessonAdminMode = ({
                               </div>
                             </PopoverTrigger>
                             <PopoverContent>
-                              <div className="px-1 py-2">Copied</div>
+                              <div className="px-1 py-2 font-serif">Copied</div>
                             </PopoverContent>
                           </Popover>
                         </div>
@@ -198,7 +198,7 @@ const LessonAdminMode = ({
                               </div>
                             </PopoverTrigger>
                             <PopoverContent>
-                              <div className="px-1 py-2">Copied</div>
+                              <div className="px-1 py-2 font-serif">Copied</div>
                             </PopoverContent>
                           </Popover>
                         </div>

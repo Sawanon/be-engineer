@@ -100,6 +100,11 @@ const AddLesson = ({
               }
               <Input
                 size="lg"
+                onKeyDown={(key) => {
+                  if(key.code === `Enter`){
+                    submitCreateLesson()
+                  }
+                }}
                 className="font-IBM-Thai-Looped text-lg font-medium mt-3"
                 classNames={{
                   input: "font-IBM-Thai-Looped text-lg font-medium",

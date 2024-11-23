@@ -27,7 +27,7 @@ const SortItemComponent = ({
         <div className='text-foreground-400'>
             <Menu size={24} />
         </div>
-        <div className='text-base font-normal'>
+        <div className='text-base font-normal font-serif'>
             {title}
         </div>
     </div>

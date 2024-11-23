@@ -122,6 +122,13 @@ const ManageCourse = ({
   }, [isFetched, selectedCourse]);
 
   const handleClose = () => {
+    const lesson = selectedCourse?.CourseLesson.length ?? 0
+    if(lesson > 0){
+      const course = selectedCourse!
+      if(course.name === "" || !course.detail || !course.Tutor || !course.clueLink || !course.playlist || !course.price){
+        return
+      }
+    }
     setIsEdit(false);
     setIsDelete(false);
     setIsAdd(true);
@@ -304,7 +311,7 @@ const ManageCourse = ({
                     </div>
                   </PopoverTrigger>
                   <PopoverContent>
-                    <div className="px-1 py-2">Copied</div>
+                    <div className="px-1 py-2 font-serif font-serif">Copied</div>
                   </PopoverContent>
                 </Popover>
               </div>
@@ -336,7 +343,7 @@ const ManageCourse = ({
                   </div>
                 </PopoverTrigger>
                 <PopoverContent>
-                  <div className="px-1 py-2">Copied</div>
+                  <div className="px-1 py-2 font-serif">Copied</div>
                 </PopoverContent>
               </Popover>
               <div className={`mt-2 flex gap-2 items-center`}>
@@ -390,7 +397,7 @@ const ManageCourse = ({
                     </div>
                   </PopoverTrigger>
                   <PopoverContent>
-                    <div className="px-1 py-2">Copied</div>
+                    <div className="px-1 py-2 font-serif">Copied</div>
                   </PopoverContent>
                 </Popover>
                 <div>ชั่วโมง</div>
@@ -410,7 +417,7 @@ const ManageCourse = ({
                     </div>
                   </PopoverTrigger>
                   <PopoverContent>
-                    <div className="px-1 py-2">Copied</div>
+                    <div className="px-1 py-2 font-serif">Copied</div>
                   </PopoverContent>
                 </Popover>
               </div>
@@ -430,7 +437,7 @@ const ManageCourse = ({
                     </div>
                   </PopoverTrigger>
                   <PopoverContent>
-                    <div className="px-1 py-2">Copied</div>
+                    <div className="px-1 py-2 font-serif">Copied</div>
                   </PopoverContent>
                 </Popover>
               </div>

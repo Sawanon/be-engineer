@@ -47,6 +47,10 @@ const AddCourseForm = ({
         name: data.courseName,
         tutor: parseInt(data.courseTutorId),
         status: `noContent`,
+        detail: data.courseDetail ?? undefined,
+        clueLink: data.clueLink ?? undefined,
+        playlist: data.playlist ?? undefined,
+        price: data.price ? parseInt(data.price) : undefined,
       })
       if(!response) throw `response is ${response}`
       if(typeof response === "string") throw response

@@ -14,6 +14,7 @@ import {
    Modal,
    ModalContent,
    Pagination,
+   Textarea,
 } from "@nextui-org/react";
 import { X } from "lucide-react";
 import { addSheetAction, listSheetsAction } from "@/lib/actions/sheet.action";
@@ -423,13 +424,19 @@ const DocumentComp = () => {
                      placeholder={`Dynamics (CU) - Pre-midterm 2/2565`}
                      aria-label={`ชื่อเอกสาร`}
                      onChange={(e) => setPreExamName(e.target.value)}
+                     className={`font-serif`}
                   />
-                  <Input
-                     placeholder={`Link`}
-                     aria-label={`Link`}
-                     className={`mt-2`}
-                     onChange={(e) => setPreExamLink(e.target.value)}
-                  />
+                  <div id="textarea-wrapper">
+                     <Textarea
+                        classNames={{
+                           input: `text-[1em]`,
+                        }}
+                        placeholder={`Link`}
+                        aria-label={`Link`}
+                        className={`mt-2 font-serif ${!preExamLink ? `` : `underline`}`}
+                        onChange={(e) => setPreExamLink(e.target.value)}
+                     />
+                  </div>
                </div>
                <Button
                   onClick={submitPreExam}

@@ -99,50 +99,8 @@ export const handleError = (error: unknown): ErrorMessageProps => {
    return parseStringify(errDetails as ErrorMessageProps);
 };
 
-// export const classifyCourseByBranch = (courseListByBranch: [], courseListInNewDB: any[]) => {
-// //   const courseList: {
-// //     branch: string;
-// //     id: number;
-// //     name: string;
-// //     image: string;
-// //     hasFeedback: boolean;
-// //   }[] = [];
-// const courseListObj:{[x: string]: Course} = {}
-// const courseList:Course[] = []
-//   courseListByBranch.forEach(
-//     (courseByBranch: { branch: string; courses: [] }) => {
-//       courseByBranch.courses.forEach(
-//         (course: {
-//           id: number;
-//           name: string;
-//           image: string;
-//           hasFeedback: boolean;
-//         }) => {
-//           courseListObj[`${course.id}`] = {
-//             status: course.hasFeedback ? 'enterForm' : 'noContent',
-//             branch: courseByBranch.branch,
-//             id: course.id,
-//             name: course.name,
-//             image: course.image,
-//             hasFeedback: course.hasFeedback,
-//           }
-//           courseList.push({
-//             status: course.hasFeedback ? 'enterForm' : 'noContent',
-//             branch: courseByBranch.branch,
-//             id: course.id,
-//             name: course.name,
-//             image: course.image,
-//             hasFeedback: course.hasFeedback,
-//           });
-//         }
-//       );
-//     }
-//   );
-//   console.log(courseListInNewDB);
+export const openSheetPage = (id : number)=>{
 
-//   courseListInNewDB.forEach(courseInNewDB => {
-//     courseListObj[courseInNewDB.webappCourseId].name = courseInNewDB.name
-//   })
+      window.open(`/document?sheetId=${id}`)
 
-//   return Object.values(courseListObj);
-// };
+}

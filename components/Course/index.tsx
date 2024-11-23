@@ -25,7 +25,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { listTutor } from "@/lib/actions/tutor.actions";
 import ManageCourse from "@/components/ManageCourse";
-import { CourseLesson, Course as CoursePrisma, DocumentBook, DocumentPreExam, DocumentSheet, LessonOnDocument, LessonOnDocumentBook, LessonOnDocumentSheet} from '@prisma/client'
+import { CourseLesson, Course as CoursePrisma, DocumentBook, DocumentPreExam, DocumentSheet, LessonOnDocument, LessonOnDocumentBook, LessonOnDocumentSheet, Prisma} from '@prisma/client'
 import { usePathname, useSearchParams } from "next/navigation";
 import _ from 'lodash'
 
@@ -98,19 +98,6 @@ const CourseComponent = ({
    const searchParam = useSearchParams()
    const pathName = usePathname()
 
-   useMemo(() => {
-    //TODO: check mode admin
-     if(courses){
-      const courseId = searchParam.get('drawerCourse')
-      if(!courseId) return
-      const course = courses.find(course => course.id === parseInt(courseId))
-      setSelectedCourse(course)
-      if(course){
-        setIsOpenDrawer(true)
-      }
-    }
-   }, [searchParam.get('drawerCourse'), courses])
-
    const findUniqueDocument = (course: any) => {
     const uniqueSheets = Array.from(
       new Map(course.CourseLesson.flatMap((lesson: CourseLesson & {
@@ -147,6 +134,20 @@ const CourseComponent = ({
       uniqueBooks,
     }
    }
+
+   useMemo(() => {
+    //TODO: check mode admin
+     if(courses){
+      const courseId = searchParam.get('drawerCourse')
+      if(!courseId) return
+      const course = courses.find(course => course.id === parseInt(courseId))
+      const courseWithUniqueDocuments = findUniqueDocument(course)
+      setSelectedCourse(courseWithUniqueDocuments)
+      if(course){
+        setIsOpenDrawer(true)
+      }
+    }
+   }, [searchParam.get('drawerCourse'), courses])
 
    useMemo(() => {
       if (!isRefetching) {
@@ -280,9 +281,17 @@ const CourseComponent = ({
   }, [preSearchCourse])
 
   const handleOnClickCourse = (course:any) => {
+    const _course:NonNullable<Awaited<ReturnType<typeof listCourseAction>>>[0] = course
+    
+    let onlyOneDontExistDoc = false
+    _course.CourseLesson.forEach(lesson => {
+      const coundDoc = lesson.LessonOnDocument.length + lesson.LessonOnDocumentBook.length + lesson.LessonOnDocumentSheet.length
+      if(coundDoc === 0) onlyOneDontExistDoc = true
+    })
     setSelectedCourse(course);
     setIsOpenDrawer((prev) => !prev);
-    const mode = course.status === "noContent" ? `tutor` : `admin`
+    let mode = course.status === "noContent" ? `tutor` : `admin`
+    if(onlyOneDontExistDoc) mode = `tutor`
     const newPath = `${pathName}?drawerCourse=${course.id}&mode=${mode}`;
     window.history.replaceState(null, "", newPath);
   }
@@ -471,7 +480,7 @@ const CourseComponent = ({
                     ))}
                     {course.uniqueSheets.map((sheet, index) => (
                       <div key={`sheet${index}${sheet.id}`} className={`flex items-center gap-2`}>
-                        <ScrollText className={`text-content4-foreground`} size={16} />
+                        <ScrollText className={`text-content4-foreground min-w-4`} size={16} />
                         <div className={`text-xs font-IBM-Thai-Looped text-default-foreground`}>
                           {sheet.name}
                         </div>
@@ -479,7 +488,7 @@ const CourseComponent = ({
                     ))}
                     {course.uniquePreExam.map((preExam, index) => (
                       <div key={`sheet${index}${preExam.id}`} className={`flex items-center gap-2`}>
-                        <ClipboardSignature className={`text-content4-foreground`} size={16} />
+                        <ClipboardSignature className={`text-content4-foreground min-w-4`} size={16} />
                         <div className={`text-xs font-IBM-Thai-Looped text-default-foreground`}>
                           {preExam.name}
                         </div>
