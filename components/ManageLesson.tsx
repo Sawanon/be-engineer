@@ -307,10 +307,10 @@ const ManageLesson = ({
                     handleOnClickDeleteLesson(lesson)
                   }
                 }}>
-                  <DropdownItem className={`text-default-foreground`} startContent={<PenSquare size={16} />} key={`changeName`}>
+                  <DropdownItem className={`text-default-foreground font-serif`} startContent={<PenSquare size={16} />} key={`changeName`}>
                     เปลี่ยนชื่อ
                   </DropdownItem>
-                  <DropdownItem className={`text-danger-500`} key={`delete`} startContent={<Trash2 size={16} />}>
+                  <DropdownItem className={`text-danger-500 font-serif`} key={`delete`} startContent={<Trash2 size={16} />}>
                     ลบ
                   </DropdownItem>
                 </DropdownMenu>

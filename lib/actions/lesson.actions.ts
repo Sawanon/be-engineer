@@ -295,6 +295,25 @@ export const deleteLesson = async (lessonId: number) => {
         }
       }
     }
+    const course = await prisma.course.findFirst({
+      where: {
+        id: lesson.Course.id,
+      },
+      include: {
+        CourseLesson: true,
+      },
+    })
+    if(course?.CourseLesson.length === 1){
+      const responseUpdateStatusCourse = await prisma.course.update({
+        where: {
+          id: course.id,
+        },
+        data: {
+          status: "noContent",
+        }
+      })
+      console.log("responseUpdateStatusCourse: ", responseUpdateStatusCourse.status);
+    }
     const response = await prisma.courseLesson.delete({
       where: {
         id: lessonId,

@@ -304,7 +304,7 @@ const ManageContent = ({
                   </div>
                   {/* <div className={`mt-3 grid grid-cols-2 flex-1 overflow-auto`}> */}
                   <div className={`mt-3 gap-3 flex md:flex-row flex-col flex-1 overflow-auto`}>
-                     <div className={`flex-1 flex flex-col`}>
+                     <div className={`flex-1 flex flex-col overflow-auto`}>
                         <Autocomplete
                            placeholder={`Playlist`}
                            startContent={

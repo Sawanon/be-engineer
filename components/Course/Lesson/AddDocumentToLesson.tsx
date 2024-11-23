@@ -4,6 +4,7 @@ import { listPreExamAction } from '@/lib/actions/pre-exam.actions'
 import { listSheetsAction } from '@/lib/actions/sheet.action'
 import Alert from '@/ui/alert'
 import { Autocomplete, AutocompleteItem, Button, Image, Modal, ModalContent } from '@nextui-org/react'
+import { DocumentBook } from '@prisma/client'
 import { useQuery } from '@tanstack/react-query'
 import { ClipboardSignature, ScrollText, X } from 'lucide-react'
 import React, { Key, useMemo, useState } from 'react'
@@ -178,22 +179,31 @@ const AddDocumentToLesson = ({
         >
           {
             documentList?
-            documentList?.map((document, index) => {
-            return (
-              <AutocompleteItem
-                className={`font-serif`}
-                key={`${document.id}:${document.type}`}
-                startContent={renderStartContent(document)}
-              >
-                {document.name}
-              </AutocompleteItem>
-            )
-          })
-        : (
-          <AutocompleteItem className={`font-serif`} key={`loading`}>
-            loading...
-          </AutocompleteItem>
-        )}
+            documentList?.sort((a, b) => {
+              if(a.updatedAt! > b.updatedAt!){
+                return -1
+              }else if(a.updatedAt! < b.updatedAt!){
+                return 1
+              }
+              return 0
+            }).map((document, index) => {
+              const book = document as DocumentBook
+              const name = document.type === "book" ? `${book.name} ${book.term} ${book.year} ${book.volume ?? ""}` : document.name
+              return (
+                <AutocompleteItem
+                  className={`font-serif`}
+                  key={`${document.id}:${document.type}`}
+                  startContent={renderStartContent(document)}
+                >
+                  {name}
+                </AutocompleteItem>
+              )
+            })
+          : (
+            <AutocompleteItem className={`font-serif`} key={`loading`}>
+              loading...
+            </AutocompleteItem>
+          )}
         </Autocomplete>
       </div>
       <Button

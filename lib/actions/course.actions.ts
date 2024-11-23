@@ -371,7 +371,7 @@ const changeBindWebApp = async (courseId: number, branch: string, webAppCourseId
   }
 }
 
-export const courseConnectWebAppCourse = async (courseId: number, branch: string, webAppCourseId: number, books: DocumentBook[], imageUrl: string | null) => {
+export const courseConnectWebAppCourse = async (courseId: number, branch: string, webAppCourse: {id: number, hasFeedback: boolean}, books: DocumentBook[], imageUrl: string | null) => {
   try {
     const course = await prisma.course.findFirst({
       where: {
@@ -384,7 +384,7 @@ export const courseConnectWebAppCourse = async (courseId: number, branch: string
     const deliverList:Delivery[] = await prisma.$queryRaw`
       SELECT *
       FROM Delivery
-      WHERE FIND_IN_SET(${webAppCourseId}, webappCourseId) > 0
+      WHERE FIND_IN_SET(${webAppCourse.id}, webappCourseId) > 0
       AND status = 'waiting'
     `
     for (let i = 0; i < books.length; i++) {
@@ -415,7 +415,7 @@ export const courseConnectWebAppCourse = async (courseId: number, branch: string
         deliveryListWithCourse.push({
           deliveryId: delivery.id,
           courseId: courseId,
-          webappCourseId: webAppCourseId,
+          webappCourseId: webAppCourse.id,
           webappOrderId: delivery.webappOrderId,
         })
       })
@@ -438,9 +438,9 @@ export const courseConnectWebAppCourse = async (courseId: number, branch: string
       },
       data: {
         branch: branch,
-        webappCourseId: webAppCourseId,
+        webappCourseId: webAppCourse.id,
         imageUrl: imageUrl,
-        status: `uploadWebapp`,
+        status: webAppCourse.hasFeedback ? `enterForm` : `uploadWebapp`,
       },
     })
     return response

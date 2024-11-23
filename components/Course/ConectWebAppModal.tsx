@@ -87,7 +87,7 @@ const ConectWebAppModal = ({
       const response = await courseConnectWebAppCourse(
         courseId,
         selectedBranch!,
-        selectedWebAppCourse!.id,
+        selectedWebAppCourse,
         // book.id,
         books,
         selectedWebAppCourse.image,

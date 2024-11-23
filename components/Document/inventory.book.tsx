@@ -135,6 +135,26 @@ const BookInventory = ({
          backdrop="blur"
          onClose={() => {}}
          scrollBehavior={"inside"}
+         motionProps={{
+            variants: {
+              enter: {
+                x: 0,
+                opacity: 1,
+                transition: {
+                  duration: 0.3,
+                  ease: "easeOut",
+                },
+              },
+              exit: {
+                x: 50,
+                opacity: 0,
+                transition: {
+                  duration: 0.2,
+                  ease: "easeIn",
+                },
+              },
+            }
+         }}
       >
          <ModalContent>
             <ModalBody className={cn("p-0 flex flex-col  ")}>
