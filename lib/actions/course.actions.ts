@@ -483,3 +483,7 @@ export const countBookInCourse = async (courseId: number, bookId: number):Promis
     prisma.$disconnect()
   }
 }
+
+export const revalidateCourse = async () => {
+  revalidatePath('/course')
+}

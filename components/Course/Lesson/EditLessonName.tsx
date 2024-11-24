@@ -1,4 +1,4 @@
-import { listCourseAction } from '@/lib/actions/course.actions'
+import { listCourseAction, revalidateCourse } from '@/lib/actions/course.actions'
 import { updateLesson } from '@/lib/actions/lesson.actions'
 import Alert from '@/ui/alert'
 import { Button, Input, Modal, ModalContent } from '@nextui-org/react'
@@ -15,10 +15,6 @@ const EditLessonName = ({
   onClose: () => void,
   lesson?: any,
 }) => {
-  const {refetch: refetchCourse} = useQuery({
-    queryKey: ["listCourseAction"],
-    queryFn: () => listCourseAction(),
-  });
   const [lessonName, setLessonName] = useState<string | undefined>()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState({
@@ -61,7 +57,7 @@ const EditLessonName = ({
         return
       }
       handleOnClose()
-      refetchCourse()
+      revalidateCourse()
     } catch (error) {
       setError({
         isError: true,
