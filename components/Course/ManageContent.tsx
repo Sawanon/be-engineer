@@ -207,6 +207,9 @@ const ManageContent = ({
 
    const handleOnSelecteCell = (keys: Selection) => {
       {
+         console.log(keys);
+         console.log(videoList);
+         
          const arrKeys = Array.from(keys)
          const videoInLessonArrKeys = Object.keys(videoInLesson)
          const videoFilterRemove = Object.keys(videoInLesson).map(key => videoInLesson[key]).filter(video => (video.action !== "removeInDB" && video.action !== "remove"))
@@ -214,8 +217,8 @@ const ManageContent = ({
          if(arrKeys.length > videoFilterRemove.length){
             // add
             let arrVideo = {}
-            
-            arrKeys.forEach(key => {
+            const newKeys = arrKeys.filter(key => !videoFilterRemove.find(video => `${video.webappVideoId!}` === `${key}`))
+            newKeys.forEach(key => {
                const video = videoList.find(video => parseInt(video.id.toString()) === parseInt(key.toString()))
                const preAddVideo = addVideo(video!)
                arrVideo = {
@@ -321,7 +324,8 @@ const ManageContent = ({
                            listboxProps={{
                               className: 'font-serif',
                            }}
-                           selectedKey={selectedPlaylistId}
+                           defaultSelectedKey={selectedPlaylistId ?? undefined}
+                           // selectedKey={selectedPlaylistId}
                            onSelectionChange={handleOnChangePlayList}
                            inputValue={list.filterText}
                            isLoading={list.isLoading}
@@ -340,6 +344,7 @@ const ManageContent = ({
                            )}
                         </Autocomplete>
                         <div className={`mt-2 flex-1 relative overflow-auto`}>
+                           {videoList.length}
                            <Table
                               isStriped
                               aria-label="Controlled table example with dynamic content"

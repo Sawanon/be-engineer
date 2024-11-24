@@ -26,8 +26,9 @@ import { useQuery } from "@tanstack/react-query";
 import { listTutor } from "@/lib/actions/tutor.actions";
 import ManageCourse from "@/components/ManageCourse";
 import { CourseLesson, Course as CoursePrisma, DocumentBook, DocumentPreExam, DocumentSheet, LessonOnDocument, LessonOnDocumentBook, LessonOnDocumentSheet, Prisma} from '@prisma/client'
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import _ from 'lodash'
+import { PrefetchKind } from "next/dist/client/components/router-reducer/router-reducer-types";
 
 const Status = ({ course }: { course: CourseT }) => {
    let textColor = "";
@@ -58,111 +59,112 @@ const Status = ({ course }: { course: CourseT }) => {
 };
 
 const CourseComponent = ({
-  // courses,
+  courses,
 }:{
-  // courses: Awaited<ReturnType<typeof listCourseAction>>
+  courses: Awaited<ReturnType<typeof listCourseAction>>
 }) => {
-   const [selectedCourse, setSelectedCourse] = useState<CourseT | undefined>();
-   const [isOpenDrawer, setIsOpenDrawer] = useState(false);
-   const [isSort, setIsSort] = useState(false);
+  const route = useRouter()
+  //  const [selectedCourse, setSelectedCourse] = useState<CourseT | undefined>();
+  //  const [isOpenDrawer, setIsOpenDrawer] = useState(false);
+  //  const [isSort, setIsSort] = useState(false);
    const [page, setPage] = useState(1);
    const [pageSize, setPageSize] = useState(30);
-   const [isDeleteCourse, setIsDeleteCourse] = useState(false);
-   const [errorDeleteCourse, setErrorDeleteCourse] = useState({
-      isError: false,
-      message: "ลบไม่สำเร็จ ดูเพิ่มเติมใน Console",
-   });
+  //  const [isDeleteCourse, setIsDeleteCourse] = useState(false);
+  //  const [errorDeleteCourse, setErrorDeleteCourse] = useState({
+  //     isError: false,
+  //     message: "ลบไม่สำเร็จ ดูเพิ่มเติมใน Console",
+  //  });
    const [preSearchCourse, setPreSearchCourse] = useState("")
    const [searchCourse, setSearchCourse] = useState("")
    const [filterStatusCourse, setFilterStatusCourse] = useState<Key[] | undefined>()
    const [searchCourseByTutorId, setSearchCourseByTutorId] = useState<any | undefined>()
 
    const rowsPerPage = 5;
-   const {
-      data: courses,
-      isLoading,
-      status,
-      error,
-      isRefetching,
-      refetch: refetchCourse,
-   } = useQuery({
-      queryKey: ["listCourseAction"],
-      queryFn: () => listCourseAction(),
-   });
+  //  const {
+  //     data: courses,
+  //     isLoading,
+  //     status,
+  //     error,
+  //     isRefetching,
+  //     refetch: refetchCourse,
+  //  } = useQuery({
+  //     queryKey: ["listCourseAction"],
+  //     queryFn: () => listCourseAction(),
+  //  });
 
    const { data: tutorList } = useQuery({
       queryKey: ["listTutor"],
       queryFn: () => listTutor(),
    });
    
-   const searchParam = useSearchParams()
-   const pathName = usePathname()
+  //  const searchParam = useSearchParams()
+  //  const pathName = usePathname()
 
-   const findUniqueDocument = (course: any) => {
-    const uniqueSheets = Array.from(
-      new Map(course.CourseLesson.flatMap((lesson: CourseLesson & {
-        LessonOnDocumentSheet: LessonOnDocumentSheet &{
-          DocumentSheet: DocumentSheet,
-        }[]
-      }) => 
-         lesson.LessonOnDocumentSheet.map(sheet => [sheet.DocumentSheet.id, sheet.DocumentSheet])
-      )).values()
-    )
-    const uniquePreExam = Array.from(
-      new Map(course.CourseLesson.flatMap((lesson: CourseLesson & {
-        LessonOnDocument: LessonOnDocument & {
-          DocumentPreExam: DocumentPreExam,
-        }[]
-      }) => 
-         lesson.LessonOnDocument.map(sheet => [sheet.DocumentPreExam.id, sheet.DocumentPreExam])
-      )).values()
-    )
-    const uniqueBooks = Array.from(
-      new Map(course.CourseLesson.flatMap((lesson: CourseLesson & {
-        LessonOnDocumentBook: LessonOnDocumentBook &{
-          DocumentBook: DocumentBook,
-        }[]
-      }) => 
-         lesson.LessonOnDocumentBook.map(sheet => [sheet.DocumentBook.id, sheet.DocumentBook])
-      )).values()
-    )
+  //  const findUniqueDocument = (course: any) => {
+  //   const uniqueSheets = Array.from(
+  //     new Map(course.CourseLesson.flatMap((lesson: CourseLesson & {
+  //       LessonOnDocumentSheet: LessonOnDocumentSheet &{
+  //         DocumentSheet: DocumentSheet,
+  //       }[]
+  //     }) => 
+  //        lesson.LessonOnDocumentSheet.map(sheet => [sheet.DocumentSheet.id, sheet.DocumentSheet])
+  //     )).values()
+  //   )
+  //   const uniquePreExam = Array.from(
+  //     new Map(course.CourseLesson.flatMap((lesson: CourseLesson & {
+  //       LessonOnDocument: LessonOnDocument & {
+  //         DocumentPreExam: DocumentPreExam,
+  //       }[]
+  //     }) => 
+  //        lesson.LessonOnDocument.map(sheet => [sheet.DocumentPreExam.id, sheet.DocumentPreExam])
+  //     )).values()
+  //   )
+  //   const uniqueBooks = Array.from(
+  //     new Map(course.CourseLesson.flatMap((lesson: CourseLesson & {
+  //       LessonOnDocumentBook: LessonOnDocumentBook &{
+  //         DocumentBook: DocumentBook,
+  //       }[]
+  //     }) => 
+  //        lesson.LessonOnDocumentBook.map(sheet => [sheet.DocumentBook.id, sheet.DocumentBook])
+  //     )).values()
+  //   )
     
-    return {
-      ...course,
-      uniqueSheets,
-      uniquePreExam,
-      uniqueBooks,
-    }
-   }
+  //   return {
+  //     ...course,
+  //     uniqueSheets,
+  //     uniquePreExam,
+  //     uniqueBooks,
+  //   }
+  //  }
 
-   useMemo(() => {
-    //TODO: check mode admin
-     if(courses){
-      const courseId = searchParam.get('drawerCourse')
-      if(!courseId) return
-      const course = courses.find(course => course.id === parseInt(courseId))
-      const courseWithUniqueDocuments = findUniqueDocument(course)
-      setSelectedCourse(courseWithUniqueDocuments)
-      if(course){
-        setIsOpenDrawer(true)
-      }
-    }
-   }, [searchParam.get('drawerCourse'), courses])
+  //  useMemo(() => {
+  //   //TODO: check mode admin
+  //    if(courses){
+  //     const courseId = searchParam.get('drawerCourse')
+  //     if(!courseId) return
+  //     const course = courses.find(course => course.id === parseInt(courseId))
+  //     const courseWithUniqueDocuments = findUniqueDocument(course)
+  //     setSelectedCourse(courseWithUniqueDocuments)
+  //     if(course){
+  //       setIsOpenDrawer(true)
+  //     }
+  //   }
+  //  }, [searchParam.get('drawerCourse'), courses])
 
-   useMemo(() => {
-      if (!isRefetching) {
-         if (selectedCourse) {
-            // for update delete
-            const findCourse = courses?.find(
-               (course) => course.id === selectedCourse.id
-            );
-            if (findCourse) {
-              const courseWithUniqueDocuments = findUniqueDocument(findCourse)
-              setSelectedCourse(courseWithUniqueDocuments);
-            }
-         }
-      }
-   }, [isRefetching]);
+  //  useMemo(() => {
+  //     if (!isRefetching) {
+  //        if (selectedCourse) {
+  //           // for update delete
+  //           const findCourse = courses?.find(
+  //              (course) => course.id === selectedCourse.id
+  //           );
+  //           if (findCourse) {
+  //             const courseWithUniqueDocuments = findUniqueDocument(findCourse)
+  //             setSelectedCourse(courseWithUniqueDocuments);
+  //           }
+  //        }
+  //     }
+  //  }, [isRefetching]);
 
   const courseItem = useMemo(() => {
     const startIndex = (page - 1) * rowsPerPage;
@@ -211,60 +213,60 @@ const CourseComponent = ({
       setPageSize(Math.ceil(courseFromSearch.length / rowsPerPage));
     }
     return courseFromSearch?.slice(startIndex, endIndex);
-  }, [page, courses, isLoading, searchCourse, filterStatusCourse, searchCourseByTutorId]);
+  }, [page, courses, /*isLoading*/, searchCourse, filterStatusCourse, searchCourseByTutorId]);
 
-  const replacePath = () => {
-    const newPath = `/course`;
-    window.history.replaceState(null, "", newPath);
-  };
+  // const replacePath = () => {
+  //   const newPath = `/course`;
+  //   window.history.replaceState(null, "", newPath);
+  // };
 
-  const handleCloseManageCourse = () => {
-    setIsOpenDrawer(false);
-    setSelectedCourse(undefined);
-    replacePath()
-  };
+  // const handleCloseManageCourse = () => {
+  //   setIsOpenDrawer(false);
+  //   setSelectedCourse(undefined);
+  //   replacePath()
+  // };
 
-  const confirmDeleteCourse = async () => {
-    if (!selectedCourse) {
-        return;
-    }
-    const res = await deleteCourse(selectedCourse.id);
-    console.log(res);
-    if (!res) {
-        setErrorDeleteCourse((prev) => ({ ...prev, isError: true }));
-        return;
-    }
-    setIsDeleteCourse(false);
-    handleCloseManageCourse();
-    refetchCourse();
-  };
+  // const confirmDeleteCourse = async () => {
+  //   if (!selectedCourse) {
+  //       return;
+  //   }
+  //   const res = await deleteCourse(selectedCourse.id);
+  //   console.log(res);
+  //   if (!res) {
+  //       setErrorDeleteCourse((prev) => ({ ...prev, isError: true }));
+  //       return;
+  //   }
+  //   setIsDeleteCourse(false);
+  //   handleCloseManageCourse();
+  //   // refetchCourse();
+  // };
 
-  const handleCloseDeleteCourseDialog = () => {
-    setErrorDeleteCourse((prev) => ({ ...prev, isError: false }));
-    setIsDeleteCourse(false);
-  };
+  // const handleCloseDeleteCourseDialog = () => {
+  //   setErrorDeleteCourse((prev) => ({ ...prev, isError: false }));
+  //   setIsDeleteCourse(false);
+  // };
 
-  const onAddedCourse = async (courseId: number) => {
-    const res = await refetchCourse();
-    const course = res.data;
-    console.log(course);
-    if (!course) return;
-    const findCourse = course.find((course) => course.id === courseId);
-    console.log(findCourse);
-    setSelectedCourse(findCourse);
-  };
+  // const onAddedCourse = async (courseId: number) => {
+  //   // const res = await refetchCourse();
+  //   // const course = res.data;
+  //   // console.log(course);
+  //   // if (!course) return;
+  //   // const findCourse = course.find((course) => course.id === courseId);
+  //   // console.log(findCourse);
+  //   // setSelectedCourse(findCourse);
+  // };
 
-  const refreshCourse = async () => {
-    if (!selectedCourse) return;
-    const res = await refetchCourse();
-    const course = res.data;
-    if (!course) return;
-    const findCourse = course.find(
-       (course) => course.id === selectedCourse.id
-    );
-    console.log(findCourse);
-    setSelectedCourse(findCourse);
-  };
+  // const refreshCourse = async () => {
+  //   if (!selectedCourse) return;
+  //   const res = await refetchCourse();
+  //   const course = res.data;
+  //   if (!course) return;
+  //   const findCourse = course.find(
+  //      (course) => course.id === selectedCourse.id
+  //   );
+  //   console.log(findCourse);
+  //   setSelectedCourse(findCourse);
+  // };
 
   const handleSearch = (value: string) => {
     console.log("search !", value);
@@ -280,21 +282,21 @@ const CourseComponent = ({
     }
   }, [preSearchCourse])
 
-  const handleOnClickCourse = (course:any) => {
-    const _course:NonNullable<Awaited<ReturnType<typeof listCourseAction>>>[0] = course
+  // const handleOnClickCourse = (course:any) => {
+  //   const _course:NonNullable<Awaited<ReturnType<typeof listCourseAction>>>[0] = course
     
-    let onlyOneDontExistDoc = false
-    _course.CourseLesson.forEach(lesson => {
-      const coundDoc = lesson.LessonOnDocument.length + lesson.LessonOnDocumentBook.length + lesson.LessonOnDocumentSheet.length
-      if(coundDoc === 0) onlyOneDontExistDoc = true
-    })
-    setSelectedCourse(course);
-    setIsOpenDrawer((prev) => !prev);
-    let mode = course.status === "noContent" ? `tutor` : `admin`
-    if(onlyOneDontExistDoc) mode = `tutor`
-    const newPath = `${pathName}?drawerCourse=${course.id}&mode=${mode}`;
-    window.history.replaceState(null, "", newPath);
-  }
+  //   let onlyOneDontExistDoc = false
+  //   _course.CourseLesson.forEach(lesson => {
+  //     const coundDoc = lesson.LessonOnDocument.length + lesson.LessonOnDocumentBook.length + lesson.LessonOnDocumentSheet.length
+  //     if(coundDoc === 0) onlyOneDontExistDoc = true
+  //   })
+  //   setSelectedCourse(course);
+  //   setIsOpenDrawer((prev) => !prev);
+  //   let mode = course.status === "noContent" ? `tutor` : `admin`
+  //   if(onlyOneDontExistDoc) mode = `tutor`
+  //   const newPath = `${pathName}?drawerCourse=${course.id}&mode=${mode}`;
+  //   window.history.replaceState(null, "", newPath);
+  // }
 
   return (
     // <div className="flex flex-col pt-6 px-4 bg-background relative md:h-screenDevice bg-red-400 md:bg-green-400">
@@ -320,12 +322,12 @@ const CourseComponent = ({
             </>
           }
         /> */}
-        <ManageCourse
+        {/* <ManageCourse
           isOpenDrawer={isOpenDrawer}
           selectedCourse={selectedCourse}
           onClose={handleCloseManageCourse}
           onFetch={async () => {
-            await refetchCourse()
+            // await refetchCourse()
           }}
           onConfirmAdd={async (courseId) => {
             await onAddedCourse(courseId)
@@ -334,7 +336,7 @@ const CourseComponent = ({
             // setAddedCourseId(courseId)
             // await refetchCourse()
           }}
-        />
+        /> */}
         <div className="font-IBM-Thai text-3xl font-bold py-2 hidden md:block">
           คอร์สเรียน
         </div>
@@ -429,7 +431,8 @@ const CourseComponent = ({
             className="flex mt-2 md:mt-0 w-full md:w-auto font-sans text-base font-medium bg-default-foreground text-primary-foreground"
             endContent={<Plus className={`min-w-5 min-h-5`} size={20} />}
             onClick={() => {
-              setIsOpenDrawer(true);
+              // setIsOpenDrawer(true);
+              route.push(`/course?drawerCourse=add`)
             }}
           >
             <div className={`mt-1`}>เพิ่ม</div>
@@ -444,7 +447,7 @@ const CourseComponent = ({
               <TableColumn className="font-IBM-Thai">เอกสาร</TableColumn>
             </TableHeader>
             <TableBody
-              isLoading={isLoading}
+              // isLoading={isLoading}
               loadingContent={<Spinner />}
               items={courseItem ?? []}
             >
@@ -452,7 +455,10 @@ const CourseComponent = ({
               {(course) => (
                 <TableRow key={`courseRow${course.id}`}>
                   <TableCell
-                    onClick={() => handleOnClickCourse(course)}
+                    // onClick={() => handleOnClickCourse(course)}
+                    onClick={() => {
+                      route.push(`/course?drawerCourse=${course.id}`)
+                    }}
                   >
                     <div className="flex gap-2 items-center">
                       {course.imageUrl && (

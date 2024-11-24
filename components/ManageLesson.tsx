@@ -32,7 +32,7 @@ import ManageContent from "./Course/ManageContent";
 import SortLessonModal from "./Course/Lesson/SortLessonModal";
 import SortContentModal from "./Course/Lesson/SortContentModal";
 import AddDocumentToLesson from "./Course/Lesson/AddDocumentToLesson";
-import { listCourseAction } from "@/lib/actions/course.actions";
+import { listCourseAction, revalidateCourse } from "@/lib/actions/course.actions";
 import EditVideoDetail from "./Course/CourseVideo/EditVideoDetail";
 import EditLessonName from "./Course/Lesson/EditLessonName";
 import DeleteLesson from "./Course/Lesson/DeleteLesson";
@@ -50,15 +50,9 @@ const ManageLesson = ({
   courseId: number;
   lessons?: any[];
   onFetch?: () => Promise<void>;
-  mode: "tutor" | "admin"
+  mode: "tutor" | "admin" | string
   className: string
 }) => {
-  const {
-    refetch: refetchCourse,
-  } = useQuery({
-      queryKey: ["listCourseAction"],
-      queryFn: () => listCourseAction(),
-  });
 
   const {
     refetch: refetchBookList,
@@ -106,7 +100,7 @@ const ManageLesson = ({
       const response = await changePositionVideoAction(video.id, i)
       console.log(response);
     }
-    await refetchCourse()
+    await revalidateCourse()
   }
 
   useMemo(() => {
@@ -134,7 +128,7 @@ const ManageLesson = ({
       const response = await changePositionLesson(lesson.id, i)
       console.log(response);
     }
-    await refetchCourse()
+    await revalidateCourse()
     handleOnCloseSortLesson()
   }
 
@@ -150,7 +144,7 @@ const ManageLesson = ({
 
   const handleOnConfirmAddDocument = (type: string) => {
     setSelectedLesson(undefined)
-    refetchCourse()
+    revalidateCourse()
     if(type === "book"){
       refetchBookList()
     }
@@ -185,7 +179,7 @@ const ManageLesson = ({
   }
 
   const handleOnEditDocumentSuccess = (type: string) => {
-    refetchCourse()
+    revalidateCourse()
     if(type === "book"){
       refetchBookList()
     }

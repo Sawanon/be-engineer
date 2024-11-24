@@ -4,7 +4,7 @@ import Alert from '@/ui/alert';
 import { Button, Input, Select, SelectItem, Textarea } from '@nextui-org/react';
 import { Course } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
-import React from 'react'
+import React, { useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form';
 
 type EditCourse = {

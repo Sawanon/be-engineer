@@ -1,4 +1,4 @@
-import { listCourseAction } from '@/lib/actions/course.actions'
+import { listCourseAction, revalidateCourse } from '@/lib/actions/course.actions'
 import { addLessonToDB } from '@/lib/actions/lesson.actions'
 import Alert from '@/ui/alert'
 import { Button, Input, Modal, ModalContent } from '@nextui-org/react'
@@ -17,10 +17,6 @@ const AddLesson = ({
   position: number,
   courseId: number,
 }) => {
-  const {refetch: refetchCourse} = useQuery({
-    queryKey: ["listCourseAction"],
-    queryFn: () => listCourseAction(),
-  });
   const [isLoading, setLoading] = useState(false)
   const [lessonName, setLessonName] = useState<string | undefined>()
   const [error, setError] = useState({
@@ -59,7 +55,7 @@ const AddLesson = ({
       throw res
     }
     handleOnClose()
-    refetchCourse()
+    revalidateCourse()
     } catch (error) {
       console.error(error)
       setError({
