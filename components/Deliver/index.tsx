@@ -113,7 +113,7 @@ const DeliverComp = ({
 
    useMemo(() => {
       const id = searchParams.get("editAddress");
-      if (id) {
+      if (id && !isEditAddress.open) {
          const findDataByID = delivery.data.find((d) => d.id === parseInt(id));
          setIsEditAddress({ open: true, data: findDataByID });
       }
@@ -189,7 +189,6 @@ const DeliverComp = ({
          return { ...prev, data: cloneData };
       });
    };
-
    return (
       <div className="flex flex-col pt-0 md:pt-6 px-app  bg-background relative overflow-y-hidden md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 ">
          {/* <button
@@ -225,6 +224,7 @@ const DeliverComp = ({
             dialogState={[isEditAddress, setIsEditAddress]}
             updatePrintModal={updatePrintModal}
             onEditAddress={onEditAddress}
+            
          />
          <AddTracking
             onChangeTypeSuccess={onChangeTypeSuccess}

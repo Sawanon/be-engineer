@@ -653,7 +653,8 @@ export const updateDataByBranch = async ({
                type,
                approved: deliver.last_updated,
                webappOrderId: deliver.id,
-               updatedAddress: deliver.note,
+               updatedAddress:  `${deliver.member} ${deliver.note} โทร. ${deliver.mobile}`,
+               // updatedAddress: deliver.note,
                branch: deliver.branch,
                member: deliver.member,
                webappCourseId: deliver.courses
