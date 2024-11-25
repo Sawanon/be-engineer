@@ -260,7 +260,7 @@ const EditBookModal = ({
           <div className="flex flex-col pb-4 ">
             <div className=" flex flex-col rounded-xl    bg-white flex-1 px-4 space-y-2">
               <div className="flex gap-1 justify-center my-3  ">
-                <p className="text-3xl font-semibold">หนังสือ</p>
+                <p className="text-3xl font-semibold font-sans">หนังสือ</p>
                 <Button
                   variant="flat"
                   isIconOnly

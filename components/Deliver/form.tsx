@@ -143,6 +143,7 @@ const FormDeliver = ({
                   classNames={{
                      calendarContent: cn("w-[280px] font-serif"),
                      base: cn('text-red-400'),
+                     inputWrapper: cn('bg-default-100'),
                      calendar: cn("w-[280px]"),
                      input: cn("text-black"),
                   }}

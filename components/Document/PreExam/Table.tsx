@@ -19,12 +19,14 @@ const TablePreExam = ({
    preExamList,
   //  onViewStock,
   //  onEditBook,
-   onViewUsage
+   onViewUsage,
+   onEditPreExam,
 }:{
    preExamList? :DocumentPreExam[],
   //  onViewStock: (book: DocumentBook) => void,
   //  onEditBook: () => void,
    onViewUsage: (courseList: any[], book: DocumentPreExam) => void,
+   onEditPreExam: (preExam: DocumentPreExam) => void,
 }) => {
 
    const renderCourseUsage = (preExam: DocumentPreExam | any) => {
@@ -66,7 +68,7 @@ const TablePreExam = ({
                preExamList?.map((preExam, index) => {
                return (
                   <TableRow key={`documentRow${index}`}>
-                     <TableCell>
+                     <TableCell onClick={() => onEditPreExam(preExam)}>
                         <div
                           className="flex gap-2 items-center font-IBM-Thai-Looped text-default-foreground"
                         >

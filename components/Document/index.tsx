@@ -30,6 +30,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import EditSheeModal from "./Sheet/EditSheeModal";
 import SheetUsage from "./Sheet/SheetUsage";
 import PreExamUsage from "./PreExam/PreExamUsage";
+import EditPreExamModal from "./PreExam/EditPreExamModal";
 
 export type DocumentMode = "book" | "sheet" | "pre-exam";
 
@@ -94,6 +95,7 @@ const DocumentComp = () => {
 
    const [isOpenPreExamViewUsage, setIsOpenPreExamViewUsage] = useState(false)
    const [selectedPreExam, setSelectedPreExam] = useState<DocumentPreExam | undefined>()
+   const [isOpenEditPreExam, setIsOpenEditPreExam] = useState(false)
    
    // book search
    const bookList = useMemo(() => {
@@ -300,6 +302,11 @@ const DocumentComp = () => {
       setCourseList([])
    }
 
+   const handleOnClickEditPreExam = (preExam: DocumentPreExam) => {
+      setSelectedPreExam(preExam)
+      setIsOpenEditPreExam(true)
+   }
+
    return (
       <div className="relative pt-6 px-app h-screenDevice flex flex-col">
          <BookInventory
@@ -324,13 +331,26 @@ const DocumentComp = () => {
                onClose={handleOnCloseEditBook}
             />
          }
-         <EditSheeModal
-            isOpen={isOpenEditSheet}
-            sheet={selectedSheet}
-            onClose={() => {
-               setIsOpenEditSheet(false)
-            }}
-         />
+         {isOpenEditSheet &&
+            <EditSheeModal
+               isOpen={isOpenEditSheet}
+               sheet={selectedSheet}
+               onClose={() => {
+                  setIsOpenEditSheet(false)
+               }}
+               onSuccess={refetchSheets}
+            />
+         }
+         {isOpenEditPreExam &&
+            <EditPreExamModal
+               isOpen={isOpenEditPreExam}
+               preExam={selectedPreExam}
+               onClose={() => {
+                  setIsOpenEditPreExam(false)
+               }}
+               onSuccess={refetchPreExam}
+            />
+         }
          {/* <ConfirmBook open={isDelete} onClose={() => setIsDelete(false)} /> */}
          <BookUsage courseList={courseList} book={selectedBook} open={isViewUsage} onClose={() => setIsViewUsage(false)} />
          <SheetUsage
@@ -376,13 +396,24 @@ const DocumentComp = () => {
                      placeholder={`ชื่อเอกสาร`}
                      aria-label={`ชื่อเอกสาร`}
                      onChange={(e) => setDocumentName(e.target.value)}
+                     className={`font-serif`}
+                     classNames={{
+                        input: `text-[1em]`,
+                        inputWrapper: ['rounded-lg']
+                     }}
                   />
-                  <Input
-                     placeholder={`Link`}
-                     aria-label={`Link`}
-                     className={`mt-2`}
-                     onChange={(e) => setDocumentLink(e.target.value)}
-                  />
+                  <div id="textarea-wrapper">
+                     <Textarea
+                        classNames={{
+                           input: `text-[1em]`,
+                           inputWrapper: ['rounded-lg']
+                        }}
+                        placeholder={`Link`}
+                        aria-label={`Link`}
+                        className={`mt-2 font-serif ${!documentLink ? `` : `underline`}`}
+                        onChange={(e) => setDocumentLink(e.target.value)}
+                     />
+                  </div>
                </div>
                <Button
                   onClick={submitDocument}
@@ -505,6 +536,7 @@ const DocumentComp = () => {
                   onViewUsage={handleOnOpenPreExamViewUsage}
                   // preExamList={preExamList}
                   preExamList={preExamItems}
+                  onEditPreExam={handleOnClickEditPreExam}
                />
             }
          </div>

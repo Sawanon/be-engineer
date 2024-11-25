@@ -48,3 +48,37 @@ export const addPreExamAction = async (preExam: Prisma.DocumentPreExamCreateMany
     prisma.$disconnect()
   }
 }
+
+export const editPreExamAction = async (preExamId: number, name: string, url: string) => {
+  try {
+     const response = await prisma.documentPreExam.update({
+        where: {
+           id: preExamId,
+        },
+        data: {
+           name: name,
+           url: url,
+        },
+     })
+     return response
+  } catch (error) {
+     if(error instanceof Prisma.PrismaClientKnownRequestError) return error.message
+  } finally {
+     prisma.$disconnect()
+  }
+}
+
+export const deletePreExamAction = async (sheetId: number) => {
+  try {
+     const response = await prisma.documentPreExam.delete({
+        where: {
+           id: sheetId,
+        }
+     })
+     return response
+  } catch (error) {
+     if(error instanceof Prisma.PrismaClientKnownRequestError) return error.message
+  } finally {
+     prisma.$disconnect()
+  }
+}

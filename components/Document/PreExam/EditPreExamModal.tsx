@@ -1,25 +1,25 @@
 import DeleteCourseDialog from '@/components/Course/DeleteCourseDialog'
-import { deleteSheetAction, editSheetAction } from '@/lib/actions/sheet.action'
+import { deletePreExamAction, editPreExamAction } from '@/lib/actions/pre-exam.actions'
 import Alert from '@/ui/alert'
 import { Button, Input, Modal, ModalContent, Textarea } from '@nextui-org/react'
-import { DocumentSheet } from '@prisma/client'
+import { DocumentPreExam } from '@prisma/client'
 import { X } from 'lucide-react'
 import React, { useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 
-type EditSheet = {
+type EditPreExam = {
   name: string,
   url: string,
 }
 
-const EditSheeModal = ({
+const EditPreExamModal = ({
   isOpen,
-  sheet,
+  preExam,
   onClose,
   onSuccess,
 }:{
   isOpen: boolean,
-  sheet?: DocumentSheet,
+  preExam?: DocumentPreExam,
   onClose: () => void,
   onSuccess: () => void,
 }) => {
@@ -30,14 +30,14 @@ const EditSheeModal = ({
     formState: {errors, isSubmitting},
     setError,
     reset,
-  } = useForm<EditSheet>({
-    defaultValues: sheet ? {
-      name: sheet.name,
-      url: sheet.url,
+  } = useForm<EditPreExam>({
+    defaultValues: preExam ? {
+      name: preExam.name,
+      url: preExam.url,
     } : undefined
   })
   const [isOpenDelete, setIsOpenDelete] = useState(false)
-  const [errorDeleteSheet, setErrorDeleteSheet] = useState({
+  const [errorDeletePreExam, setErrorDeletePreExam] = useState({
     isError: false,
     message: "",
   })
@@ -47,10 +47,10 @@ const EditSheeModal = ({
     reset({name: '', url: ''})
   }
 
-  const handleOnSubmit:SubmitHandler<EditSheet> = async (data) => {
+  const handleOnSubmit:SubmitHandler<EditPreExam> = async (data) => {
     try {
-      const response = await editSheetAction(
-        sheet!.id,
+      const response = await editPreExamAction(
+        preExam!.id,
         data.name,
         data.url,
       )
@@ -67,16 +67,16 @@ const EditSheeModal = ({
     }
   }
 
-  const deleteSheet = async () => {
+  const deletePreExam = async () => {
     try {
-      const response = await deleteSheetAction(sheet!.id)
-      console.log("🚀 ~ deleteSheet ~ response:", response)
+      const response = await deletePreExamAction(preExam!.id)
+      console.log("🚀 ~ deletePreExam ~ response:", response)
       if(typeof response === 'string') throw response
       if(!response) throw `response is ${response}`
       onSuccess()
       handleOnClose()
     } catch (error) {
-      setErrorDeleteSheet({
+      setErrorDeletePreExam({
         isError: true,
         message: `${error}`
       })
@@ -103,15 +103,15 @@ const EditSheeModal = ({
                 คุณแน่ใจหรือไม่ที่จะลบ
               </div>
               <div>
-                เอกสาร {sheet?.name}
+                {preExam?.name}
               </div>
             </div>
           )}
           onCancel={() => {
             setIsOpenDelete(false)
           }}
-          error={errorDeleteSheet}
-          onConfirm={deleteSheet}
+          error={errorDeletePreExam}
+          onConfirm={deletePreExam}
         />
         <form onSubmit={handleSubmit(handleOnSubmit)}>
           <div className={`flex items-center`}>
@@ -171,4 +171,4 @@ const EditSheeModal = ({
   )
 }
 
-export default EditSheeModal
+export default EditPreExamModal
