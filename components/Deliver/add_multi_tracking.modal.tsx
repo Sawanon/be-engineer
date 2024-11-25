@@ -101,7 +101,7 @@ const AddMultiTracking = ({
    };
 
    const onSubmit = (formData: formDetail) => {
-      const cloneData: Partial<formDetail> = _.cloneDeep(formData);
+      const cloneData: Partial<formDetail> =  _.cloneDeep(formData)
       const deliveryService = formData.delivery;
       delete cloneData.delivery;
       const webappOrderIds: number[] = [];
@@ -184,57 +184,44 @@ const AddMultiTracking = ({
                               deliveryType[form.watch("delivery")].logo
                            }
                            placeholder="ขนส่ง"
-                           // onChange={(e) => {
-                           //    console.log(e.target.value);
-                           //    // form.setValue("delivery", e);
-                           //    // setValue(e)
-                           // }}
-                           // {...register("delivery", { required: true })}
-                           // onSelectionChange={setValue}
-                           // isInvalid={true}
-                           // color={errors.delivery && "danger"}
-                           // startContent={
-                           //    form.watch("delivery") &&
-                           //    deliveryType[form.watch("delivery")].logo
-                           // }
-                           // defaultSelectedKeys={["flash"]}
+                    
                         >
-                           <SelectItem
-                              classNames={{
-                                 base: cn("flex gap-1"),
-                              }}
-                              startContent={deliveryType["flash"].logo}
-                              key={"flash"}
-                           >
-                              Flash
-                           </SelectItem>
-                           <SelectItem
-                              classNames={{
-                                 base: cn("flex gap-1"),
-                              }}
-                              startContent={deliveryType["kerry"].logo}
-                              key={"kerry"}
-                           >
-                              Kerry
-                           </SelectItem>
-                           <SelectItem
-                              classNames={{
-                                 base: cn("flex gap-1"),
-                              }}
-                              startContent={deliveryType["j&t"].logo}
-                              key={"j&t"}
-                           >
-                              J&T
-                           </SelectItem>
-                           <SelectItem
-                              classNames={{
-                                 base: cn("flex gap-1"),
-                              }}
-                              startContent={deliveryType["thaipost"].logo}
-                              key={"thaipost"}
-                           >
-                              ไปรษณีย์ไทย
-                           </SelectItem>
+                          <SelectItem
+                     classNames={{
+                        base: cn("flex gap-1"),
+                     }}
+                     startContent={deliveryType["flash"].logo}
+                     key={"flash"}
+                  >
+                     <p className="font-serif">Flash</p>
+                  </SelectItem>
+                  <SelectItem
+                     classNames={{
+                        base: cn("flex gap-1"),
+                     }}
+                     startContent={deliveryType["kerry"].logo}
+                     key={"kerry"}
+                  >
+                     <p className="font-serif"> Kerry</p>
+                  </SelectItem>
+                  <SelectItem
+                     classNames={{
+                        base: cn("flex gap-1"),
+                     }}
+                     startContent={deliveryType["j&t"].logo}
+                     key={"j&t"}
+                  >
+                     <p className="font-serif">J&T</p>
+                  </SelectItem>
+                  <SelectItem
+                     classNames={{
+                        base: cn("flex gap-1"),
+                     }}
+                     startContent={deliveryType["thaipost"].logo}
+                     key={"thaipost"}
+                  >
+                     <p className="font-serif">ไปรษณีย์ไทย</p>
+                  </SelectItem>
                         </Select>
                         <CustomInput
                            onChange={(e) => setSearch(e.target.value)}
@@ -268,7 +255,7 @@ const AddMultiTracking = ({
                                           showArrow
                                        >
                                           <PopoverTrigger>
-                                             <div className="flex gap-1 items-center">
+                                             <div className="flex gap-1 items-center font-serif">
                                                 <p className="text-sm text-default-500">
                                                    {index + 1}.
                                                 </p>
@@ -276,7 +263,7 @@ const AddMultiTracking = ({
                                              </div>
                                           </PopoverTrigger>
                                           <PopoverContent>
-                                             <p>{delivery?.updatedAddress}</p>
+                                             <p  className="font-serif">{delivery?.updatedAddress}</p>
                                           </PopoverContent>
                                        </Popover>
 
@@ -285,7 +272,7 @@ const AddMultiTracking = ({
                                              name={delivery?.id.toString()}
                                              control={form.control}
                                              defaultValue=""
-                                             rules={{ required: true }}
+                                             // rules={{ required: true }}
                                              render={(e) => {
                                                 // console.log("e", e);
                                                 return (

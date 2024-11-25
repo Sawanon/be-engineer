@@ -10,6 +10,10 @@ import {
    PageProps,
    Font,
    Image,
+   PDFDownloadLink,
+   BlobProvider,
+   Svg,
+   Path,
    //    PDFViewer,
 } from "@react-pdf/renderer";
 import {
@@ -19,8 +23,11 @@ import {
 } from "@/lib/actions/deliver.actions";
 import { Modal, ModalContent, ModalBody, Button } from "@nextui-org/react";
 import { cn } from "@nextui-org/theme";
-import { LuX } from "react-icons/lu";
+import { LuDownload, LuPrinter, LuX } from "react-icons/lu";
 import { formatCourse } from "@/lib/query/delivery";
+import dayjs from "dayjs";
+import { downloadBlobToFile } from "@/lib/util";
+
 Font.register({
    family: `sanLoop`,
    src: "./fonts/IBMPlexSansThaiLooped.ttf",
@@ -36,8 +43,8 @@ const styles = StyleSheet.create({
       fontFamily: "sanLoop",
    },
    pageSize: {
-      width: "281", // 99mm to in * 72
       height: "212", // 74.5mm to in * 72
+      width: "281", // 99mm to in * 72
    },
    section: { color: "black", margin: 8 },
 });
@@ -70,7 +77,29 @@ const PrintPdf = ({
       >
          <ModalContent>
             <ModalBody className={cn("p-0 font-IBM-Thai-Looped")}>
-               <div className="flex gap-1 justify-end ">
+               <div className="flex gap-2 justify-end mr-2 mt-2 ">
+                  <BlobProvider document={PDFDoc}>
+                     {({ blob, url, loading, error }) => {
+                        // Do whatever you need with blob here
+                        if (loading) {
+                           return <div>Loading...</div>;
+                        }
+                        return (
+                           <Button
+                              onClick={() => {
+                                 downloadBlobToFile(
+                                    blob!,
+                                    `Label ${dayjs().format("DD-MM-YYYY")}`
+                                 );
+                              }}
+                              color={"primary"}
+                              className="flex-shrink-0 font-sans  text-base font-medium w-fit"
+                           >
+                              Download <LuDownload size={24} />
+                           </Button>
+                        );
+                     }}
+                  </BlobProvider>
                   <Button
                      className="bg-default-100 text-default-foreground"
                      isIconOnly
@@ -81,9 +110,15 @@ const PrintPdf = ({
                </div>
                {/* <Suspense> */}
                {loaded && open && (
-                  <PDFViewer showToolbar={true} className="flex-1">
-                     {PDFDoc}
-                  </PDFViewer>
+                  <>
+                     <PDFViewer
+                        //  fileName={`Label ${dayjs().format("DD-MM-YYYY")}`}
+                        showToolbar={true}
+                        className="flex-1"
+                     >
+                        {PDFDoc}
+                     </PDFViewer>
+                  </>
                )}
                {/* </Suspense> */}
             </ModalBody>
@@ -100,13 +135,16 @@ export const PDFDocument = ({
    data: Awaited<ReturnType<typeof getDeliverByIds>>;
 }) => {
    return (
-      <Document title="Print Track" language="th">
+      <Document
+         producer=""
+         title={`Label ${dayjs().format("DD-MM-YYYY")}`}
+         language="th"
+      >
          {data?.map((delivery) => {
             const checkCourse = formatCourse(delivery);
-            console.log("delivery.Delivery_Course", delivery.Delivery_Course);
             return (
                <Page
-                  key={delivery.id}
+                  key={delivery.webappOrderId}
                   size={styles.pageSize}
                   style={styles.page}
                >
@@ -114,7 +152,7 @@ export const PDFDocument = ({
                      <Text style={{ fontSize: 8 }}>
                         {delivery.webappOrderId}
                      </Text>
-                     <Text
+                     {/* <Text
                         style={{
                            fontSize: 10,
                            marginTop: "4px",
@@ -122,23 +160,24 @@ export const PDFDocument = ({
                         }}
                      >
                         {delivery?.member} <br />
-                     </Text>
+                     </Text> */}
                      <Text
                         style={{
-                           fontSize: 10,
-                           padding: "0px 8px",
+                           fontSize: 12,
+                           // lineHeight : 0.9
+                           // padding: "0px 8px",
                         }}
                      >
                         {delivery.updatedAddress}
                      </Text>
-                     <Text
+                     {/* <Text
                         style={{
                            fontSize: 10,
                            padding: "0px 8px",
                         }}
                      >
                         เบอร์โทร {delivery.mobile}
-                     </Text>
+                     </Text> */}
                      <Text
                         style={{
                            backgroundColor: "#A1A1AA",
@@ -253,15 +292,19 @@ export const PDFDocument = ({
                         >
                            <View
                               style={{
+                                 gap : 4,
                                  display: "flex",
+                                 flexDirection : 'row',
                                  paddingLeft: "16px",
                                  paddingVertical: 2,
                                  color: "#F31260",
                                  backgroundColor: "#FEE7EF",
-                                 alignItems: "center",
+                                 // alignItems: "center",
                                  borderRadius: 4,
                               }}
                            >
+                              <ErrorIcon />
+
                               <Text style={{ fontSize: 8 }}>
                                  ไม่มีข้อมูลคอร์ส{" "}
                                  {
@@ -315,3 +358,14 @@ export const PDFDocument = ({
 //     )
 //   }
 // }
+
+const ErrorIcon = () => {
+   return (
+      <Svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+         <Path
+            d="M21.76 15.92 15.36 4.4C14.5 2.85 13.31 2 12 2s-2.5.85-3.36 2.4l-6.4 11.52c-.81 1.47-.9 2.88-.25 3.99.65 1.11 1.93 1.72 3.61 1.72h12.8c1.68 0 2.96-.61 3.61-1.72.65-1.11.56-2.53-.25-3.99ZM11.25 9c0-.41.34-.75.75-.75s.75.34.75.75v5c0 .41-.34.75-.75.75s-.75-.34-.75-.75V9Zm1.46 8.71-.15.12c-.06.04-.12.07-.18.09-.06.03-.12.05-.19.06-.06.01-.13.02-.19.02s-.13-.01-.2-.02a.636.636 0 0 1-.18-.06.757.757 0 0 1-.18-.09l-.15-.12c-.18-.19-.29-.45-.29-.71 0-.26.11-.52.29-.71l.15-.12c.06-.04.12-.07.18-.09.06-.03.12-.05.18-.06.13-.03.27-.03.39 0 .07.01.13.03.19.06.06.02.12.05.18.09l.15.12c.18.19.29.45.29.71 0 .26-.11.52-.29.71Z"
+            fill="#f31260"
+         ></Path>
+      </Svg>
+   );
+};
