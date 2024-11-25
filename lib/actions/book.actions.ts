@@ -9,6 +9,17 @@ const prisma = new PrismaClient()
 
 export const addBookAction = async (book: Prisma.DocumentBookCreateInput) => {
   try {
+    const responseBook = await prisma.documentBook.findFirst({
+      where: {
+        name: book.name,
+        term: book.term,
+        year: book.year,
+        volume: book.volume,
+      }
+    })
+    if(responseBook !== null){
+      return 'name_UNIQUE'
+    }
     const response = await prisma.documentBook.create({
       data: {
         ...book,
