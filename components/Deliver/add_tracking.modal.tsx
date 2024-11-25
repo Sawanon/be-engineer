@@ -116,7 +116,7 @@ const AddTracking = ({
             backdrop: `bg-backdrop`,
             base: "top-0 absolute md:relative w-screen bg-white  md:w-[428px]  m-0  max-w-full ",
          }}
-         // backdrop="blur"
+         backdrop="blur"
          onClose={() => {}}
          scrollBehavior={"inside"}
          closeButton={<></>}

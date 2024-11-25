@@ -3,7 +3,7 @@ import {
    deliveryPrismaProps,
    getDeliverByIds,
 } from "@/lib/actions/deliver.actions";
-import { cn } from "@/lib/util";
+import { cn, downloadBlobToFile } from "@/lib/util";
 import {
    Modal,
    ModalContent,
@@ -25,6 +25,7 @@ import Alert from "@/ui/alert";
 import { modalProps, stateProps } from "@/@type";
 import { BlobProvider, PDFDownloadLink } from "@react-pdf/renderer";
 import { formatCourse, useDeliverByIds } from "@/lib/query/delivery";
+import dayjs from "dayjs";
 
 const PrintModal = ({
    onEditAddress,
@@ -62,28 +63,6 @@ const PrintModal = ({
    const PDFDoc = useMemo(() => {
       return <PDFDocument data={queryData.data!} />;
    }, [queryData.data]);
-
-   const downloadBlobToFile = (blob: Blob, filename: string) => {
-      // Step 1: Create a URL for the Blob
-      const url = window.URL.createObjectURL(blob);
-
-      // Step 2: Create a temporary anchor (<a>) element
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename; // Set the desired file name
-
-      // Step 3: Append the anchor to the document
-      document.body.appendChild(a);
-
-      // Step 4: Programmatically click the anchor to trigger the download
-      a.click();
-
-      // Step 5: Remove the anchor from the DOM after the click
-      document.body.removeChild(a);
-
-      // Step 6: Release the object URL
-      window.URL.revokeObjectURL(url);
-   };
 
    return (
       <>
@@ -127,10 +106,13 @@ const PrintModal = ({
                                     }
                                     return (
                                        <Button
+                                          isLoading={queryData.isFetching}
                                           onClick={() => {
                                              downloadBlobToFile(
                                                 blob!,
-                                                "Print Track.pdf"
+                                                `Label ${dayjs().format(
+                                                   "DD-MM-YYYY"
+                                                )}`
                                              );
                                           }}
                                           className="flex md:hidden bg-default-foreground text-primary-foreground"
@@ -171,7 +153,7 @@ const PrintModal = ({
                               queryData.data?.map((delivery) => {
                                  return (
                                     <CardDeliver
-                                       refetch={() => queryData.refetch()}
+                                       refetch={queryData.refetch}
                                        key={delivery?.id.toString()}
                                        delivery={delivery}
                                        onEdit={onEditAddress}
@@ -203,13 +185,13 @@ const CardDeliver = ({
    const myRef = useRef<HTMLDivElement>(null);
    const handleMouseOver = () => {
       if (myRef.current) {
-         myRef.current.className = "block mt-3";
+         myRef.current.className = "block absolute bottom-2 left-1/2 -translate-x-1/2";
       }
    };
 
    const handleMouseOut = () => {
       if (myRef.current) {
-         myRef.current.className = "hidden mt-0";
+         myRef.current.className = "hidden ";
       }
    };
 
@@ -217,18 +199,41 @@ const CardDeliver = ({
       return formatCourse(delivery);
    }, [delivery]);
 
+   console.log("checkCourse", checkCourse);
    return (
       <Card
-         className="break-after-page flex-1  rounded-none  hover:bg-black hover:bg-opacity-15  shadow-md  "
+         className="break-after-page flex-1 h-[281px]  rounded-none  hover:bg-black hover:bg-opacity-15  shadow-md "
+         style={
+            {
+               // width : 281,
+               // height: `282px !important`,
+            }
+         }
          onMouseOver={handleMouseOver}
          onMouseOut={handleMouseOut}
       >
-         <CardBody>
-            <p className=" text-[10px] md:text-[10px]">{delivery?.id}</p>
+         <CardBody className="relative ">
+            <div
+               ref={myRef}
+               className={cn("hidden ", {})}
+            >
+               {/* Your component here */}
+               <Button
+                  onClick={() => {
+                     onEdit(delivery, refetch);
+                  }}
+                  size="sm"
+                  endContent={<LuPenSquare size={20} />}
+               >
+                  แก้ไขที่อยู่
+               </Button>
+            </div>
+
+            <p className=" text-[10px] md:text-[10px]">{delivery?.webappOrderId}</p>
             <p className="px-2 mt-1 leading-[19.6px] text-[14px] md:text-[16px]">
-               {delivery?.member} <br />
-               {delivery?.updatedAddress} <br />
-               เบอร์โทร {delivery?.mobile}
+               {/* {delivery?.member} <br /> */}
+               {delivery?.updatedAddress}
+               {/* เบอร์โทร {delivery?.mobile} */}
             </p>
             <Divider className="my-2 bg-[#A1A1AA]" />
             {!delivery?.Delivery_Course.some(
@@ -259,7 +264,7 @@ const CardDeliver = ({
                               {checkCourse.bookLesson.map((d) => {
                                  return d.DocumentBook.image ? (
                                     <Image
-                                    className="rounded-sm object-cover"
+                                       className="rounded-sm object-cover"
                                        key={d.DocumentBook.id}
                                        width={24}
                                        height={34}
@@ -313,18 +318,6 @@ const CardDeliver = ({
                   )}
                </>
             )}
-            <div className="flex justify-center ">
-               <div ref={myRef} className={cn("hidden ", {})}>
-                  {/* Your component here */}
-                  <Button
-                     onClick={() => onEdit(delivery, refetch)}
-                     size="sm"
-                     endContent={<LuPenSquare size={20} />}
-                  >
-                     แก้ไขที่อยู่
-                  </Button>
-               </div>
-            </div>
          </CardBody>
       </Card>
    );

@@ -289,11 +289,11 @@ const TableDeliver = ({
             >
                <TableHeader>
                   <TableColumn className="font-sans">ลำดับ</TableColumn>
-                  <TableColumn>ผู้เรียน</TableColumn>
-                  <TableColumn>คอร์สเรียน</TableColumn>
-                  <TableColumn className={""}>จัดส่ง</TableColumn>
-                  <TableColumn>อนุมัติ</TableColumn>
-                  <TableColumn>สถานะ</TableColumn>
+                  <TableColumn className="font-sans">ผู้เรียน</TableColumn>
+                  <TableColumn className="font-sans">คอร์สเรียน</TableColumn>
+                  <TableColumn className="font-sans">จัดส่ง</TableColumn>
+                  <TableColumn className="font-sans">อนุมัติ</TableColumn>
+                  <TableColumn className="font-sans">สถานะ</TableColumn>
                </TableHeader>
 
                <TableBody
@@ -315,9 +315,16 @@ const TableDeliver = ({
                      return (
                         <TableRow key={deliver?.id}>
                            <TableCell>
-                              <p className="font-serif">
-                                 {deliver?.webappOrderId}
-                              </p>
+                              <div className="font-serif">
+                                 <p className="font-serif">
+                                    {deliver?.webappOrderId}
+                                 </p>
+                                 {deliver.branch === "KMITL" && (
+                                    <p className="rounded-sm p-1 bg-default-50">
+                                       KMITL
+                                    </p>
+                                 )}
+                              </div>
                               {/* ({deliver.id}) */}
                            </TableCell>
                            <TableCell>
@@ -337,7 +344,9 @@ const TableDeliver = ({
                                              className="font-serif text-base font-medium "
                                              key={course?.id}
                                           >
-                                             {course?.name} ({deliver.branch})
+                                             {course?.name}{" "}
+                                             {deliver.branch === "KMITL" &&
+                                                `${deliver.branch}`}
                                              <p className="ml-5 whitespace-nowrap text-sm font-normal">
                                                 {course?.term}
                                              </p>
@@ -424,32 +433,33 @@ const TrackingDetail = ({
          {checkType === "ship" && (
             <div className="leading-3">
                <p className="text-secondary-fade text-xs font-serif">
-                  ส่งวันที่ {dayjs(tracking?.createdAt).format("DD MMM YYYY")}
+                  ส่งวันที่ {dayjs(tracking?.updatedAt).format("DD MMM YYYY")}
                </p>
 
-               <div className="flex gap-2 items-center text-secondary-default text-base font-semibold font-serif">
+               <div className="flex flex-col text-secondary-default text-base font-semibold font-serif">
                   <p>{tracking?.trackingCode}</p>
-
-                  <Button
-                     onClick={() => {
-                        window.open(
-                           `${tracking?.DeliverShipService?.trackingUrl}${tracking?.trackingCode}`
-                        );
-                     }}
-                     isIconOnly
-                     className="bg-default-100"
-                  >
-                     <HiOutlineTruck className="" size={24} />
-                  </Button>
-                  <Button
-                     onClick={() => {
-                        onOpenEditTracking(tracking!);
-                     }}
-                     isIconOnly
-                     className="bg-default-100"
-                  >
-                     <LuBookCopy className="" size={24} />
-                  </Button>
+                  <div className="flex gap-2">
+                     <Button
+                        onClick={() => {
+                           window.open(
+                              `${tracking?.DeliverShipService?.trackingUrl}${tracking?.trackingCode}`
+                           );
+                        }}
+                        isIconOnly
+                        className="bg-default-100"
+                     >
+                        <HiOutlineTruck className="" size={24} />
+                     </Button>
+                     <Button
+                        onClick={() => {
+                           onOpenEditTracking(tracking!);
+                        }}
+                        isIconOnly
+                        className="bg-default-100"
+                     >
+                        <LuBookCopy className="" size={24} />
+                     </Button>
+                  </div>
                </div>
                <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning font-serif">
                   {tracking?.note}
@@ -463,7 +473,7 @@ const TrackingDetail = ({
                   {tracking?.webappAdminUsername}
                </p>
                <p className="text-secondary-default font-semibold font-serif text-base">
-                  รับวันที่ {dayjs(tracking?.createdAt).format("DD MMM YYYY")}
+                  รับวันที่ {dayjs(tracking?.updatedAt).format("DD MMM YYYY")}
                </p>
                <Button
                   onClick={() => {
@@ -500,7 +510,7 @@ const AddTrackDetail = ({
    return (
       <div className="space-y-2">
          {deliveryType === "ship" && (
-            <>
+            <div className="flex gap-2">
                <Button
                   color="default"
                   variant="flat"
@@ -521,7 +531,7 @@ const AddTrackDetail = ({
                >
                   พิมพ์ใบปะหน้า
                </Button>
-            </>
+            </div>
          )}
          {deliveryType === "pickup" && (
             <>

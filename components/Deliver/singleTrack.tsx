@@ -121,7 +121,7 @@ const SingleTrack = ({
                      startContent={deliveryType["flash"].logo}
                      key={"flash"}
                   >
-                     Flash
+                     <p className="font-serif">Flash</p>
                   </SelectItem>
                   <SelectItem
                      classNames={{
@@ -130,7 +130,7 @@ const SingleTrack = ({
                      startContent={deliveryType["kerry"].logo}
                      key={"kerry"}
                   >
-                     Kerry
+                     <p className="font-serif"> Kerry</p>
                   </SelectItem>
                   <SelectItem
                      classNames={{
@@ -139,7 +139,7 @@ const SingleTrack = ({
                      startContent={deliveryType["j&t"].logo}
                      key={"j&t"}
                   >
-                     J&T
+                     <p className="font-serif">J&T</p>
                   </SelectItem>
                   <SelectItem
                      classNames={{
@@ -148,7 +148,7 @@ const SingleTrack = ({
                      startContent={deliveryType["thaipost"].logo}
                      key={"thaipost"}
                   >
-                     ไปรษณีย์ไทย
+                     <p className="font-serif">ไปรษณีย์ไทย</p>
                   </SelectItem>
                </Select>
                <div id="textarea-wrapper">
@@ -162,7 +162,7 @@ const SingleTrack = ({
                      // defaultValue="ได้ Calculus ไปแล้ว ขาด Physics กัับ Chemistry จะส่งให้วันพฤหัสที่ 8 ธ.ค. นะครับ"
                   />
                </div>
-               <div className="py-2 flex flex-col-reverse md:flex-row gap-2 md:gap-0">
+               <div className="py-2 flex flex-col-reverse md:flex-row gap-0 md:gap-2">
                   <Button
                      onClick={() =>
                         onChangeType({ detail: data!, type: "pickup" })
@@ -170,7 +170,12 @@ const SingleTrack = ({
                      color="default"
                      variant="light"
                      className="text-base px-4 min-w-max font-medium font-sans flex gap-3"
-                     startContent={<LuArrowRightLeft size={24} className="min-w-6 min-h-6" />}
+                     startContent={
+                        <LuArrowRightLeft
+                           size={24}
+                           className="min-w-6 min-h-6"
+                        />
+                     }
                   >
                      รับที่สถาบัน
                   </Button>
