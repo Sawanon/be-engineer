@@ -104,3 +104,15 @@ export const openSheetPage = (id : number)=>{
       window.open(`/document?sheetId=${id}`)
 
 }
+
+export const     downloadBlobToFile = (blob: Blob, filename: string) => {
+   const url = window.URL.createObjectURL(blob);
+   const a = document.createElement("a");
+   a.href = url;
+   a.download = filename; // Set the desired file name
+   document.body.appendChild(a);
+   a.click();
+   document.body.removeChild(a);
+   window.URL.revokeObjectURL(url);
+};
+

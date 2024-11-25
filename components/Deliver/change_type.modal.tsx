@@ -59,7 +59,7 @@ const ChangeReceiveType = ({
                <div className="flex flex-col">
                   <div className=" flex flex-col rounded-t-xl md:rounded-none   bg-white flex-1 space-y-2">
                      <div className="flex gap-1 justify-start my-4  ">
-                        <p className="text-3xl font-semibold">
+                        <p className="text-3xl font-semibold font-sans">
                            เปลี่ยนเป็น{txtType[type!]}
                         </p>
                         <Button
@@ -76,7 +76,7 @@ const ChangeReceiveType = ({
                         <Alert label="เปลี่ยนไม่สำเร็จ ดูเพิ่มเติมใน Console" />
                      )}
 
-                     <p>
+                     <p className="font-serif">
                         คุณแน่ใจหรือไม่ที่เปลี่ยนคำสั่งซื้อ{" "}
                         <span className="font-bold">
                            {detail?.id} {detail?.member}
