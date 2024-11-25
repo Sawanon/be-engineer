@@ -22,7 +22,6 @@ const DeliverPage = async () => {
       .groupBy("branch") // Group items by 'branch'
       .mapValues((group) => _.maxBy(group, "webappOrderId")) // Get the item with the max 'id' in each group
       .value();
-
    const lastWebappOrderIdOdm = lastItemsByBranch["ODM"]?.webappOrderId ?? 0;
    const lastWebappOrderIdKmitl =
       lastItemsByBranch["KMITL"]?.webappOrderId ?? 0;
