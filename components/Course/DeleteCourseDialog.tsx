@@ -72,7 +72,7 @@ const DeleteCourseDialog = ({
             <Button
               className={`font-IBM-Thai font-medium text-base bg-default-100`}
               onClick={onCancel}
-              isLoading={isLoading}
+              disabled={isLoading}
             >
               ยกเลิก
             </Button>

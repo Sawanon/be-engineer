@@ -320,6 +320,7 @@ const EditBookModal = ({
                   variant="light"
                   className="text-danger font-medium order-2 md:order-1 font-serif"
                   onClick={handleOnDelete}
+                  disabled={isLoading}
                 >
                   ลบ
                 </Button>

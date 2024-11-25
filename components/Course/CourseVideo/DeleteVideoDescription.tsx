@@ -92,7 +92,7 @@ const DeleteVideoDescription = ({
         </div>
         <div className={`mt-app pt-2 flex justify-end gap-2`}>
           <Button
-            isLoading={isLoading}
+            disabled={isLoading}
             className={`bg-default-100 text-default-foreground font-IBM-Thai font-medium`}
             onClick={handleOnClose}
           >
