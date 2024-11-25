@@ -359,13 +359,21 @@ const changeBindWebApp = async (courseId: number, branch: string, webAppCourseId
       data: bookTransactions,
     })
     console.log("🚀 ~ courseConnectWebAppCourse ~ responseAddBookTransaction:", responseAddBookTransaction)
-    const responseLinkDeliveryWithCourse = await prisma.delivery_Course.deleteMany({
+    const responseLinkDeliveryWithCourse = await prisma.delivery_Course.updateMany({
       where: {
-        deliveryId: {
-          in: deliverId,
-        }
+        webappCourseId: webAppCourseId,
+      },
+      data: {
+        courseId: null,
       }
     })
+    // const responseLinkDeliveryWithCourse = await prisma.delivery_Course.deleteMany({
+    //   where: {
+    //     deliveryId: {
+    //       in: deliverId,
+    //     }
+    //   }
+    // })
     console.log("🚀 ~ changeBindWebApp ~ responseLinkDeliveryWithCourse:", responseLinkDeliveryWithCourse)
     console.log("end changeBindWebApp ^^^^");
   }
@@ -426,9 +434,26 @@ export const courseConnectWebAppCourse = async (courseId: number, branch: string
         data: bookTransactions,
       })
       console.log("🚀 ~ courseConnectWebAppCourse ~ responseAddBookTransaction:", responseAddBookTransaction)
-      const responseLinkDeliveryWithCourse = await prisma.delivery_Course.createMany({
-        data: deliveryListWithCourse,
+      // prisma.delivery_Course.updateMany({
+      //   where: {
+      //     deliveryId: 1,
+      //     webappCourseId: 2,
+      //   },
+      //   data: {
+      //     courseId: 1,
+      //   }
+      // })
+      const responseLinkDeliveryWithCourse = await prisma.delivery_Course.updateMany({
+        where: {
+          webappCourseId: webAppCourse.id
+        },
+        data: {
+          courseId: courseId
+        }
       })
+      // const responseLinkDeliveryWithCourse = await prisma.delivery_Course.createMany({
+      //   data: deliveryListWithCourse,
+      // })
       console.log("🚀 ~ courseConnectWebAppCourse ~ responseLinkDeliveryWithCourse:", responseLinkDeliveryWithCourse)
     }
     revalidatePath("/deliver")

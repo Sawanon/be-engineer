@@ -82,13 +82,6 @@ const ManageCourse = ({
   // onConfirmAdd: (courseId: number) => Promise<void>;
   // onFetch?: () => Promise<void>;
 }) => {
-  if(typeof selectedCourse === "string" || selectedCourse === null || selectedCourse === undefined){
-    return (
-      <div>
-        Empty
-      </div>
-    )
-  }
   const route = useRouter()
   // const searchParams = useSearchParams()
   const { data: webappBranchCourseList, isFetched } = useQuery({
@@ -141,7 +134,7 @@ const ManageCourse = ({
     }
     setIsAdd(selectedCourse === undefined);
     // setManageCourseMode(selectedCourse === undefined ? 'add' : 'show')
-    if (selectedCourse) {
+    if (selectedCourse && typeof selectedCourse !== "string") {
       listImageCourse(selectedCourse.name);
       
       let onlyOneDontExistDoc = false
@@ -156,7 +149,7 @@ const ManageCourse = ({
   }, [selectedCourse]);
 
   useMemo(() => {
-    if (!selectedCourse) return;
+    if (!selectedCourse || typeof selectedCourse === "string") return;
     if (!webappBranchCourseList) return;
     console.log(webappBranchCourseList);
     const webappCourseList = webappBranchCourseList.find(
@@ -164,6 +157,14 @@ const ManageCourse = ({
     )?.courses;
     setWebappCourseList(webappCourseList);
   }, [isFetched, selectedCourse]);
+
+  if(typeof selectedCourse === "string" || selectedCourse === null || selectedCourse === undefined){
+    return (
+      <div>
+        Empty
+      </div>
+    )
+  }
 
   const handleClose = () => {
     const lesson = selectedCourse?.CourseLesson.length ?? 0
