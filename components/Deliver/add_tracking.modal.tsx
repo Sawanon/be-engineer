@@ -80,7 +80,7 @@ const AddTracking = ({
    const addSingleTrack = useAddTracking({
       onError: onError,
       onSuccess: () => {
-         alert("Add track Success");
+         // alert("Add track Success");
          router.refresh();
          // refetch();
          onClose();
@@ -89,7 +89,7 @@ const AddTracking = ({
    const updatePickup = useUpdatePickup({
       onError: onError,
       onSuccess: () => {
-         alert("Update Pickup Success");
+         // alert("Update Pickup Success");
          router.refresh();
          // refetch();
          onClose();

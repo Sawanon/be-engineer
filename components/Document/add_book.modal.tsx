@@ -86,7 +86,7 @@ const AddBook = ({
          console.log('uploaded successfully!')
       },
       onUploadError: (e) => {
-         alert("error occurred while uploading");
+         // alert("error occurred while uploading");
          console.error(e)
       },
       onUploadBegin: (file) => {

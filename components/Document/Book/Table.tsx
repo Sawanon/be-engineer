@@ -83,7 +83,7 @@ const TableBooks = ({
                   src={book.image!}
                 />
                 <p>
-                  {book.name} {book.term} {book.year}
+                  {book.name} {book.term} {book.year} {book.volume ? `vol. ${book.volume}` : ``}
                 </p>
               </div>
             </TableCell>

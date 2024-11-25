@@ -85,7 +85,7 @@ const AddMultiTracking = ({
          console.error("Error", errors);
       },
       onSuccess: () => {
-         alert("Add multi track Success");
+         // alert("Add multi track Success");
          router.refresh();
          // refetch();
          handleClose();

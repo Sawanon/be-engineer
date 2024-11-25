@@ -408,6 +408,7 @@ const DocumentComp = () => {
                            input: `text-[1em]`,
                            inputWrapper: ['rounded-lg']
                         }}
+                        minRows={1}
                         placeholder={`Link`}
                         aria-label={`Link`}
                         className={`mt-2 font-serif ${!documentLink ? `` : `underline`}`}
@@ -456,12 +457,16 @@ const DocumentComp = () => {
                      aria-label={`ชื่อเอกสาร`}
                      onChange={(e) => setPreExamName(e.target.value)}
                      className={`font-serif`}
+                     classNames={{
+                        input: 'text-[1em]'
+                     }}
                   />
                   <div id="textarea-wrapper">
                      <Textarea
                         classNames={{
                            input: `text-[1em]`,
                         }}
+                        minRows={1}
                         placeholder={`Link`}
                         aria-label={`Link`}
                         className={`mt-2 font-serif ${!preExamLink ? `` : `underline`}`}

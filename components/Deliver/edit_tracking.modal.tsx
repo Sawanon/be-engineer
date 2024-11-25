@@ -113,7 +113,7 @@ const EditTracking = ({
    const mutation = useUpdateTracking({
       onError: onError,
       onSuccess: () => {
-         alert("Update Success");
+         // alert("Update Success");
          queryData.refetch();
          router.refresh();
          handleClose();

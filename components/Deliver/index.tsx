@@ -140,7 +140,7 @@ const DeliverComp = ({
       setIsAddTracking({ open: true, data, type });
    };
    const onChangeTypeSuccess = (type: deliveryTypeProps) => {
-      alert("Change Type Success");
+      // alert("Change Type Success");
       if (type === "ship") {
          onCloseAddTrack();
          onEditAddress(isAddTracking.data!);

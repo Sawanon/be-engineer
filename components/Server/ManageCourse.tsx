@@ -535,7 +535,7 @@ const ManageCourse = ({
                       }else if(branch?.toLowerCase() === "kmitl"){
                         link = `https://www.inclass.me/kmitl/admin/course/course/${selectedCourse?.webappCourseId}`
                       }
-                      alert(link)
+                      // alert(link)
                       window.open(link, '_blank')
                     }}
                   >

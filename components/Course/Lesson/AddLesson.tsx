@@ -95,6 +95,7 @@ const AddLesson = ({
                 <Alert label={error.message} />
               }
               <Input
+                autoFocus
                 size="lg"
                 onKeyDown={(key) => {
                   if(key.code === `Enter`){
