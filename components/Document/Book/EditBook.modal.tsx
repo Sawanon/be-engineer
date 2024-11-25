@@ -76,7 +76,7 @@ const EditBookModal = ({
       console.log("uploaded successfully!");
     },
     onUploadError: () => {
-      alert("error occurred while uploading");
+      // alert("error occurred while uploading");
     },
     onUploadBegin: (file) => {
       console.log("upload has begun for", file);

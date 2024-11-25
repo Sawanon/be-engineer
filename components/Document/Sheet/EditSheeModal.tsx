@@ -143,6 +143,7 @@ const EditSheeModal = ({
                     input: `text-[1em]`,
                     inputWrapper: ['rounded-lg']
                 }}
+                minRows={1}
                 color={errors.url ? `danger` : `default`}
                 placeholder={`Link`}
                 aria-label={`Link`}

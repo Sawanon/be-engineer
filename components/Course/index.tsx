@@ -461,7 +461,7 @@ const CourseComponent = ({
                   >
                     <div className="flex gap-2 items-center">
                       {course.imageUrl && (
-                        <Image radius="sm" width={40} src={course.imageUrl} />
+                        <Image radius="sm" width={40} className={`min-w-10`} src={course.imageUrl} />
                       )}
                       <div className="font-IBM-Thai-Looped">
                         {course.name}
