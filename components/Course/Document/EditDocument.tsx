@@ -266,7 +266,7 @@ const EditDocument = ({
           บันทึก
         </Button>
         <Button
-          isLoading={isLoading}
+          disabled={isLoading}
           onClick={handleOnDisconnect}
           color='danger'
           variant='light'

@@ -67,7 +67,7 @@ const SortLessonModal = ({
               </div>
             </DndContext>
             <div className={`mt-3 flex gap-2 justify-end`}>
-              <Button onClick={handleOnClose} className={`bg-default-100 text-default-foreground font-medium text-base font-IBM-Thai`}>
+              <Button disabled={isLoading} onClick={handleOnClose} className={`bg-default-100 text-default-foreground font-medium text-base font-IBM-Thai`}>
                 ยกเลิก
               </Button>
               <Button isLoading={isLoading} onClick={handleOnConfirm} className={`bg-default-foreground text-primary-foreground font-medium text-base font-IBM-Thai`}>

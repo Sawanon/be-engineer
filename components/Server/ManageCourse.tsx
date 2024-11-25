@@ -101,13 +101,7 @@ const ManageCourse = ({
   const preExam = courseWithUniqueDocuments?.uniquePreExam ?? []
   const books = courseWithUniqueDocuments?.uniqueBooks ?? []
   const documentNumber = sheets.length + preExam.length + books.length
-  // const [refetchCourse] = useCourse();
-  const {
-    refetch: refetchCourse,
- } = useQuery({
-    queryKey: ["listCourseAction"],
-    queryFn: () => listCourseAction(),
- });
+
   const [isAdd, setIsAdd] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [manageCourseMode, setManageCourseMode] = useState<'add' | 'edit' | 'show'>('show')
@@ -330,7 +324,7 @@ const ManageCourse = ({
         webappCourseId={selectedCourse?.webappCourseId}
         courseId={selectedCourse?.id}
         books={books}
-        onSuccess={refetchCourse}
+        onSuccess={revalidateCourse}
       />
       {/* <div className="block md:flex h-full w-auto overflow-auto"> */}
       <div className="block md:flex w-auto overflow-auto md:h-full">

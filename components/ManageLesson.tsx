@@ -353,7 +353,7 @@ const ManageLesson = ({
                 if(document.type === "sheet"){
                   return (
                     <div onClick={() => handleOnClickEditDocument(document, lesson)} className={`cursor-pointer mt-2 flex gap-2 font-IBM-Thai-Looped`} key={`documentSheet${document.id}${lesson.id}`}>
-                      <ClipboardSignature size={20} />
+                      <ScrollText size={20} />
                       <div>
                         {document.DocumentSheet.name}
                       </div>
@@ -371,7 +371,7 @@ const ManageLesson = ({
                 }else if(document.type === "preExam"){
                   return (
                     <div onClick={() => handleOnClickEditDocument(document, lesson)} className={`cursor-pointer mt-2 flex gap-2 font-IBM-Thai-Looped`} key={`documentPreExam${document.id}${lesson.id}`}>
-                      <ScrollText size={20} />
+                      <ClipboardSignature size={20} />
                       <div>
                         {document.DocumentPreExam.name}
                       </div>

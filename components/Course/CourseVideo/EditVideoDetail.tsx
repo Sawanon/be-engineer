@@ -172,11 +172,11 @@ const EditVideoDetail = ({
           </Autocomplete>
         </div>
         <div className={`mt-app`}>
-          <Button isLoading={isLoading} onClick={handleOnSubmit} className={`bg-default-foreground text-base font-medium text-primary-foreground font-IBM-Thai`} fullWidth>
+          <Button isLoading={isLoading} onClick={handleOnSubmit} className={`bg-default-foreground text-base font-medium text-primary-foreground font-sans`} fullWidth>
             ตกลง
           </Button>
-          <Button isLoading={isLoading} onClick={handleOnDelete} className={`bg-transparent text-danger-500 font-medium font-IBM-Thai-Looped mt-2`} fullWidth>
-            ลบ
+          <Button disabled={isLoading} onClick={handleOnDelete} className={`bg-transparent text-danger-500 font-medium font-serif mt-2`} fullWidth>
+            ลบรายละเอียดใต้วิดิโอ
           </Button>
         </div>
       </ModalContent>

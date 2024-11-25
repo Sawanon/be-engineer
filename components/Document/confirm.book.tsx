@@ -70,7 +70,7 @@ const ConfirmBook = ({
                         หนังสือ {bookName}
                      </p>{" "}
                      <div className="py-2 grid grid-cols-2 md:flex md:justify-end gap-2">
-                        <Button onClick={onClose} className={`bg-default-100`}>
+                        <Button disabled={isLoading} onClick={onClose} className={`bg-default-100`}>
                            ยกเลิก
                         </Button>
                         <Button

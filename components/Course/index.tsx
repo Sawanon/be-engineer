@@ -24,7 +24,6 @@ import {
 } from "@/lib/actions/course.actions";
 import { useQuery } from "@tanstack/react-query";
 import { listTutor } from "@/lib/actions/tutor.actions";
-import ManageCourse from "@/components/ManageCourse";
 import { CourseLesson, Course as CoursePrisma, DocumentBook, DocumentPreExam, DocumentSheet, LessonOnDocument, LessonOnDocumentBook, LessonOnDocumentSheet, Prisma} from '@prisma/client'
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import _ from 'lodash'

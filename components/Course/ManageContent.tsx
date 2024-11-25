@@ -32,7 +32,7 @@ import {
    addCourseVideoMany,
    deleteCourseVideoMany,
 } from "@/lib/actions/video.actions";
-import { listCourseAction } from "@/lib/actions/course.actions";
+import { listCourseAction, revalidateCourse } from "@/lib/actions/course.actions";
 import axios from "axios";
 import {AsyncListData, useAsyncList} from "@react-stately/data";
 import _ from 'lodash'
@@ -50,12 +50,6 @@ const ManageContent = ({
    onSuccess: () => void;
    lesson: any;
 }) => {
-   const {
-      refetch: refetchCourse,
-    } = useQuery({
-        queryKey: ["listCourseAction"],
-        queryFn: () => listCourseAction(),
-    });
    const [isLoading, setIsLoading] = useState(false)
    const [videoList, setVideoList] = useState<VideoWebapp[]>([]);
    const [selectedPlaylistId, setSelectedPlaylistId] = useState<Key | null>();
@@ -196,7 +190,7 @@ const ManageContent = ({
             console.log(responseAdd, "responseAdd");
          }
          // onSuccess()
-         await refetchCourse();
+         await revalidateCourse()
          onConfirm();
       } catch (error) {
          console.error(error)
@@ -344,7 +338,6 @@ const ManageContent = ({
                            )}
                         </Autocomplete>
                         <div className={`mt-2 flex-1 relative overflow-auto`}>
-                           {videoList.length}
                            <Table
                               isStriped
                               aria-label="Controlled table example with dynamic content"
