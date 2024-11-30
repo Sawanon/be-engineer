@@ -18,7 +18,6 @@ import {
    testAddBook,
    updateAddress,
 } from "@/lib/actions/deliver.actions";
-import { revalidatePath } from "next/cache";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import _ from "lodash";
 import { Button } from "@nextui-org/react";
@@ -83,6 +82,7 @@ const DeliverComp = ({
    };
 
    const handleOpenPrintTracking = (data: DeliverRes["data"]) => {
+      console.log('data 85', data)
       setPrintModalState((prev) => ({ open: true, data: data }));
    };
    const onOpenEditTracking = (data: DeliverRes["data"][0]) => {
@@ -92,6 +92,7 @@ const DeliverComp = ({
       setIsEditTracking((prev) => ({ open: false }));
    };
 
+   console.log('printModalState', printModalState)
    const onEditAddress = (
       data: DeliverRes["data"][0] | undefined,
       refetch?: () => void
@@ -150,6 +151,7 @@ const DeliverComp = ({
          //    return { open: true, data: prev.data, type: type };
          // });
       }
+      refetchData()
    };
 
    const onCloseAddTrack = () => {
