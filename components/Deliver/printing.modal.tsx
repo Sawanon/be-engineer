@@ -246,7 +246,13 @@ const CardDeliver = ({
                   <div className="list-disc list-outside text-[10px] md:text-[12px]">
                     {checkCourse.bookLesson.map((d) => {
                       return (
-                        <li key={d.DocumentBook.id}>{d.DocumentBook.name}</li>
+                        <li
+                          key={d.DocumentBook.id}
+                        >
+                          <span
+                          className="relative -left-[6px]"
+                          >{d.DocumentBook.name}</span>
+                        </li>
                       );
                     })}
                   </div>
@@ -278,7 +284,12 @@ const CardDeliver = ({
                   <div className="list-disc list-outside text-[10px] md:text-[12px]">
                     {checkCourse.sheetLesson.map((d) => {
                       return (
-                        <li key={d.DocumentSheet.id}>{d.DocumentSheet.name}</li>
+                        <li key={d.DocumentSheet.id}>
+                          <span
+                          className="relative -left-[6px]"
+                          >                          {d.DocumentSheet.name}
+</span>
+                          </li>
                       );
                     })}
                   </div>
@@ -286,7 +297,7 @@ const CardDeliver = ({
               </div>
             )}
 
-            {checkCourse.preExamLesson.length > 0 && (
+            {/* {checkCourse.preExamLesson.length > 0 && (
               <div className="flex gap-2">
                 <p className=" text-[8px] md:text-[10px] text-[#A1A1AA]">
                   ข้อสอบ
@@ -303,7 +314,7 @@ const CardDeliver = ({
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
           </>
         )}
       </CardBody>

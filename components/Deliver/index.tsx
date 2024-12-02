@@ -246,7 +246,7 @@ const DeliverComp = ({
             onClose={onCloseSelect}
          />
 {/* max-w-[960px]  */}
-         <div className=" flex flex-col mb-4  overflow-hidden  ">
+         <div className=" flex flex-col mb-4 flex-1  overflow-hidden  ">
             <FormDeliver
                onCloseSelect={onCloseSelect}
                searchState={[searchData, setSearchData]}

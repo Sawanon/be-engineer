@@ -93,38 +93,12 @@ const TableDeliver = ({
     }
     setSelectKeys({ key, data });
   };
-  // useMemo(() => {
-  //    const deliverMap: Record<string, NonNullable<deliveryPrismaProps>> = {};
-  //    const disabledKeys: Record<string, NonNullable<deliveryPrismaProps>> = {};
 
-  //    if (query.data?.pages) {
-  //       for (let index = 0; index < query.data?.pages?.length; index++) {
-  //          const page = query.data.pages[index];
-  //          page.dataArr?.forEach((deliver) => {
-  //             const checkType = deliver?.type;
-  //             if (checkType === "pickup" || deliver?.status === "success") {
-  //                disabledKeys[deliver.id.toString()] = deliver;
-  //             }
-  //             deliverMap[deliver.id.toString()] = deliver;
-  //          });
-  //          // }
-  //       }
-  //    }
-  //    setDeliverItem({ data: deliverMap, pickup: disabledKeys });
-  // }, [query.data?.]);
   useMemo(() => {
     const startIndex = (page - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage + 1;
     const disabledKeys: Record<string, DeliverRes["data"][0]> = {};
     const deliverMap: Record<string, DeliverRes["data"][0]> = {};
-
-    // console.table({
-    //    endDate: !_.isEmpty(search.endDate),
-    //    input: !_.isEmpty(search.input),
-    //    startDate: !_.isEmpty(search.startDate),
-    //    status: !_.isEmpty(search.status) && search.status !== "",
-    //    uni: !_.isEmpty(search.university),
-    // });
     if (
       !_.isEmpty(search.endDate) ||
       !_.isEmpty(search.input) ||
@@ -242,7 +216,6 @@ const TableDeliver = ({
   }, [allPage]);
   return (
     <>
-      <div className="py-2 flex flex-col flex-1  overflow-y-hidden">
         <Table
           // color={"secondary"}
           disabledKeys={
@@ -255,7 +228,7 @@ const TableDeliver = ({
           selectionMode={selectState.open ? "multiple" : "none"}
           classNames={{
             ...tableClassnames,
-            base: "flex-1 min-h-[600px] mb-4  overflow-y-auto",
+            base: "flex-1  mb-4  overflow-y-auto",
             // tbody : "overflow-scroll scrollbar-hide",
             table: " flex-1 ",
             th: [
@@ -340,12 +313,13 @@ const TableDeliver = ({
                               className="font-serif text-base font-medium "
                               key={course?.id}
                             >
-                              <div className="flex gap-1 items-center">
-                                <div className="w-2 h-2 rounded-full bg-black" />
+                                <div className="flex gap-1">
+                                <div className="w-2 h-2 rounded-full bg-black mt-[6px]" />
                                 {course?.name}{" "}
                                 {deliver.branch === "KMITL" &&
                                   `${deliver.branch}`}
-                              </div>
+                                   </div>
+
                               <p className="ml-3 whitespace-nowrap text-sm font-normal">
                                 {course?.term}
                               </p>
@@ -393,7 +367,6 @@ const TableDeliver = ({
             }}
           </TableBody>
         </Table>
-      </div>
       <div className="py-2 flex justify-center">
         <Pagination
           total={allPage}
