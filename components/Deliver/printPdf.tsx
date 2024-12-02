@@ -190,9 +190,10 @@ export const PDFDocument = ({
                           fontSize: 10,
                         }}
                       >
-                        {checkCourse.bookLesson.map((d) => {
+                        {checkCourse.bookLesson.map((d, index) => {
                           return (
                             <View
+                              key={`bookLesson${index}`}
                               style={{
                                 display: "flex",
                                 alignItems: "center",
@@ -256,9 +257,10 @@ export const PDFDocument = ({
                           fontSize: 10,
                         }}
                       >
-                        {checkCourse.sheetLesson.map((d) => {
+                        {checkCourse.sheetLesson.map((d, index) => {
                           return (
                            <View
+                              key={`sheetLesson${index}`}
                               style={{
                                 display: "flex",
                                 alignItems: "center",
