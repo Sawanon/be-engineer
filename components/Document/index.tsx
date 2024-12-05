@@ -26,7 +26,7 @@ import { addPreExamAction, listPreExamAction } from "@/lib/actions/pre-exam.acti
 import TablePreExam from "./PreExam/Table";
 import EditBookModal from "./Book/EditBook.modal";
 import _ from 'lodash'
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import EditSheeModal from "./Sheet/EditSheeModal";
 import SheetUsage from "./Sheet/SheetUsage";
 import PreExamUsage from "./PreExam/PreExamUsage";
@@ -37,6 +37,7 @@ export type DocumentMode = "book" | "sheet" | "pre-exam";
 const DocumentComp = () => {
    const searchParams = useSearchParams()
    const pathName = usePathname()
+   const route = useRouter()
    const {
       data: bookListData,
       isLoading: isLoadingBook,
@@ -454,7 +455,7 @@ const DocumentComp = () => {
                <div className={`mt-app`}>
                   <Input
                      placeholder={`Dynamics (CU) - Pre-midterm 2/2565`}
-                     aria-label={`ชื่อเอกสาร`}
+                     aria-label={`ชื่อเอกสาร preExam`}
                      onChange={(e) => setPreExamName(e.target.value)}
                      className={`font-serif`}
                      classNames={{
@@ -487,6 +488,7 @@ const DocumentComp = () => {
             {title}
          </div>
          <FormDocument
+            documentMode={documentMode}
             className={`py-2`}
             onAddDocument={() => {
                if (documentMode === "sheet") {
@@ -517,9 +519,10 @@ const DocumentComp = () => {
                   booksList={bookItems}
                   onEditBook={handleOnClickEditBook}
                   onViewStock={(book) => {
-                     console.log("onViewStock");
-                     setIsInventory(true)
-                     setSelectedBook(book)
+                     // console.log("onViewStock");
+                     // setIsInventory(true)
+                     // setSelectedBook(book)
+                     route.push(`/document?stockBookId=${book.id}`)
                   }}
                   onViewUsage={(courseLise, book) => {
                      console.log("onViewUsage");
@@ -550,6 +553,7 @@ const DocumentComp = () => {
                classNames={{
                   cursor: "bg-default-foreground",
                }}
+               className={`font-serif`}
                aria-label="pagination-document"
                showShadow
                color="primary"

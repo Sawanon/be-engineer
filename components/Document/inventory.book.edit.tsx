@@ -20,9 +20,9 @@ import CustomInput from "../CustomInput";
 import { DocumentBook } from "@prisma/client";
 import { useState } from "react";
 import dayjs from "dayjs";
-import { addBookTransactionAction, listBookTransactionByBookId } from "@/lib/actions/bookTransactions";
+import { addBookTransactionAction, listBookTransactionByBookId, revalidateBookTransaction } from "@/lib/actions/bookTransactions";
 import { useQuery } from "@tanstack/react-query";
-import { listBooksAction } from "@/lib/actions/book.actions";
+import { getBookById, listBooksAction } from "@/lib/actions/book.actions";
 import { DateValue as DateVal, parseDate } from '@internationalized/date';
 
 const EditInventory = ({
@@ -32,13 +32,8 @@ const EditInventory = ({
 }: {
    open: boolean;
    onClose: () => void;
-   book?: DocumentBook
+   book: Awaited<ReturnType<typeof getBookById>>
 }) => {
-   const {refetch: refetchBookTransaction} =  useQuery({
-      queryKey: ["listBookTransactionByBookId", book?.id],
-      queryFn: () => listBookTransactionByBookId(book!.id),
-      enabled: book !== undefined
-   })
    const {refetch: refetchBookList} = useQuery({
       queryKey: ["listBooksAction"],
       queryFn: () => listBooksAction(),
@@ -67,7 +62,7 @@ const EditInventory = ({
       if(!date || !qty || qty === 0 || detail === "") {
          setError({
             isError: true,
-            message: `กรุณากรอกข้อมูบให้ครบ`,
+            message: `กรุณากรอกข้อมูลให้ครบ`,
          })
          return false
       }
@@ -94,7 +89,8 @@ const EditInventory = ({
             throw response
          }
          handleOnClose()
-         refetchBookTransaction()
+         // refetchBookTransaction()
+         revalidateBookTransaction(book!.id)
          refetchBookList()
       } catch (error) {
          console.error(error)
@@ -195,6 +191,9 @@ const EditInventory = ({
                         <DatePicker
                            label={`วันที่`}
                            className={`font-serif`}
+                           classNames={{
+                              calendarContent: cn(`font-serif`),
+                           }}
                            onChange={handleOnChangeDate}
                            defaultValue={parseDate(`${dayjs().format(`YYYY-MM-DD`)}`)}
                            aria-label="datepickerTransaction"

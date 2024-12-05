@@ -2,30 +2,17 @@ import { cn } from "@/lib/util";
 import Alert from "@/ui/alert";
 import {
    Button,
-   Input,
    Modal,
    ModalBody,
    ModalContent,
-   Popover,
-   PopoverContent,
-   PopoverTrigger,
-   Select,
-   SelectItem,
-   Textarea,
    Image,
+   Input,
 } from "@nextui-org/react";
-import { Danger } from "iconsax-react";
 import {
-   LuArrowRightLeft,
-   LuExternalLink,
    LuImage,
-   LuPackageCheck,
-   LuScrollText,
-   LuSearch,
    LuX,
 } from "react-icons/lu";
 
-import thaipost from "../../assets/thaipost.png";
 // import Image from "next/image";
 import CustomInput from "../CustomInput";
 import { useUploadThing } from "@/lib/uploading/uploadthing";
@@ -34,6 +21,8 @@ import { generateClientDropzoneAccept, generatePermittedFileTypes } from 'upload
 import { useCallback, useState } from "react";
 import { addBookAction, editBookAction, listBooksAction } from "@/lib/actions/book.actions";
 import { useQuery } from "@tanstack/react-query";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { CreateBook } from "@/lib/model/document";
 
 const AddBook = ({
    open,
@@ -46,30 +35,21 @@ const AddBook = ({
       queryKey: ["listBooksAction"],
       queryFn: () => listBooksAction(),
    })
+   const {
+      register,
+      handleSubmit,
+      formState: {errors, isSubmitting},
+      setError,
+      reset,
+   } = useForm<CreateBook>()
    const [files, setFiles] = useState<File[]>([]);
    const [imagePreview, setImagePreview] = useState<string | ArrayBuffer | null | undefined>()
-   const [name, setName] = useState<string | undefined>()
-   const [term, setTerm] = useState<string | undefined>()
-   const [year, setYear] = useState<string | undefined>()
-   const [volume, setVolume] = useState<string | undefined>()
-   const [errorAddBook, setErrorAddBook] = useState({
-      isError: false,
-      message: ``,
-   })
-   const [isLoading, setIsLoading] = useState(false)
 
    const handleOnClose = () => {
+      reset()
       setFiles([])
       setImagePreview(undefined)
-      setName(undefined)
-      setTerm(undefined)
-      setYear(undefined)
-      setVolume(undefined)
       onClose()
-      setErrorAddBook({
-         isError: false,
-         message: '',
-      })
    }
 
    const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -104,34 +84,16 @@ const AddBook = ({
       ),
    });
 
-   const validateForm = () => {
-      console.table({
-         name,
-         term,
-         year,
-         volume,
-         fileLength: files.length,
-      })
-      if(!name || name === "" ||
-         !term || term === "" ||
-         !year || year === "" ||
-         !volume ||
-         files.length === 0
-      ){
-         return false
-      }
-      return true
-   }
-
-   const submitAddBook = async () => {
+   const submitCreateBook:SubmitHandler<CreateBook> = async (data) => {
       try {
-         if(!validateForm()){
-            return setErrorAddBook({
-               isError: true,
-               message: `กรุณากรอกข้อมูลให้ครบ`,
+         const {name, term, year, volume} = data
+         console.log(data);
+         if(files.length === 0){
+            setError('root', {
+               message: "กรุณากรอกข้อมูลให้ครบ"
             })
+            return
          }
-         setIsLoading(true)
          const response = await addBookAction({
             name: name!,
             // image: responseUploadFile![0].url,
@@ -145,8 +107,7 @@ const AddBook = ({
             console.log(response.includes("name_UNIQUE"));
             
             if(response.includes("name_UNIQUE")){
-               setErrorAddBook({
-                  isError: true,
+               setError('root', {
                   message: `ชื่อหนังสือ ${name} มีอยู่แล้ว กรุณาใช้ชื่ออื่น`,
                })
                console.error(response)
@@ -165,20 +126,14 @@ const AddBook = ({
             image: responseUploadFile![0].url,
          })
          console.log("🚀 ~ submitAddBook ~ updateImageToBook:", updateImageToBook)
-         setErrorAddBook({
-            isError: false,
-            message: ``,
-         })
          handleOnClose()
          refetchBookList()
+         console.log(data);
       } catch (error) {
          console.error(error)
-         setErrorAddBook({
-            isError: true,
+         setError('root', {
             message: `เกิดข้อผิดพลาดบางอย่าง ดูเพิ่มเติมใน Console`,
          })
-      } finally {
-         setIsLoading(false)
       }
    }
 
@@ -202,57 +157,107 @@ const AddBook = ({
          <ModalContent>
             <ModalBody className={cn("p-0 flex-1 ")}>
                <div className="flex flex-col pb-4 ">
-                  <div className=" flex flex-col rounded-xl    bg-white flex-1 px-4 space-y-2">
-                     <div className="flex gap-1 justify-center my-3">
-                        <p className="text-3xl font-semibold font-sans text-default-foreground">หนังสือ</p>
-                        <Button
-                           variant="flat"
-                           isIconOnly
-                           className="bg-transparent text-black absolute right-1 top-1"
-                           onClick={handleOnClose}
-                        >
-                           <LuX size={24} />
-                        </Button>
-                     </div>
-                     {errorAddBook.isError &&
-                        <Alert label={errorAddBook.message} />
-                     }
-                     <CustomInput classNames={{inputWrapper: 'h-11'}} onChange={(e) => setName(e.target.value)} placeholder="ชื่อวิชา" />
-                     <div className="flex gap-2">
-                        <div className="cursor-pointer rounded-lg w-28 h-[148px] flex justify-center items-center transition-background bg-default-100 hover:bg-default-300" {...getRootProps()}>
-                           <input {...getInputProps()} multiple={false} />
-                           {imagePreview
-                           ?
-                           <Image className={`object-cover w-28 h-[148px]  data-[loaded=true]:hover:opacity-80`} src={`${imagePreview}`} alt="book image" />
+                  <form onSubmit={handleSubmit(submitCreateBook)}>
+                     <div className=" flex flex-col rounded-xl bg-white flex-1 px-4 space-y-2">
+                        <div className="flex gap-1 justify-center my-3">
+                           <p className="text-3xl font-semibold font-sans text-default-foreground">หนังสือ</p>
+                           <Button
+                              variant="flat"
+                              isIconOnly
+                              className="bg-transparent text-black absolute right-1 top-1"
+                              onClick={handleOnClose}
+                           >
+                              <LuX size={24} />
+                           </Button>
+                        </div>
+                        {errors.root ?
+                           <Alert label={errors.root.message} />
                            :
-                           <LuImage className="text-[#A1A1AA] h-24 w-24" />
-                           }
+                           (errors.name || errors.term || errors.year) &&
+                             <Alert label={'กรุณากรอกข้อมูลให้ครบ'} />
+                        }
+                        {/* <CustomInput classNames={{inputWrapper: 'h-11'}} onChange={(e) => setName(e.target.value)} placeholder="ชื่อวิชา" /> */}
+                        <Input
+                           aria-label="book name"
+                           placeholder={`ชื่อวิชา`}
+                           classNames={{
+                              input: ['font-serif', 'text-[1em]'],
+                              inputWrapper: ['h-11'],
+                           }}
+                           className={`rounded-lg`}
+                           color={errors.name ? `danger` : `default`}
+                           {...register('name', {required: true})}
+                        />
+                        <div className="flex gap-2">
+                           <div className={`cursor-pointer rounded-lg w-28 h-[148px] flex justify-center items-center transition-background ${errors.root ? `bg-danger-50 hover:bg-danger-100` : `bg-default-100 hover:bg-default-300`}`} {...getRootProps()}>
+                              <input aria-label="book image" {...getInputProps()} multiple={false} />
+                              {imagePreview
+                              ?
+                              <Image className={`object-cover w-28 h-[148px]  data-[loaded=true]:hover:opacity-80`} src={`${imagePreview}`} alt="book image" />
+                              :
+                              <LuImage className={`${errors.root ? `text-danger-300` : `text-[#A1A1AA]`} h-24 w-24`} />
+                              }
+                           </div>
+                           <div className="flex-1 flex flex-col gap-2">
+                              {/* <CustomInput classNames={{inputWrapper: 'h-11'}} onChange={(e) => setTerm(e.target.value)} placeholder="midterm/final" /> */}
+                              <Input
+                                 aria-label="term"
+                                 placeholder={`midterm/final`}
+                                 classNames={{
+                                    input: ['font-serif', 'text-[1em]'],
+                                    inputWrapper: ['h-11'],
+                                 }}
+                                 className={`rounded-lg`}
+                                 color={errors.term ? `danger` : `default`}
+                                 {...register('term', {required: true})}
+                              />
+                              {/* <CustomInput classNames={{inputWrapper: 'h-11'}} onChange={(e) => setYear(e.target.value)} placeholder="ปีการศึกษา" />{" "} */}
+                              <Input
+                                 aria-label="year"
+                                 placeholder={`ปีการศึกษา`}
+                                 classNames={{
+                                    input: ['font-serif', 'text-[1em]'],
+                                    inputWrapper: ['h-11'],
+                                 }}
+                                 className={`rounded-lg`}
+                                 color={errors.year ? `danger` : `default`}
+                                 {...register('year', {required: true})}
+                              />
+                              {/* <CustomInput classNames={{inputWrapper: 'h-11'}} onChange={(e) => setVolume(e.target.value)} placeholder="volume" /> */}
+                              <Input
+                                 aria-label="volume"
+                                 placeholder={`volume`}
+                                 classNames={{
+                                    input: ['font-serif', 'text-[1em]'],
+                                    inputWrapper: ['h-11'],
+                                 }}
+                                 className={`rounded-lg`}
+                                 color={errors.volume ? `danger` : `default`}
+                                 {...register('volume')}
+                              />
+                           </div>
                         </div>
-                        <div className="flex-1 flex flex-col gap-2">
-                           <CustomInput classNames={{inputWrapper: 'h-11'}} onChange={(e) => setTerm(e.target.value)} placeholder="midterm/final" />
-                           <CustomInput classNames={{inputWrapper: 'h-11'}} onChange={(e) => setYear(e.target.value)} placeholder="ปีการศึกษา" />{" "}
-                           <CustomInput classNames={{inputWrapper: 'h-11'}} onChange={(e) => setVolume(e.target.value)} placeholder="volume" />
+                        <div className="py-2 flex md:flex-row flex-col gap-2 ">
+                           {/* <Button
+                              color="secondary"
+                              className="text-danger  order-2 md:order-1 "
+                              onClick={onDelete}
+                           >
+                              ลบ
+                           </Button> */}
+                           <Button
+                              fullWidth
+                              // color="primary"
+                              className="bg-default-foreground text-primary-foreground md:order-2 order-1 font-sans font-medium text-base"
+                              // onClick={submitAddBook}
+                              isLoading={isSubmitting}
+                              type="submit"
+                           >
+                              บันทึก
+                           </Button>
                         </div>
                      </div>
-                     <div className="py-2 flex md:flex-row flex-col gap-2 ">
-                        {/* <Button
-                           color="secondary"
-                           className="text-danger  order-2 md:order-1 "
-                           onClick={onDelete}
-                        >
-                           ลบ
-                        </Button> */}
-                        <Button
-                           fullWidth
-                           // color="primary"
-                           className="bg-default-foreground text-primary-foreground md:order-2 order-1"
-                           onClick={submitAddBook}
-                           isLoading={isLoading}
-                        >
-                           บันทึก
-                        </Button>
-                     </div>
-                  </div>
+                  </form>
                </div>
             </ModalBody>
          </ModalContent>

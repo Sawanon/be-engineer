@@ -57,7 +57,7 @@ export const duplicationCourseAction = async (courseId: number) => {
     const readyCreateCourse:Prisma.CourseCreateManyInput = {
       name: `${cloneCourse.name!} copy`,
       detail: cloneCourse.detail,
-      status: cloneCourse.status!,
+      status: cloneLesson?.length === 0 ? 'noContent' : 'hasContent',
       clueLink: cloneCourse.clueLink,
       price: cloneCourse.price,
       tutorId: cloneCourse.tutorId,
@@ -110,8 +110,10 @@ export const duplicationCourseAction = async (courseId: number) => {
         })
         console.log("🚀 ~ duplicationCourseAction ~ responseCreateLesson:", responseCreateLesson)
       }
+      revalidateCourse()
       return responseCreateCourse
     }
+    revalidateCourse()
   } catch (error) {
     console.error(error)
     if(error instanceof Prisma.PrismaClientKnownRequestError) return error.message
@@ -255,6 +257,7 @@ export const deleteCourse = async (courseId: number) => {
         id: courseId,
       }
     })
+    revalidateCourse()
     return res
   } catch (error) {
     console.error(error)
@@ -510,5 +513,6 @@ export const countBookInCourse = async (courseId: number, bookId: number):Promis
 }
 
 export const revalidateCourse = async () => {
+  console.log("revalidateCourse !!");
   revalidatePath('/course')
 }

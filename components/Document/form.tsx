@@ -33,18 +33,31 @@ const FormDocument = ({
    onChangeMode,
    className,
    onChangeSearch,
+   documentMode,
 }:{
    onAddDocument: () => void,
    onChangeMode: (mode: DocumentMode) => void,
    className: string,
    onChangeSearch: (value: string) => void,
+   documentMode: DocumentMode,
 }) => {
+   const renderPlaceholder = () => {
+      if(documentMode === "book"){
+         return `ชื่อหนังสือ midterm/final เทอม ปีการศึกษา`
+      }else if(documentMode === "sheet"){
+         return `ชื่อเอกสาร ปีการศึกษา`
+      }else if(documentMode === "pre-exam"){
+         return `ชื่อเอกสาร ปีการศึกษา`
+      }else{
+         return ``
+      }
+   }
    return (
       <section className={`flex gap-2 md:flex-row flex-col items-center ${className}`}>
          <Input
             type="text"
             // label="Email"
-            placeholder="ชื่อหนังสือ midterm/final เทอม ปีการศึกษา"
+            placeholder={renderPlaceholder()}
             // labelPlacement="outside"
             startContent={
                <CiSearch strokeWidth={1} className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />

@@ -143,7 +143,7 @@ const EditCourseForm = ({
             </SelectItem>
           )}
         </Select>
-        <Input
+        {/* <Input
           className="font-IBM-Thai-Looped mt-2"
           classNames={{
             input: `text-[1em] ${watch('clueLink') === "" || !watch('clueLink') ? 'no-underline' : 'underline'}`,
@@ -151,7 +151,19 @@ const EditCourseForm = ({
           color={errors.clueLink ? `danger` : `default`}
           placeholder="Link เฉลย"
           {...register('clueLink', {required: (course?.CourseLesson.length ?? 0) > 0 ? true : false})}
-        />
+        /> */}
+        <div id="textarea-wrapper">
+          <Textarea
+            className="font-IBM-Thai-Looped mt-2"
+            minRows={1}
+            classNames={{
+              input: `text-[1em] ${watch('clueLink') === "" || !watch('clueLink') ? 'no-underline' : 'underline'}`,
+            }}
+            color={errors.clueLink ? `danger` : `default`}
+            placeholder="Link เฉลย"
+            {...register('clueLink', {required: (course?.CourseLesson.length ?? 0) > 0 ? true : false})}
+          />
+        </div>
         <Input
           className={`font-IBM-Thai-Looped mt-2`}
           classNames={{

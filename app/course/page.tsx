@@ -10,10 +10,11 @@ import { Suspense } from 'react'
 
 // export const revalidate = 20
 // ?drawerCourse=40&mode=tutor
-const Course = async (props: {searchParams: {drawerCourse: string}}) => {
+const Course = async (props: {searchParams: {drawerCourse: string, mode?: string}}) => {
   // const showModal = props.searchParams?.modal === "true"
   // const id = props.searchParams?.id
   console.log("drawerCourse", props.searchParams.drawerCourse);
+  console.log("mode", props.searchParams.mode);
   
   const courses = await listCourseAction()
   
@@ -26,6 +27,7 @@ const Course = async (props: {searchParams: {drawerCourse: string}}) => {
       >
         <ManageCourseWrapper
           id={props.searchParams.drawerCourse}
+          mode={props.searchParams.mode ?? 'tutor'}
         />
       </Suspense>
       <Suspense

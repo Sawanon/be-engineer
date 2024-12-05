@@ -58,7 +58,7 @@ const TablePreExam = ({
          color={"primary"}
       >
          <TableHeader>
-            <TableColumn className={`font-IBM-Thai`}>หนังสือ</TableColumn>
+            <TableColumn className={`font-IBM-Thai`}>เอกสาร</TableColumn>
             <TableColumn className={`font-IBM-Thai`}>Stock</TableColumn>
             <TableColumn className={`font-IBM-Thai`}>คอร์สที่ใช้งาน</TableColumn>
          </TableHeader>

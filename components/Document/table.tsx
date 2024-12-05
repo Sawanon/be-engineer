@@ -35,7 +35,6 @@ const TableDocument = ({
 }) => {
 
    const renderCourseUsage = (sheet: DocumentSheet | any) => {
-      console.log("sheet", sheet);
       const LessonOnDocument: any[] = sheet.LessonOnDocumentSheet
       const courseMap: Map<string, any> = new Map();
       LessonOnDocument.forEach((lessonOnDocument) => {
@@ -78,7 +77,7 @@ const TableDocument = ({
          color={"primary"}
       >
          <TableHeader>
-            <TableColumn className={`font-IBM-Thai`}>หนังสือ</TableColumn>
+            <TableColumn className={`font-IBM-Thai`}>เอกสาร</TableColumn>
             <TableColumn className={`font-IBM-Thai`}>เปิดดู</TableColumn>
             <TableColumn className={`font-IBM-Thai`}>คอร์สที่ใช้งาน</TableColumn>
          </TableHeader>

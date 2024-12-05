@@ -35,7 +35,7 @@ import LessonAdminMode from "@/components/Course/LessonAdminMode";
 import DeleteCourseDialog from "@/components/Course/DeleteCourseDialog";
 import AddCourseForm from "@/components/Course/AddCourseForm";
 import EditCourseForm from "@/components/Course/EditCourseForm";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Buttons from "./Buttons";
 
@@ -71,18 +71,21 @@ const findUniqueDocument = (course: Awaited<ReturnType<typeof getCourseById>>) =
 const ManageCourse = ({
   isOpenDrawer,
   selectedCourse,
+  mode,
   // onClose,
   // onConfirmAdd,
   // onFetch,
 }: {
-  isOpenDrawer: boolean;
+  isOpenDrawer: boolean,
   // selectedCourse: Course | undefined | null;
-  selectedCourse: Awaited<ReturnType<typeof getCourseById>>;
+  selectedCourse: Awaited<ReturnType<typeof getCourseById>>,
+  mode: string,
   // onClose: () => void;
   // onConfirmAdd: (courseId: number) => Promise<void>;
   // onFetch?: () => Promise<void>;
 }) => {
   const route = useRouter()
+  const searchParams = useSearchParams()
   // const searchParams = useSearchParams()
   const { data: webappBranchCourseList, isFetched } = useQuery({
     queryKey: [`listCourseWebapp`],
@@ -106,7 +109,7 @@ const ManageCourse = ({
     message: "ลบไม่สำเร็จ ดูเพิ่มเติมใน Console",
   });
 
-  const [mode, setMode] = useState<"tutor" | "admin" | string>("tutor");
+  // const [mode, setMode] = useState<"tutor" | "admin" | string>("tutor");
   const [courseImageList, setCourseImageList] = useState<string[]>([]);
   const [webappCourseList, setWebappCourseList] = useState<
     | { id: number; name: string; image: string; hasFeedback: boolean; term: string; }[]
@@ -142,9 +145,9 @@ const ManageCourse = ({
         const coundDoc = lesson.LessonOnDocument.length + lesson.LessonOnDocumentBook.length + lesson.LessonOnDocumentSheet.length
         if(coundDoc === 0) onlyOneDontExistDoc = true
       })
-      let mode = selectedCourse.status === "noContent" ? `tutor` : `admin`
-      if(onlyOneDontExistDoc) mode = `tutor`
-      setMode(mode)
+      // let mode = selectedCourse.status === "noContent" ? `tutor` : `admin`
+      // if(onlyOneDontExistDoc) mode = `tutor`
+      // setMode(mode)
     }
   }, [selectedCourse]);
 
@@ -178,8 +181,8 @@ const ManageCourse = ({
     setIsDelete(false);
     setIsAdd(true);
     // onClose();
-    route.back()
-    setMode('tutor')
+    route.replace('/course')
+    // setMode('tutor')
   };
 
   const handleDeleteCourse = async () => {
@@ -187,7 +190,12 @@ const ManageCourse = ({
   };
 
   const handleSwitchMode = () => {
-    setMode((prev) => (prev === "tutor" ? "admin" : "tutor"));
+    // setMode((prev) => (prev === "tutor" ? "admin" : "tutor"));
+    const ogDrawerCourse = searchParams.get('drawerCourse')
+    const ogMode = searchParams.get('mode')
+    const mode = ogMode === 'tutor' ? 'admin' : 'tutor'
+    const newRoute = `/course?drawerCourse=${ogDrawerCourse}&mode=${mode}`
+    route.replace(newRoute)
   };
 
   const renderHourCourse = () => {
@@ -257,8 +265,8 @@ const ManageCourse = ({
         return;
     }
     setIsDeleteCourse(false);
-    await revalidateCourse()
-    handleClose();
+    // handleClose();
+    route.replace('/course')
     // refetchCourse();
   };
 
@@ -280,7 +288,8 @@ const ManageCourse = ({
         const responseDuplicate = await duplicationCourseAction(selectedCourse.id)
         if(!responseDuplicate) throw `responseDuplicate is ${responseDuplicate}`
         if(typeof responseDuplicate === "string") throw responseDuplicate
-        handleClose()
+        // handleClose()
+        route.replace('/course')
         // if(onFetch) onFetch()
       }
     } catch (error) {

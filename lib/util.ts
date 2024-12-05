@@ -5,6 +5,7 @@ import { isErrorMessageProps } from "./typeGuard";
 import { CustomError } from "@/@type/classes";
 import { AxiosError } from "axios";
 import { Course } from "./model/course";
+import { DocumentBook } from "@prisma/client";
 
 export function cn(...inputs: ClassValue[]) {
    return twMerge(clsx(inputs));
@@ -115,4 +116,8 @@ export const     downloadBlobToFile = (blob: Blob, filename: string) => {
    document.body.removeChild(a);
    window.URL.revokeObjectURL(url);
 };
+
+export const renderBookName = (book: DocumentBook) => {
+   return `${book.name} ${book.term} ${book.year}${book.volume != null ? ` vol.${book.volume}` : ``}`
+}
 

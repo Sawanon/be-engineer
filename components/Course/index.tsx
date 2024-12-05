@@ -78,7 +78,7 @@ const CourseComponent = ({
    const [filterStatusCourse, setFilterStatusCourse] = useState<Key[] | undefined>()
    const [searchCourseByTutorId, setSearchCourseByTutorId] = useState<any | undefined>()
 
-   const rowsPerPage = 5;
+   const rowsPerPage = 30;
   //  const {
   //     data: courses,
   //     isLoading,
@@ -281,21 +281,20 @@ const CourseComponent = ({
     }
   }, [preSearchCourse])
 
-  // const handleOnClickCourse = (course:any) => {
-  //   const _course:NonNullable<Awaited<ReturnType<typeof listCourseAction>>>[0] = course
-    
-  //   let onlyOneDontExistDoc = false
-  //   _course.CourseLesson.forEach(lesson => {
-  //     const coundDoc = lesson.LessonOnDocument.length + lesson.LessonOnDocumentBook.length + lesson.LessonOnDocumentSheet.length
-  //     if(coundDoc === 0) onlyOneDontExistDoc = true
-  //   })
-  //   setSelectedCourse(course);
-  //   setIsOpenDrawer((prev) => !prev);
-  //   let mode = course.status === "noContent" ? `tutor` : `admin`
-  //   if(onlyOneDontExistDoc) mode = `tutor`
-  //   const newPath = `${pathName}?drawerCourse=${course.id}&mode=${mode}`;
-  //   window.history.replaceState(null, "", newPath);
-  // }
+  const handleOnClickCourse = (course:any) => {
+    const _course:NonNullable<Awaited<ReturnType<typeof listCourseAction>>>[0] = course
+    let onlyOneDontExistDoc = false
+    _course.CourseLesson.forEach(lesson => {
+      const coundDoc = lesson.LessonOnDocument.length + lesson.LessonOnDocumentBook.length + lesson.LessonOnDocumentSheet.length
+      if(coundDoc === 0) onlyOneDontExistDoc = true
+    })
+    // setSelectedCourse(course);
+    // setIsOpenDrawer((prev) => !prev);
+    let mode = course.status === "noContent" ? `tutor` : `admin`
+    if(onlyOneDontExistDoc) mode = `tutor`
+    route.push(`/course?drawerCourse=${course.id}&mode=${mode}`)
+    // window.history.replaceState(null, "", newPath);
+  }
 
   return (
     // <div className="flex flex-col pt-6 px-4 bg-background relative md:h-screenDevice bg-red-400 md:bg-green-400">
@@ -407,7 +406,7 @@ const CourseComponent = ({
               {tutorList ? (
                 tutorList.map((tutor, index) => {
                   return (
-                    <SelectItem aria-label={`${tutor.name}`} key={`${tutor.id}`}>
+                    <SelectItem className={`font-serif`} aria-label={`${tutor.name}`} key={`${tutor.id}`}>
                       {tutor.name}
                     </SelectItem>
                   );
@@ -454,10 +453,10 @@ const CourseComponent = ({
               {(course) => (
                 <TableRow key={`courseRow${course.id}`}>
                   <TableCell
-                    // onClick={() => handleOnClickCourse(course)}
-                    onClick={() => {
-                      route.push(`/course?drawerCourse=${course.id}`)
-                    }}
+                    onClick={() => handleOnClickCourse(course)}
+                    // onClick={() => {
+                    //   route.push(`/course?drawerCourse=${course.id}`)
+                    // }}
                   >
                     <div className="flex gap-2 items-center">
                       {course.imageUrl && (
