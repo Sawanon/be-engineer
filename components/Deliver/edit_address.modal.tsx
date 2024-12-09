@@ -49,6 +49,7 @@ const EditAddress = ({
    const mutationUpdateAddress = useUpdateAddress({
       onError: onError,
       onSuccess: (data: Awaited<ReturnType<typeof updateAddress>>) => {
+         console.log(52,"done edit address")
          console.log("refetch", refetch);
          if (refetch) {
             refetch();

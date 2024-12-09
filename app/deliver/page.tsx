@@ -13,6 +13,7 @@ export const revalidate = 3600;
 
 const DeliverPage = async () => {
    // addDeliverShipService({})
+   console.log('16', 16)
    let newData = false;
    const delivery = await getDeliver();
    const getLastIdKmitl = await getLatestId("KMITL");
