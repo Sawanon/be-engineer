@@ -194,6 +194,10 @@ const EditInventory = ({
                            classNames={{
                               calendarContent: cn(`font-serif`),
                            }}
+                           dateInputClassNames={{
+                              segment: 'text-default-foreground',
+                              input: 'text-default-foreground',
+                           }}
                            onChange={handleOnChangeDate}
                            defaultValue={parseDate(`${dayjs().format(`YYYY-MM-DD`)}`)}
                            aria-label="datepickerTransaction"

@@ -351,7 +351,7 @@ const EditBookModal = ({
                 <Button
                   color="danger"
                   variant="light"
-                  className="text-danger font-medium order-2 md:order-1 font-serif"
+                  className="text-danger font-medium order-2 md:order-1 font-sans text-base"
                   onClick={handleOnDelete}
                   disabled={isLoading}
                 >
@@ -360,7 +360,7 @@ const EditBookModal = ({
                 <Button
                   fullWidth
                   // color="primary"
-                  className="bg-default-foreground text-primary-foreground md:order-2 order-1 font-sans font-medium"
+                  className="bg-default-foreground text-primary-foreground md:order-2 order-1 font-sans font-medium text-base"
                   // onClick={submitEditBook}
                   isLoading={isSubmitting}
                   type="submit"

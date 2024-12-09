@@ -143,9 +143,14 @@ const FormDeliver = ({
                   classNames={{
                      calendarContent: cn("w-[280px] font-serif"),
                      inputWrapper: cn('bg-default-100'),
-                     innerWrapper: cn('text-primary-300'),
+                     innerWrapper: cn('text-default-foreground data-[placeholder=true]:text-yellow-400'),
                      calendar: cn("w-[280px]"),
-                     input: cn("text-black"),
+                     input: cn("text-default-foreground"),
+                     // segment: cn(`text-default-foreground data-[placeholder=true]:text-red-400 data-[editable=true]:text-default-foreground`),
+                     // separator: cn(`data-[placeholder=true]:text-yellow-400 data-[editable=true]:text-default-foreground`),
+                     // segment: [`data-[editable=true]:data-[placeholder=true]:data-[data-slot=segment]:text-primary-300`],
+                     segment: [`text-default-foreground data-[editable=true]:data-[placeholder=true]:text-default-foreground`],
+                     separator: [`text-default-foreground`],
                   }}
                   value={
                      search.startDate && search.endDate

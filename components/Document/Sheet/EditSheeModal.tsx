@@ -195,7 +195,7 @@ const EditSheeModal = ({
               />
             </div>
             <div className={`mt-app pt-2 flex gap-2`}>
-              <Button onClick={handleOnDelete} disabled={isSubmitting} className={`bg-default-100 text-danger-500 font-serif min-w-0 font-medium text-base`}>
+              <Button onClick={handleOnDelete} disabled={isSubmitting} className={`bg-default-100 text-danger-500 font-sans min-w-0 font-medium text-base`}>
                 ลบ
               </Button>
               <Button

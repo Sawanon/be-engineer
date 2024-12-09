@@ -10,7 +10,7 @@ import {
    TableRow,
 } from "@nextui-org/react";
 import { DocumentPreExam } from "@prisma/client";
-import { ClipboardList, ScrollText } from "lucide-react";
+import { ClipboardList, ExternalLink, ScrollText } from "lucide-react";
 import {
    LuListTree,
 } from "react-icons/lu";
@@ -59,7 +59,7 @@ const TablePreExam = ({
       >
          <TableHeader>
             <TableColumn className={`font-IBM-Thai`}>เอกสาร</TableColumn>
-            <TableColumn className={`font-IBM-Thai`}>Stock</TableColumn>
+            <TableColumn className={`font-IBM-Thai`}>เปิดดู</TableColumn>
             <TableColumn className={`font-IBM-Thai`}>คอร์สที่ใช้งาน</TableColumn>
          </TableHeader>
          <TableBody>
@@ -84,7 +84,7 @@ const TablePreExam = ({
                             window.open(preExam.url, '_blank')
                           }}
                       >
-                          <ClipboardList size={24} />
+                          <ExternalLink size={24} />
                       </Button>
                      </TableCell>
                      <TableCell>

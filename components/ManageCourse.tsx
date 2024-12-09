@@ -303,7 +303,7 @@ const ManageCourse = ({
                 <Popover placement="top">
                   <PopoverTrigger className={`cursor-pointer`}>
                     <div
-                      className={`rounded-lg px-1 bg-default-50 text-lg font-bold font-IBM-Thai-Looped text-content4-foreground`}
+                      className={`rounded-lg px-1 bg-default-50 text-lg font-bold font-serif text-content4-foreground`}
                       tabIndex={0}
                       onClick={() => copy(selectedCourse?.name ?? "")}
                     >
@@ -311,7 +311,7 @@ const ManageCourse = ({
                     </div>
                   </PopoverTrigger>
                   <PopoverContent>
-                    <div className="px-1 py-2 font-serif font-serif">Copied</div>
+                    <div className="px-1 py-2 font-serif">Copied</div>
                   </PopoverContent>
                 </Popover>
               </div>

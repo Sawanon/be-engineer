@@ -80,7 +80,7 @@ const BookInventory = ({
       dayjs.tz.setDefault('Asia/Bangkok')
       const startDayjs = dayjs(startDate)
       const endDayjs = dayjs(endDate)
-      console.log(new Date().getTimezoneOffset());
+      // console.log(new Date().getTimezoneOffset());
       // console.log("startDate:", startDate);
       // console.log("endDate:", endDate);
       // console.log('startDayjs:', `${startDayjs}`);

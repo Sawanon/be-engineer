@@ -78,9 +78,9 @@ const ManageContent = ({
 
    const handleOnCancel = async () => {
       onCancel();
-      setSelectedPlaylistId(undefined)
       setSelectedKeysVideo(new Set([]))
-      setVideoList([])
+      // setSelectedPlaylistId(undefined)
+      // setVideoList([])
       list.setFilterText('')
    };
 

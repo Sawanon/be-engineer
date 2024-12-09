@@ -8,7 +8,7 @@ import {
   revalidateCourse,
   searchImageByCourseName,
 } from "@/lib/actions/course.actions";
-import React , { useMemo, useState } from "react";
+import React , { useEffect, useMemo, useState } from "react";
 import CustomDrawer from "@/components/Drawer";
 import {
   ArrowLeft,
@@ -39,35 +39,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Buttons from "./Buttons";
 
-const findUniqueDocument = (course: Awaited<ReturnType<typeof getCourseById>>) => {
-  if(!course || typeof course === "string") return
-  course.CourseLesson.flatMap(lesson => {
-    
-  })
-  const uniqueSheets = Array.from(
-    new Map(course.CourseLesson.flatMap(lesson => 
-       lesson.LessonOnDocumentSheet.map(sheet => [sheet.DocumentSheet.id, sheet.DocumentSheet])
-    )).values()
-  )
-  const uniquePreExam = Array.from(
-    new Map(course.CourseLesson.flatMap(lesson => 
-       lesson.LessonOnDocument.map(sheet => [sheet.DocumentPreExam.id, sheet.DocumentPreExam])
-    )).values()
-  )
-  const uniqueBooks = Array.from(
-    new Map(course.CourseLesson.flatMap(lesson => 
-       lesson.LessonOnDocumentBook.map(sheet => [sheet.DocumentBook.id, sheet.DocumentBook])
-    )).values()
-  )
-  
-  return {
-    ...course,
-    uniqueSheets,
-    uniquePreExam,
-    uniqueBooks,
-  }
-}
-
 const ManageCourse = ({
   isOpenDrawer,
   selectedCourse,
@@ -87,10 +58,42 @@ const ManageCourse = ({
   const route = useRouter()
   const searchParams = useSearchParams()
   // const searchParams = useSearchParams()
-  const { data: webappBranchCourseList, isFetched } = useQuery({
+  const {
+    data: webappBranchCourseList,
+    isFetched
+  } = useQuery({
     queryKey: [`listCourseWebapp`],
     queryFn: () => listCourseWebapp(),
   });
+  const findUniqueDocument = (course: Awaited<ReturnType<typeof getCourseById>>) => {
+    if(!course || typeof course === "string") return
+    course.CourseLesson.flatMap(lesson => {
+      
+    })
+    const uniqueSheets = Array.from(
+      new Map(course.CourseLesson.flatMap(lesson => 
+         lesson.LessonOnDocumentSheet.map(sheet => [sheet.DocumentSheet.id, sheet.DocumentSheet])
+      )).values()
+    )
+    const uniquePreExam = Array.from(
+      new Map(course.CourseLesson.flatMap(lesson => 
+         lesson.LessonOnDocument.map(sheet => [sheet.DocumentPreExam.id, sheet.DocumentPreExam])
+      )).values()
+    )
+    const uniqueBooks = Array.from(
+      new Map(course.CourseLesson.flatMap(lesson => 
+         lesson.LessonOnDocumentBook.map(sheet => [sheet.DocumentBook.id, sheet.DocumentBook])
+      )).values()
+    )
+    
+    return {
+      ...course,
+      uniqueSheets,
+      uniquePreExam,
+      uniqueBooks,
+    }
+  }
+
   const courseWithUniqueDocuments = findUniqueDocument(selectedCourse)
   
   const sheets = courseWithUniqueDocuments?.uniqueSheets ?? []
@@ -98,11 +101,8 @@ const ManageCourse = ({
   const books = courseWithUniqueDocuments?.uniqueBooks ?? []
   const documentNumber = sheets.length + preExam.length + books.length
 
-  const [isAdd, setIsAdd] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
   const [manageCourseMode, setManageCourseMode] = useState<'add' | 'edit' | 'show'>('show')
   
-  const [isDelete, setIsDelete] = useState(false);
   const [isDeleteCourse, setIsDeleteCourse] = useState(false);
   const [errorDeleteCourse, setErrorDeleteCourse] = useState({
     isError: false,
@@ -131,11 +131,10 @@ const ManageCourse = ({
   //   }
   // }, [searchParams.get('mode')])
 
-  useMemo(() => {
+  useEffect(() => {
     if(!selectedCourse){
       setCourseImageList([])
     }
-    setIsAdd(selectedCourse === undefined);
     // setManageCourseMode(selectedCourse === undefined ? 'add' : 'show')
     if (selectedCourse && typeof selectedCourse !== "string") {
       listImageCourse(selectedCourse.name);
@@ -177,9 +176,6 @@ const ManageCourse = ({
         return
       }
     }
-    setIsEdit(false);
-    setIsDelete(false);
-    setIsAdd(true);
     // onClose();
     route.replace('/course')
     // setMode('tutor')
@@ -419,6 +415,9 @@ const ManageCourse = ({
                     base: "p-0",
                     symbol: `p-0 hidden`,
                   }}
+                  tooltipProps={{
+                    className: `font-serif`,
+                  }}
                 />
               </div>
               <div className={`mt-2 flex gap-2 items-center`}>
@@ -428,14 +427,17 @@ const ManageCourse = ({
                   Link ติวเตอร์: {selectedCourse?.Tutor?.name}
                 </div>
                 <Snippet
-                  codeString={selectedCourse?.tutorLink!}
+                  codeString={selectedCourse?.Tutor?.tutorLink!}
                   hideSymbol
                   variant="flat"
                   className={`p-0 gap-0 bg-default-100 text-default-foreground`}
                   copyIcon={<Copy size={24} />}
                   classNames={{
-                    base: "p-0",
-                    symbol: `p-0 hidden`,
+                    base: ["p-0"],
+                    symbol: [`p-0 hidden`],
+                  }}
+                  tooltipProps={{
+                    className: `font-serif`,
                   }}
                 />
               </div>

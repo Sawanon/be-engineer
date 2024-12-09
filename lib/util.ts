@@ -118,6 +118,6 @@ export const     downloadBlobToFile = (blob: Blob, filename: string) => {
 };
 
 export const renderBookName = (book: DocumentBook) => {
-   return `${book.name} ${book.term} ${book.year}${book.volume != null ? ` vol.${book.volume}` : ``}`
+   return `${book.name} ${book.term} ${book.year}${!book.volume ? `` : ` vol.${book.volume}`}`
 }
 

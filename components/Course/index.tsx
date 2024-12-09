@@ -273,7 +273,7 @@ const CourseComponent = ({
     setSearchCourse(value)
   }
 
-  const debouncedSearch = _.debounce(handleSearch, 3000);
+  const debouncedSearch = _.debounce(handleSearch, 500);
   useEffect(() => {
     debouncedSearch(preSearchCourse)
     return () => {
@@ -340,7 +340,7 @@ const CourseComponent = ({
         </div>
         <div className="block md:flex gap-2">
           <Input
-            className="font-IBM-Thai-Looped"
+            className="font-serif"
             type="text"
             classNames={{
               input: "text-[1em]",
