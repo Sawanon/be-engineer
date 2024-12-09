@@ -189,8 +189,6 @@ const CardDeliver = ({
       myRef.current.className = "hidden ";
     }
   };
-  console.log("delivery", delivery);
-
   const checkCourse = useMemo(() => {
     return formatCourse(delivery);
   }, [delivery]);
@@ -209,7 +207,6 @@ const CardDeliver = ({
     >
       <CardBody className="relative ">
         <div ref={myRef} className={cn("hidden ", {})}>
-          {/* Your component here */}
           <Button
             onClick={() => {
               onEdit(delivery, refetch);

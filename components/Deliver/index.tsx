@@ -92,7 +92,6 @@ const DeliverComp = ({
       setIsEditTracking((prev) => ({ open: false }));
    };
 
-   console.log('printModalState', printModalState)
    const onEditAddress = (
       data: DeliverRes["data"][0] | undefined,
       refetch?: () => void
