@@ -198,7 +198,7 @@ const CourseComponent = ({
     
     let courseFromSearch = courseWithUniqueBooks
     if(searchCourse !== ""){
-      courseFromSearch = courseFromSearch?.filter(course => course.name.toLowerCase().startsWith(searchCourse))
+      courseFromSearch = courseFromSearch?.filter(course => course.name.toLowerCase().startsWith(searchCourse.toLowerCase()))
     }
     if(filterStatusCourse && filterStatusCourse.length > 0){
       courseFromSearch = courseFromSearch?.filter(course => filterStatusCourse.includes(course.status))

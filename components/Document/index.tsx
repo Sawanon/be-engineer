@@ -110,7 +110,7 @@ const DocumentComp = () => {
    const handleSearchBook = (value: string) => {
       setSearchBookText(value)
    }
-   const debounceSearchBook = _.debounce(handleSearchBook, 2000)
+   const debounceSearchBook = _.debounce(handleSearchBook, 500)
    useEffect(() => {
       debounceSearchBook(preSearchBookText)
       return () => {
@@ -130,7 +130,7 @@ const DocumentComp = () => {
    const handleSearchSheet = (value: string) => {
       setSearchSheetText(value)
    }
-   const debounceSearchSheet = _.debounce(handleSearchSheet, 2000)
+   const debounceSearchSheet = _.debounce(handleSearchSheet, 500)
    useEffect(() => {
       debounceSearchSheet(preSearchSheetText)
       return () => {
@@ -150,7 +150,7 @@ const DocumentComp = () => {
    const handleSearchPreExam = (value: string) => {
       setSearchPreExamText(value)
    }
-   const debounceSearchPreExam = _.debounce(handleSearchPreExam, 2000)
+   const debounceSearchPreExam = _.debounce(handleSearchPreExam, 500)
    useEffect(() => {
       debounceSearchPreExam(preSearchPreExamText)
       return () => {
