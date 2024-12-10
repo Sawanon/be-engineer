@@ -54,12 +54,12 @@ const EditAddress = ({
             refetch();
             console.time("refetch")
          }
-         console.time("refresh")
-         router.refresh();
-         console.timeEnd("refresh")
-         console.time("updatePrintModal")
+         // console.time("refresh")
+         // router.refresh();
+         // console.timeEnd("refresh")
+         // console.time("updatePrintModal")
          updatePrintModal(data);
-         console.timeEnd("updatePrintModal")
+         // console.timeEnd("updatePrintModal")
          // alert("Edit Success");
          onClose();
       },

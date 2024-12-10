@@ -228,6 +228,7 @@ const TableDeliver = ({
           selectionMode={selectState.open ? "multiple" : "none"}
           classNames={{
             ...tableClassnames,
+            emptyWrapper: 'font-serif',
             base: "flex-1  mb-4  overflow-y-auto",
             // tbody : "overflow-scroll scrollbar-hide",
             table: " flex-1 ",
@@ -270,7 +271,8 @@ const TableDeliver = ({
           </TableHeader>
 
           <TableBody
-            emptyContent={"No rows to display."}
+            emptyContent={"ไม่มีคำสั่งซื่อในวันนี้"}
+            
             // items={_.orderBy(
             //    Object.values(deliverItem.data),
             //    ["id"],

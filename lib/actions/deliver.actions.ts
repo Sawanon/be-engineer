@@ -342,9 +342,9 @@ export const updateAddress = async ({
             },
          });
          console.timeEnd("update-address-prisma")
-         console.time("refethData")
-         refetchData();
-         console.timeEnd("refethData")
+         // console.time("refethData")
+         // refetchData();
+         // console.timeEnd("refethData")
          return parseStringify(res);
       }
    } catch (error) {
