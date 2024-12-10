@@ -55,7 +55,7 @@ const EditAddress = ({
             console.time("refetch")
          }
          // console.time("refresh")
-         // router.refresh();
+         router.refresh();
          // console.timeEnd("refresh")
          // console.time("updatePrintModal")
          updatePrintModal(data);
