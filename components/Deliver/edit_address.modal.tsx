@@ -49,12 +49,17 @@ const EditAddress = ({
    const mutationUpdateAddress = useUpdateAddress({
       onError: onError,
       onSuccess: (data: Awaited<ReturnType<typeof updateAddress>>) => {
-         console.log("refetch", refetch);
          if (refetch) {
+            console.time("refetch")
             refetch();
+            console.time("refetch")
          }
+         console.time("refresh")
          router.refresh();
+         console.timeEnd("refresh")
+         console.time("updatePrintModal")
          updatePrintModal(data);
+         console.timeEnd("updatePrintModal")
          // alert("Edit Success");
          onClose();
       },
