@@ -314,7 +314,7 @@ const TableDeliver = ({
                               key={course?.id}
                             >
                                 <div className="flex gap-1">
-                                <div className="w-2 h-2 rounded-full bg-black mt-[6px]" />
+                                <div className="w-[6px] h-[6px] min-w-[6px] min-h-[6px] rounded-full bg-black mt-[6px]" />
                                 {course?.name}{" "}
                                 {deliver.branch === "KMITL" &&
                                   `${deliver.branch}`}
