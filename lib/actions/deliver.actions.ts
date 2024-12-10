@@ -330,6 +330,7 @@ export const updateAddress = async ({
          // });
          // return parseStringify(res);
       } else {
+         console.time("update-address-prisma")
          const res = await prisma.delivery.update({
             where: {
                id: getDelivery.id,
@@ -340,7 +341,10 @@ export const updateAddress = async ({
                updatedAddress: updateAddress,
             },
          });
+         console.timeEnd("update-address-prisma")
+         console.time("refethData")
          refetchData();
+         console.timeEnd("refethData")
          return parseStringify(res);
       }
    } catch (error) {

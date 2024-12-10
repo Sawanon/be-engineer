@@ -193,6 +193,7 @@ export const PDFDocument = ({
                         {checkCourse.bookLesson.map((d) => {
                           return (
                             <View
+                            key={d.bookId}
                               style={{
                                 display: "flex",
                                 alignItems: "center",
@@ -259,6 +260,7 @@ export const PDFDocument = ({
                         {checkCourse.sheetLesson.map((d) => {
                           return (
                            <View
+                           key={d.sheetId}
                               style={{
                                 display: "flex",
                                 alignItems: "center",
