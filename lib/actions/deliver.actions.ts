@@ -209,13 +209,12 @@ export const getDeliverByFilter = async (
         ],
       },
     };
-    console.log(": !_.isNaN(props.input)", !_.isNaN(props.input));
     if (props.input !== "" && props.input) {
       query = {
         where: {
           OR: [
             {
-              webappOrderId: !_.isNaN(props.input)
+              webappOrderId: !isNaN(parseInt(props.input))
                 ? parseInt(props.input)
                 : undefined,
             },
