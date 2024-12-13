@@ -99,7 +99,7 @@ const EditAddress = ({
                <div className="flex flex-col">
                   <div className=" flex flex-col rounded-xl    bg-white flex-1 px-4 space-y-2">
                      <div className="flex gap-1 justify-center my-3  ">
-                        <p className="text-3xl font-semibold">ที่อยู่จัดส่ง</p>
+                        <p className="text-3xl font-semibold font-sans">ที่อยู่จัดส่ง</p>
                         <Button
                            variant="flat"
                            isIconOnly

@@ -31,7 +31,7 @@ import SingleTrack from "./singleTrack";
 import { addDeliverShipService } from "@/lib/actions/delivery_ship.actions";
 import ChangeReceiveType from "./change_type.modal";
 import ReceiveOrder from "./receive_order";
-import { deliveryPrismaProps } from "@/lib/actions/deliver.actions";
+import { deliveryPrismaProps, getDeliverByFilter } from "@/lib/actions/deliver.actions";
 import { useRouter } from "next/navigation";
 
 const AddTracking = ({
@@ -41,7 +41,7 @@ const AddTracking = ({
    onChangeTypeSuccess,
 }: {
    onChangeTypeSuccess: (type: deliveryTypeProps) => void;
-   dialogState: modalProps<deliveryPrismaProps> & { type?: deliveryTypeProps };
+   dialogState: modalProps<Awaited<ReturnType<typeof getDeliverByFilter>>["data"][0]> & { type?: deliveryTypeProps };
    refetch: () => void;
    onClose: () => void;
 }) => {
@@ -63,7 +63,7 @@ const AddTracking = ({
          // onClose();
          onCloseChangeType();
          onChangeTypeSuccess(changeType.data?.type!);
-         router.refresh()
+         // router.refresh()
       },
       // onError
    });
@@ -79,10 +79,11 @@ const AddTracking = ({
    };
    const addSingleTrack = useAddTracking({
       onError: onError,
-      onSuccess: () => {
+      onSuccess: (d) => {
          // alert("Add track Success");
-         router.refresh();
-         // refetch();
+         // router.refresh();
+         refetch();
+         console.log('86', d)
          onClose();
       },
    });

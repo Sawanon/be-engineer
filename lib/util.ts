@@ -5,6 +5,7 @@ import { isErrorMessageProps } from "./typeGuard";
 import { CustomError } from "@/@type/classes";
 import { AxiosError } from "axios";
 import { Course } from "./model/course";
+import { Prisma } from "@prisma/client";
 
 export function cn(...inputs: ClassValue[]) {
    return twMerge(clsx(inputs));
@@ -57,6 +58,7 @@ export const handleError = (error: unknown): ErrorMessageProps => {
    } else {
       console.error("Unexpected error type:", error);
    }
+
 
    if (error instanceof CustomError) {
       errDetails = {
@@ -115,4 +117,27 @@ export const     downloadBlobToFile = (blob: Blob, filename: string) => {
    document.body.removeChild(a);
    window.URL.revokeObjectURL(url);
 };
+
+export const rowsPerPage = 100
+
+export const checkStatus = {
+   received: {
+     status: "success",
+     type: "pickup",
+   },
+   pickup: {
+     status: "waiting",
+     type: "pickup",
+   },
+   shipped: {
+     status: "success",
+     type: "ship",
+   },
+   ship: {
+     status: "waiting",
+     type: "ship",
+   },
+ };
+ 
+
 

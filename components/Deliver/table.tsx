@@ -1,6 +1,10 @@
 import { deliveryTypeProps, modalProps, QueryProps, stateProps } from "@/@type";
 import { DeliverRes, deliveryPrismaProps } from "@/lib/actions/deliver.actions";
-import { useDeliver, useInfinityDeliver } from "@/lib/query/delivery";
+import {
+  useDeliver,
+  useDeliverByFilter,
+  useInfinityDeliver,
+} from "@/lib/query/delivery";
 import { tableClassnames } from "@/lib/res/const";
 import { isErrorMessageProps } from "@/lib/typeGuard";
 import {
@@ -28,6 +32,7 @@ import {
   LuPrinter,
 } from "react-icons/lu";
 import { DeliverFilter } from "./form";
+import { checkStatus, rowsPerPage } from "@/lib/util";
 type dataItem = {
   data: DeliverRes["data"];
   disable: Record<string, DeliverRes["data"][0]>;
@@ -35,7 +40,7 @@ type dataItem = {
 };
 const TableDeliver = ({
   data,
-  // query,
+  query,
   state,
   onOpenEditTracking,
   onAddTrackings,
@@ -43,17 +48,19 @@ const TableDeliver = ({
   tableSelect,
   searchState,
   onPrintTrackings,
+  onChangePage,
+  page,
 }: {
+  page: number;
+  onChangePage: (newPage: number) => void;
   onPrintTrackings: (data: DeliverRes["data"]) => void;
-
   searchState: stateProps<DeliverFilter>;
-
   data: DeliverRes;
   tableSelect: stateProps<{
     key: Set<number>;
     data?: Record<string, deliveryPrismaProps>;
   }>;
-  // query: ReturnType<typeof useDeliver>;
+  query: ReturnType<typeof useDeliverByFilter>;
   state: stateProps<modalProps>;
   onOpenEditTracking: (data: DeliverRes["data"][0]) => void;
   onAddTrackings: (
@@ -72,10 +79,6 @@ const TableDeliver = ({
 
   const [selectState] = state;
   const [selectKeys, setSelectKeys] = tableSelect;
-  const [page, setPage] = useState(1);
-  const [allPage, setAllPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(100);
 
   // const [loaderRef, scrollerRef] = useInfiniteScroll({
   //    hasMore: query.hasNextPage,
@@ -94,292 +97,271 @@ const TableDeliver = ({
     setSelectKeys({ key, data });
   };
 
-  useMemo(() => {
-    const startIndex = (page - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage + 1;
-    const disabledKeys: Record<string, DeliverRes["data"][0]> = {};
-    const deliverMap: Record<string, DeliverRes["data"][0]> = {};
-    if (
-      !_.isEmpty(search.endDate) ||
-      !_.isEmpty(search.input) ||
-      !_.isEmpty(search.startDate) ||
-      (!_.isEmpty(search.status) && search.status !== "") ||
-      !_.isEmpty(search.university)
-    ) {
-      const statusSearch = search.status
-        ? (search.status.split(",") as (keyof typeof checkStatus)[])
-        : [];
-      const ArrData: DeliverRes["data"] = [];
-      data.data.forEach((deliver) => {
-        const checkType = deliver?.type;
-        if (checkType === "pickup" || deliver?.status === "success") {
-          disabledKeys[deliver.id.toString()] = deliver;
-        }
-        deliverMap[deliver.id.toString()] = deliver;
-        const inputSearch = search.input ?? "";
+  // useMemo(() => {
+  //   const startIndex = (page - 1) * rowsPerPage;
+  //   const endIndex = startIndex + rowsPerPage + 1;
+  //   const disabledKeys: Record<string, DeliverRes["data"][0]> = {};
+  //   const deliverMap: Record<string, DeliverRes["data"][0]> = {};
+  //   if (
+  //     !_.isEmpty(search.endDate) ||
+  //     !_.isEmpty(search.input) ||
+  //     !_.isEmpty(search.startDate) ||
+  //     (!_.isEmpty(search.status) && search.status !== "") ||
+  //     !_.isEmpty(search.university)
+  //   ) {
+  //     const statusSearch = search.status
+  //       ? (search.status.split(",") as (keyof typeof checkStatus)[])
+  //       : [];
+  //     const ArrData: DeliverRes["data"] = [];
+  //     data.data.forEach((deliver) => {
+  //       const checkType = deliver?.type;
+  //       if (checkType === "pickup" || deliver?.status === "success") {
+  //         disabledKeys[deliver.id.toString()] = deliver;
+  //       }
+  //       deliverMap[deliver.id.toString()] = deliver;
+  //       const inputSearch = search.input ?? "";
 
-        const checkInput =
-          _.isEmpty(search.input) ||
-          deliver.member?.toLowerCase().includes(inputSearch) ||
-          deliver.webappOrderId
-            ?.toString()
-            .toLowerCase()
-            .includes(inputSearch) ||
-          deliver.Delivery_WebappCourse?.some((course) =>
-            course.WebappCourse?.name
-              ?.toLowerCase()
-              .includes(inputSearch.toLowerCase())
-          );
+  //       const checkInput =
+  //         _.isEmpty(search.input) ||
+  //         deliver.member?.toLowerCase().includes(inputSearch) ||
+  //         deliver.webappOrderId
+  //           ?.toString()
+  //           .toLowerCase()
+  //           .includes(inputSearch) ||
+  //         deliver.Delivery_WebappCourse?.some((course) =>
+  //           course.WebappCourse?.name
+  //             ?.toLowerCase()
+  //             .includes(inputSearch.toLowerCase())
+  //         );
 
-        const checkStatusSearch =
-          _.isEmpty(search.status) ||
-          statusSearch.some((status) => {
-            return (
-              checkStatus[status]?.status === deliver.status &&
-              checkStatus[status]?.type === deliver.type
-            );
-          });
-        const checkStartDate =
-          _.isEmpty(search.startDate) ||
-          dayjs(search.startDate)
-            .startOf("date")
-            .isSameOrBefore(dayjs(deliver.approved));
+  //       const checkStatusSearch =
+  //         _.isEmpty(search.status) ||
+  //         statusSearch.some((status) => {
+  //           return (
+  //             checkStatus[status]?.status === deliver.status &&
+  //             checkStatus[status]?.type === deliver.type
+  //           );
+  //         });
+  //       const checkStartDate =
+  //         _.isEmpty(search.startDate) ||
+  //         dayjs(search.startDate)
+  //           .startOf("date")
+  //           .isSameOrBefore(dayjs(deliver.approved));
 
-        const checkEndDate =
-          _.isEmpty(search.endDate) ||
-          dayjs(search.endDate)
-            .endOf("date")
-            .isSameOrAfter(dayjs(deliver.approved));
-        const checkUniversity =
-          _.isEmpty(search.university) ||
-          deliver.branch?.toLowerCase().includes(search?.university!);
+  //       const checkEndDate =
+  //         _.isEmpty(search.endDate) ||
+  //         dayjs(search.endDate)
+  //           .endOf("date")
+  //           .isSameOrAfter(dayjs(deliver.approved));
+  //       const checkUniversity =
+  //         _.isEmpty(search.university) ||
+  //         deliver.branch?.toLowerCase().includes(search?.university!);
 
-        if (deliver.id === 2560) {
-          console.table({
-            startDate: search.startDate,
-            endDate: search.endDate,
-            checkStartDate,
-            checkEndDate,
-          });
-        }
-        if (
-          checkInput &&
-          checkStatusSearch &&
-          checkUniversity &&
-          checkStartDate &&
-          checkEndDate
-        ) {
-          ArrData.push(deliver);
-        }
-      });
+  //       if (deliver.id === 2560) {
+  //         console.table({
+  //           startDate: search.startDate,
+  //           endDate: search.endDate,
+  //           checkStartDate,
+  //           checkEndDate,
+  //         });
+  //       }
+  //       if (
+  //         checkInput &&
+  //         checkStatusSearch &&
+  //         checkUniversity &&
+  //         checkStartDate &&
+  //         checkEndDate
+  //       ) {
+  //         ArrData.push(deliver);
+  //       }
+  //     });
 
-      setAllPage(Math.ceil(ArrData.length / rowsPerPage));
-      setDeliverItem({
-        data: ArrData.slice(startIndex, endIndex),
-        disable: disabledKeys,
-        allData: deliverMap,
-      });
-    } else {
-      if (!_.isEmpty(deliverItem.allData)) {
-        setDeliverItem((prev: dataItem) => {
-          return {
-            ...prev,
-            data: data.data.slice(startIndex, endIndex),
-          };
-        });
-        setAllPage(Math.ceil(data.data.length / rowsPerPage));
-      } else {
-        // const currentData = data.data?.slice(startIndex, endIndex);
-        data.data?.forEach((deliver) => {
-          const checkType = deliver?.type;
-          if (checkType === "pickup" || deliver?.status === "success") {
-            disabledKeys[deliver.id.toString()] = deliver;
-          }
-          deliverMap[deliver.id.toString()] = deliver;
-        });
-        if (data.data) {
-          setAllPage(Math.ceil(data.data.length / rowsPerPage));
-        }
-        // const keys = Object.keys(deliverMap).slice(startIndex, endIndex);
-        // const slicedObject = _.pick(deliverMap, keys);
-        setDeliverItem({
-          data: data.data.slice(startIndex, endIndex),
-          disable: disabledKeys,
-          allData: deliverMap,
-        });
-      }
-    }
-  }, [page, data, search]);
+  //     setAllPage(Math.ceil(ArrData.length / rowsPerPage));
+  //     setDeliverItem({
+  //       data: ArrData.slice(startIndex, endIndex),
+  //       disable: disabledKeys,
+  //       allData: deliverMap,
+  //     });
+  //   } else {
+  //     if (!_.isEmpty(deliverItem.allData)) {
+  //       setDeliverItem((prev: dataItem) => {
+  //         return {
+  //           ...prev,
+  //           data: data.data.slice(startIndex, endIndex),
+  //         };
+  //       });
+  //       setAllPage(Math.ceil(data.data.length / rowsPerPage));
+  //     } else {
+  //       // const currentData = data.data?.slice(startIndex, endIndex);
+  //       data.data?.forEach((deliver) => {
+  //         const checkType = deliver?.type;
+  //         if (checkType === "pickup" || deliver?.status === "success") {
+  //           disabledKeys[deliver.id.toString()] = deliver;
+  //         }
+  //         deliverMap[deliver.id.toString()] = deliver;
+  //       });
+  //       if (data.data) {
+  //         setAllPage(Math.ceil(data.data.length / rowsPerPage));
+  //       }
+  //       // const keys = Object.keys(deliverMap).slice(startIndex, endIndex);
+  //       // const slicedObject = _.pick(deliverMap, keys);
+  //       setDeliverItem({
+  //         data: data.data.slice(startIndex, endIndex),
+  //         disable: disabledKeys,
+  //         allData: deliverMap,
+  //       });
+  //     }
+  //   }
+  // }, [page, data, search]);
 
-  useMemo(() => {
-    setPage(1);
-  }, [allPage]);
+
+  // useMemo(() => {
+  //   setPage(1);
+  // }, [allPage]);
   return (
     <>
-        <Table
-          // color={"secondary"}
-          disabledKeys={
-            selectState.open ? Object.keys(deliverItem.disable) : ""
-          }
-          // layout="fixed"
-          isStriped
-          isHeaderSticky
-          // color={"primary"}
-          selectionMode={selectState.open ? "multiple" : "none"}
-          classNames={{
-            ...tableClassnames,
-            emptyWrapper: 'font-serif',
-            base: "flex-1  mb-4  overflow-y-auto",
-            // tbody : "overflow-scroll scrollbar-hide",
-            table: " flex-1 ",
-            th: [
-              "font-serif",
-              "bg-default-100",
-              "border-b-1",
-              "first:rounded-none",
-              "last:rounded-none",
-            ],
-            td: [
-              "first:before:rounded-l-none",
-              "rtl:first:before:rounded-r-none",
-              "last:before:rounded-r-none",
-              "rtl:last:before:rounded-l-none",
-            ],
-          }}
-          aria-label="deliver-table"
-          selectedKeys={selectKeys.key}
-          onSelectionChange={onSelectRow}
-          //  defaultSelectedKeys={["2", "3"]}
-          //  aria-label="Example static collection table"
-          // TODO: pagination
-          // baseRef={scrollerRef}
-          // bottomContent={
-          //    query.hasNextPage ? (
-          //       <div className="flex w-full justify-center">
-          //          <Spinner ref={loaderRef} color="success" />
-          //       </div>
-          //    ) : null
-          // }
+      <Table
+        // color={"secondary"}
+        disabledKeys={selectState.open ? Object.keys(deliverItem.disable) : ""}
+        // layout="fixed"
+        isStriped
+        isHeaderSticky
+        // color={"primary"}
+        selectionMode={selectState.open ? "multiple" : "none"}
+        classNames={{
+          ...tableClassnames,
+          emptyWrapper: "font-serif",
+          base: "flex-1  mb-4  overflow-y-auto",
+          // tbody : "overflow-scroll scrollbar-hide",
+          table: " flex-1 ",
+          th: [
+            "font-serif",
+            "bg-default-100",
+            "border-b-1",
+            "first:rounded-none",
+            "last:rounded-none",
+          ],
+          td: [
+            "first:before:rounded-l-none",
+            "rtl:first:before:rounded-r-none",
+            "last:before:rounded-r-none",
+            "rtl:last:before:rounded-l-none",
+          ],
+        }}
+        aria-label="deliver-table"
+        selectedKeys={selectKeys.key}
+        onSelectionChange={onSelectRow}
+        //  defaultSelectedKeys={["2", "3"]}
+        //  aria-label="Example static collection table"
+        // TODO: pagination
+        // baseRef={scrollerRef}
+        // bottomContent={
+        //    query.hasNextPage ? (
+        //       <div className="flex w-full justify-center">
+        //          <Spinner ref={loaderRef} color="success" />
+        //       </div>
+        //    ) : null
+        // }
+      >
+        <TableHeader>
+          <TableColumn className="font-sans">ลำดับ</TableColumn>
+          <TableColumn className="font-sans">ผู้เรียน</TableColumn>
+          <TableColumn className="font-sans">คอร์สเรียน</TableColumn>
+          <TableColumn className="font-sans">จัดส่ง</TableColumn>
+          <TableColumn className="font-sans">อนุมัติ</TableColumn>
+          <TableColumn className="font-sans">สถานะ</TableColumn>
+        </TableHeader>
+
+        <TableBody
+          emptyContent={"ไม่มีคำสั่งซื่อในวันนี้"}
+          // items={deliverItem.data}
+          items={data.data}
+          isLoading={query.isFetching }
+          loadingContent={<Spinner />}
+          className=""
         >
-          <TableHeader>
-            <TableColumn className="font-sans">ลำดับ</TableColumn>
-            <TableColumn className="font-sans">ผู้เรียน</TableColumn>
-            <TableColumn className="font-sans">คอร์สเรียน</TableColumn>
-            <TableColumn className="font-sans">จัดส่ง</TableColumn>
-            <TableColumn className="font-sans">อนุมัติ</TableColumn>
-            <TableColumn className="font-sans">สถานะ</TableColumn>
-          </TableHeader>
-
-          <TableBody
-            emptyContent={"ไม่มีคำสั่งซื่อในวันนี้"}
-            
-            // items={_.orderBy(
-            //    Object.values(deliverItem.data),
-            //    ["id"],
-            //    ["desc"]
-            // )}
-            items={deliverItem.data}
-            // isLoading={query.isFetching}
-            loadingContent={<Spinner />}
-            className=""
-          >
-            {(deliver) => {
-              // const courses = deliver?.courses;
-              const status = deliver?.status ?? "waiting";
-              // console.log(courses);
-              return (
-                <TableRow key={deliver?.id}>
-                  <TableCell>
-                    <div className="font-serif">
-                      <p className="font-serif">{deliver?.webappOrderId}</p>
-                      {deliver.branch === "KMITL" && (
-                        <p className="rounded-sm p-1 bg-default-50">KMITL</p>
-                      )}
-                    </div>
-                    {/* ({deliver.id}) */}
-                  </TableCell>
-                  <TableCell>
-                    <p className="font-serif whitespace-nowrap">
-                      {deliver.member}
-                    </p>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      {/* <div className="list-disc list-outside"> */}
-                      {deliver.Delivery_WebappCourse.map(
-                        (Delivery_WebappCourse) => {
-                          const course = Delivery_WebappCourse.WebappCourse;
-                          // console.log("course", course);
-                          return (
-                            <div
-                              className="font-serif text-base font-medium "
-                              key={course?.id}
-                            >
-                                <div className="flex gap-1">
-                                <div className="w-2 h-2 rounded-full bg-black mt-[6px]" />
-                                {course?.name}{" "}
-                                {deliver.branch === "KMITL" &&
-                                  `${deliver.branch}`}
-                                   </div>
-
-                              <p className="ml-3 whitespace-nowrap text-sm font-normal">
-                                {course?.term}
-                              </p>
-                            </div>
-                          );
-                        }
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <button
-                      className="text-left"
-                      onClick={() => {
-                        if (status === "success" || deliver.type === "pickup")
-                          return;
-                        onEditAddress(deliver);
-                      }}
-                    >
-                      <p className="w-[300px] font-serif">
-                        {deliver.updatedAddress}
-                      </p>
-                    </button>
-                  </TableCell>
-                  <TableCell className={`font-serif`}>
-                    {dayjs(deliver.approved).format("MMM-DD HH:mm")}
-                  </TableCell>
-                  <TableCell className=" ">
-                    {status === "success" ? (
-                      <TrackingDetail
-                        onOpenEditTracking={onOpenEditTracking}
-                        checkType={deliver.type as deliveryTypeProps}
-                        tracking={deliver}
-                      />
-                    ) : (
-                      <AddTrackDetail
-                        deliveryType={deliver.type as deliveryTypeProps}
-                        deliver={deliver}
-                        onAddTrackings={onAddTrackings}
-                        onPrint={onPrintTrackings}
-                      />
+          {(deliver) => {
+            const status = deliver?.status ?? "waiting";
+            return (
+              <TableRow key={deliver?.id}>
+                <TableCell>
+                  <div className="font-serif">
+                    <p className="font-serif">{deliver?.webappOrderId}</p>
+                    {deliver.branch === "KMITL" && (
+                      <p className="rounded-sm p-1 bg-default-50">KMITL</p>
                     )}
-                  </TableCell>
-                </TableRow>
-              );
-            }}
-          </TableBody>
-        </Table>
-      <div className="py-2 flex justify-center">
-        <Pagination
-          total={allPage}
-          page={page}
-          className="p-0 m-0 font-serif"
-          classNames={{
-            cursor: "bg-default-foreground",
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <p className="font-serif whitespace-nowrap">
+                    {deliver.member}
+                  </p>
+                </TableCell>
+                <TableCell>
+                  <div>
+                    {deliver.Delivery_WebappCourse.map(
+                      (Delivery_WebappCourse) => {
+                        const course = Delivery_WebappCourse.WebappCourse;
+                        return (
+                          <div
+                            className="font-serif text-base font-medium "
+                            key={course?.id}
+                          >
+                            <div className="flex gap-1">
+                              <div className="w-2 h-2 rounded-full bg-black mt-[6px]" />
+                              {course?.name}{" "}
+                              {deliver.branch === "KMITL" &&
+                                `${deliver.branch}`}
+                            </div>
+
+                            <p className="ml-3 whitespace-nowrap text-sm font-normal">
+                              {course?.term}
+                            </p>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <button
+                    className="text-left"
+                    onClick={() => {
+                      if (status === "success" || deliver.type === "pickup")
+                        return;
+                      onEditAddress(deliver);
+                    }}
+                  >
+                    <p className="w-[300px] font-serif">
+                      {deliver.updatedAddress}
+                    </p>
+                  </button>
+                </TableCell>
+                <TableCell className={`font-serif`}>
+                  {dayjs(deliver.approved).format("MMM-DD HH:mm")}
+                </TableCell>
+                <TableCell className=" ">
+                  {status === "success" ? (
+                    <TrackingDetail
+                      onOpenEditTracking={onOpenEditTracking}
+                      checkType={deliver.type as deliveryTypeProps}
+                      tracking={deliver}
+                    />
+                  ) : (
+                    <AddTrackDetail
+                      deliveryType={deliver.type as deliveryTypeProps}
+                      deliver={deliver}
+                      onAddTrackings={onAddTrackings}
+                      onPrint={onPrintTrackings}
+                    />
+                  )}
+                </TableCell>
+              </TableRow>
+            );
           }}
-          onChange={(page) => setPage(page)}
-        />
-      </div>{" "}
+        </TableBody>
+      </Table>
+ 
     </>
   );
 };
@@ -428,7 +410,7 @@ const TrackingDetail = ({
               </Button>
             </div>
           </div>
-          <p className="px-1 py-[2px] bg-warning-50 w-fit text-warning font-serif">
+          <p className="px-1 mt-1 py-[2px] bg-warning-50 w-fit text-warning font-serif">
             {tracking?.note}
           </p>
         </div>
@@ -477,7 +459,7 @@ const AddTrackDetail = ({
   return (
     <div className="space-y-2">
       {deliveryType === "ship" && (
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-1">
           <Button
             color="default"
             variant="flat"
@@ -519,23 +501,4 @@ const AddTrackDetail = ({
       )}
     </div>
   );
-};
-
-const checkStatus = {
-  received: {
-    status: "success",
-    type: "pickup",
-  },
-  pickup: {
-    status: "waiting",
-    type: "pickup",
-  },
-  shipped: {
-    status: "success",
-    type: "ship",
-  },
-  ship: {
-    status: "waiting",
-    type: "ship",
-  },
 };

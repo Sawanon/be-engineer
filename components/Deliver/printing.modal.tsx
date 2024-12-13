@@ -59,7 +59,6 @@ const PrintModal = ({
   const { open, data } = dialog;
   const queryData = useDeliverByIds(data?.map((d) => d?.id));
   useEffect(() => {
-    console.log('call62')
     queryData.refetch();
   }, [data]);
 

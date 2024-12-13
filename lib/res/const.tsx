@@ -76,6 +76,7 @@ export const deliveryType = {
          />
       ),
       url: "https://www.flashexpress.com/tracking/?se=",
+      txt : "Flash"
    },
    "j&t": {
       logo: (
@@ -88,6 +89,8 @@ export const deliveryType = {
          />
       ),
       url: "https://www.jtexpress.co.th/index/query/gzquery.html?bills=",
+      txt : "J&T"
+
    },
    kerry: {
       logo: (
@@ -100,6 +103,8 @@ export const deliveryType = {
          />
       ),
       url: "https://th.kerryexpress.com/en/track/?track=",
+      txt : "Kerry"
+
    },
    thaipost: {
       logo: (
@@ -112,5 +117,7 @@ export const deliveryType = {
          />
       ),
       url: "https://track.thailandpost.com/?trackNumber=",
+      txt : "ไปรษณีย์ไทย"
+
    },
 };
