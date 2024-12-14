@@ -186,6 +186,7 @@ export const PDFDocument = ({
                     if (checkCMapCourse) {
                       return (
                         <View
+                        key={delivery.id}
                           style={{
                             gap: 4,
                             display: "flex",
@@ -343,6 +344,7 @@ export const PDFDocument = ({
                     ) {
                       return (
                         <View
+                        key={delivery.id}
                           style={{
                             gap: 4,
                             display: "flex",
