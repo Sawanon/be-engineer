@@ -130,7 +130,7 @@ const EditTracking = ({
       webappAdminId: auth.data?.user.id,
     });
   };
-
+  console.log("form.watch()", form.watch());
   const handleClose = () => {
     onClose();
     form.setValue("delivery", undefined);
@@ -178,19 +178,25 @@ const EditTracking = ({
             ) : (
               <>
                 {data?.Delivery_WebappCourse.map((d) => {
-                  if (
-                    !data.Delivery_Course.some(
-                      (course) => course.webappCourseId === d.webappCourseId
-                    )
-                  ) {
-                     return (
+                  const checkCMapCourse = data.Delivery_Course.some(
+                    (course) => {
+                      return (
+                        course.webappCourseId === d.webappCourseId &&
+                        course.Course === null
+                      );
+                    }
+                  );
+
+                  if (checkCMapCourse) {
+                    return (
                       <Alert
                         key={d.webappCourseId}
-                        label={`ไม่มีข้อมูลคอร์ส ${data?.Delivery_WebappCourse[0].WebappCourse?.name}`}
+                        label={`ไม่มีข้อมูลคอร์ส ${d.WebappCourse?.name}`}
                       />
                     );
                   }
                 })}
+
                 {checkCourse && checkCourse.bookRecord.length > 0 && (
                   <div className="gap-2">
                     <p className=" text-[14px] text-[#A1A1AA]">หนังสือ</p>
@@ -228,6 +234,7 @@ const EditTracking = ({
                     <div className="space-y-1">
                       <div className="text-[14px] md:text-[12px]">
                         {checkCourse.sheetRecord.map((d) => {
+                          console.log('2377', d)
                           return (
                             <div
                               className=" flex gap-2 items-center"
@@ -241,7 +248,8 @@ const EditTracking = ({
                                 <Button
                                   variant="flat"
                                   onClick={() => {
-                                    openSheetPage(d.DocumentSheet?.id!);
+                                    window.open(d.DocumentSheet?.url)
+                                    // openSheetPage(d.DocumentSheet?.id!);
                                   }}
                                   isIconOnly
                                   // color="secondary"
@@ -291,9 +299,9 @@ const EditTracking = ({
                     />
 
                     <Select
-                      {...register("delivery", {
-                        // required: true,
-                      })}
+                      // {...register("delivery", {
+                      //   // required: true,
+                      // })}
                       color={errors.delivery && "danger"}
                       placeholder="ขนส่ง"
                       isInvalid={errors.delivery && true}
@@ -301,9 +309,10 @@ const EditTracking = ({
                         form.watch("delivery") &&
                         deliveryType[form.watch("delivery")!].logo
                       }
-                      renderValue={() =>
-                        deliveryType[form.watch("delivery")!].txt
-                      }
+                      value={watch("delivery")}
+                      // renderValue={() => {
+                      //   return deliveryType[form.watch("delivery")!].txt;
+                      // }}
                       // defaultSelectedKeys={["flash"]}
                     >
                       <SelectItem

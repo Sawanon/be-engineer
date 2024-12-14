@@ -173,10 +173,10 @@ export const getDeliverByFilter = async (
 ) => {
   const { page } = props;
   try {
-    const splitStatus = props.status?.split(
-      ","
-    ) as (keyof typeof checkStatus)[];
-
+    const splitStatus =
+      props?.status === ","
+        ? undefined
+        : (props.status?.split(",") as (keyof typeof checkStatus)[]);
     let query: Prisma.DeliveryFindManyArgs = {
       where: {
         AND: [
@@ -198,6 +198,9 @@ export const getDeliverByFilter = async (
           },
           {
             OR: splitStatus?.map((staus) => {
+              if (checkStatus[staus] === undefined) {
+                return {};
+              }
               return {
                 AND: [
                   { status: checkStatus[staus].status },
@@ -496,7 +499,6 @@ export const updateAddress = async ({
       // });
       // return parseStringify(res);
     } else {
-      console.time("update-address-prisma");
       const res = await prisma.delivery.update({
         where: {
           id: getDelivery.id,
@@ -507,10 +509,7 @@ export const updateAddress = async ({
           updatedAddress: updateAddress,
         },
       });
-      console.timeEnd("update-address-prisma");
-      // console.time("refethData")
-      // refetchData();
-      // console.timeEnd("refethData")
+
       return parseStringify(res);
     }
   } catch (error) {
@@ -545,7 +544,7 @@ export const addMultiTracking = async ({
           type: "ship",
           status: "success",
           trackingCode: delivery.trackingCode,
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date(),
           DeliverShipService: { connect: { id: getShipService!.id } },
           webappAdminUsername,
           webappAdminId,
@@ -585,7 +584,7 @@ addTrackingProps) => {
         status: "success",
         updatedAddress: updateAddress,
         note: note,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),
 
         trackingCode: trackingCode,
         DeliverShipService: { connect: { id: getShipService!.id } },
@@ -622,7 +621,7 @@ export const receiveOrder = async ({
         status: "success",
         // updatedAddress: updateAddress,
         note: note,
-        updatedAt: new Date().toISOString(),
+        updatedAt:  new Date().toISOString(),
         webappAdminId,
         webappAdminUsername,
       },

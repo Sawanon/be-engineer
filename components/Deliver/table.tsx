@@ -79,12 +79,15 @@ const TableDeliver = ({
 
   const [selectState] = state;
   const [selectKeys, setSelectKeys] = tableSelect;
-
+  console.log('selectKeys', selectKeys)
   // const [loaderRef, scrollerRef] = useInfiniteScroll({
   //    hasMore: query.hasNextPage,
   //    onLoadMore: query.fetchNextPage,
   // });
+
+
   const onSelectRow = (key: Selection) => {
+    console.log("key", key);
     let data: Record<string, DeliverRes["data"][0]> = {};
     if (key === "all") {
       data = _.omit(deliverItem.allData, Object.keys(deliverItem.disable));
@@ -94,126 +97,109 @@ const TableDeliver = ({
         data[id.toString()] = delivery;
       });
     }
+    console.log('data', data)
     setSelectKeys({ key, data });
   };
 
-  // useMemo(() => {
-  //   const startIndex = (page - 1) * rowsPerPage;
-  //   const endIndex = startIndex + rowsPerPage + 1;
-  //   const disabledKeys: Record<string, DeliverRes["data"][0]> = {};
-  //   const deliverMap: Record<string, DeliverRes["data"][0]> = {};
-  //   if (
-  //     !_.isEmpty(search.endDate) ||
-  //     !_.isEmpty(search.input) ||
-  //     !_.isEmpty(search.startDate) ||
-  //     (!_.isEmpty(search.status) && search.status !== "") ||
-  //     !_.isEmpty(search.university)
-  //   ) {
-  //     const statusSearch = search.status
-  //       ? (search.status.split(",") as (keyof typeof checkStatus)[])
-  //       : [];
-  //     const ArrData: DeliverRes["data"] = [];
-  //     data.data.forEach((deliver) => {
-  //       const checkType = deliver?.type;
-  //       if (checkType === "pickup" || deliver?.status === "success") {
-  //         disabledKeys[deliver.id.toString()] = deliver;
-  //       }
-  //       deliverMap[deliver.id.toString()] = deliver;
-  //       const inputSearch = search.input ?? "";
+  useMemo(() => {
+    const startIndex = (page - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage + 1;
+    const disabledKeys: Record<string, DeliverRes["data"][0]> = {};
+    const deliverMap: Record<string, DeliverRes["data"][0]> = {};
+    // if (
+    //   !_.isEmpty(search.endDate) ||
+    //   !_.isEmpty(search.input) ||
+    //   !_.isEmpty(search.startDate) ||
+    //   (!_.isEmpty(search.status) && search.status !== "") ||
+    //   !_.isEmpty(search.university)
+    // ) {
+    //   const statusSearch = search.status
+    //     ? (search.status.split(",") as (keyof typeof checkStatus)[])
+    //     : [];
+    //   const ArrData: DeliverRes["data"] = [];
+    data.data.forEach((deliver) => {
+      const checkType = deliver?.type;
+      if (checkType === "pickup" || deliver?.status === "success") {
+        disabledKeys[deliver.id.toString()] = deliver;
+      }
+      deliverMap[deliver.id.toString()] = deliver;
+    });
+    //     const inputSearch = search.input ?? "";
 
-  //       const checkInput =
-  //         _.isEmpty(search.input) ||
-  //         deliver.member?.toLowerCase().includes(inputSearch) ||
-  //         deliver.webappOrderId
-  //           ?.toString()
-  //           .toLowerCase()
-  //           .includes(inputSearch) ||
-  //         deliver.Delivery_WebappCourse?.some((course) =>
-  //           course.WebappCourse?.name
-  //             ?.toLowerCase()
-  //             .includes(inputSearch.toLowerCase())
-  //         );
+    //     const checkInput =
+    //       _.isEmpty(search.input) ||
+    //       deliver.member?.toLowerCase().includes(inputSearch) ||
+    //       deliver.webappOrderId
+    //         ?.toString()
+    //         .toLowerCase()
+    //         .includes(inputSearch) ||
+    //       deliver.Delivery_WebappCourse?.some((course) =>
+    //         course.WebappCourse?.name
+    //           ?.toLowerCase()
+    //           .includes(inputSearch.toLowerCase())
+    //       );
 
-  //       const checkStatusSearch =
-  //         _.isEmpty(search.status) ||
-  //         statusSearch.some((status) => {
-  //           return (
-  //             checkStatus[status]?.status === deliver.status &&
-  //             checkStatus[status]?.type === deliver.type
-  //           );
-  //         });
-  //       const checkStartDate =
-  //         _.isEmpty(search.startDate) ||
-  //         dayjs(search.startDate)
-  //           .startOf("date")
-  //           .isSameOrBefore(dayjs(deliver.approved));
+    //     const checkStatusSearch =
+    //       _.isEmpty(search.status) ||
+    //       statusSearch.some((status) => {
+    //         return (
+    //           checkStatus[status]?.status === deliver.status &&
+    //           checkStatus[status]?.type === deliver.type
+    //         );
+    //       });
+    //     const checkStartDate =
+    //       _.isEmpty(search.startDate) ||
+    //       dayjs(search.startDate)
+    //         .startOf("date")
+    //         .isSameOrBefore(dayjs(deliver.approved));
 
-  //       const checkEndDate =
-  //         _.isEmpty(search.endDate) ||
-  //         dayjs(search.endDate)
-  //           .endOf("date")
-  //           .isSameOrAfter(dayjs(deliver.approved));
-  //       const checkUniversity =
-  //         _.isEmpty(search.university) ||
-  //         deliver.branch?.toLowerCase().includes(search?.university!);
+    //     const checkEndDate =
+    //       _.isEmpty(search.endDate) ||
+    //       dayjs(search.endDate)
+    //         .endOf("date")
+    //         .isSameOrAfter(dayjs(deliver.approved));
+    //     const checkUniversity =
+    //       _.isEmpty(search.university) ||
+    //       deliver.branch?.toLowerCase().includes(search?.university!);
 
-  //       if (deliver.id === 2560) {
-  //         console.table({
-  //           startDate: search.startDate,
-  //           endDate: search.endDate,
-  //           checkStartDate,
-  //           checkEndDate,
-  //         });
-  //       }
-  //       if (
-  //         checkInput &&
-  //         checkStatusSearch &&
-  //         checkUniversity &&
-  //         checkStartDate &&
-  //         checkEndDate
-  //       ) {
-  //         ArrData.push(deliver);
-  //       }
-  //     });
+    //     if (deliver.id === 2560) {
+    //       console.table({
+    //         startDate: search.startDate,
+    //         endDate: search.endDate,
+    //         checkStartDate,
+    //         checkEndDate,
+    //       });
+    //     }
+    //     if (
+    //       checkInput &&
+    //       checkStatusSearch &&
+    //       checkUniversity &&
+    //       checkStartDate &&
+    //       checkEndDate
+    //     ) {
+    //       ArrData.push(deliver);
+    //     }
+    //   });
 
-  //     setAllPage(Math.ceil(ArrData.length / rowsPerPage));
-  //     setDeliverItem({
-  //       data: ArrData.slice(startIndex, endIndex),
-  //       disable: disabledKeys,
-  //       allData: deliverMap,
-  //     });
-  //   } else {
-  //     if (!_.isEmpty(deliverItem.allData)) {
-  //       setDeliverItem((prev: dataItem) => {
-  //         return {
-  //           ...prev,
-  //           data: data.data.slice(startIndex, endIndex),
-  //         };
-  //       });
-  //       setAllPage(Math.ceil(data.data.length / rowsPerPage));
-  //     } else {
-  //       // const currentData = data.data?.slice(startIndex, endIndex);
-  //       data.data?.forEach((deliver) => {
-  //         const checkType = deliver?.type;
-  //         if (checkType === "pickup" || deliver?.status === "success") {
-  //           disabledKeys[deliver.id.toString()] = deliver;
-  //         }
-  //         deliverMap[deliver.id.toString()] = deliver;
-  //       });
-  //       if (data.data) {
-  //         setAllPage(Math.ceil(data.data.length / rowsPerPage));
-  //       }
-  //       // const keys = Object.keys(deliverMap).slice(startIndex, endIndex);
-  //       // const slicedObject = _.pick(deliverMap, keys);
-  //       setDeliverItem({
-  //         data: data.data.slice(startIndex, endIndex),
-  //         disable: disabledKeys,
-  //         allData: deliverMap,
-  //       });
-  //     }
-  //   }
-  // }, [page, data, search]);
+    //   setAllPage(Math.ceil(ArrData.length / rowsPerPage));
+    //   setDeliverItem({
+    //     data: ArrData.slice(startIndex, endIndex),
+    //     disable: disabledKeys,
+    //     allData: deliverMap,
+    //   });
+    // } else {
 
+    // const currentData = data.data?.slice(startIndex, endIndex);
+
+    // const keys = Object.keys(deliverMap).slice(startIndex, endIndex);
+    // const slicedObject = _.pick(deliverMap, keys);
+    setDeliverItem({
+      data: data.data.slice(startIndex, endIndex),
+      disable: disabledKeys,
+      allData: deliverMap,
+    });
+    // }
+  }, [data, search]);
 
   // useMemo(() => {
   //   setPage(1);
@@ -276,7 +262,7 @@ const TableDeliver = ({
           emptyContent={"ไม่มีคำสั่งซื่อในวันนี้"}
           // items={deliverItem.data}
           items={data.data}
-          isLoading={query.isFetching }
+          isLoading={query.isFetching}
           loadingContent={<Spinner />}
           className=""
         >
@@ -303,35 +289,50 @@ const TableDeliver = ({
                       (Delivery_WebappCourse) => {
                         const course = Delivery_WebappCourse.WebappCourse;
                         return (
-                          <div
-                            className="font-serif text-base font-medium "
-                            key={course?.id}
-                          >
-                            <div className="flex gap-1">
-                              <div className="w-2 h-2 rounded-full bg-black mt-[6px]" />
-                              {course?.name}{" "}
-                              {deliver.branch === "KMITL" &&
-                                `${deliver.branch}`}
-                            </div>
+                          // <div
+                          //   className="font-serif text-base font-medium "
+                          //   key={course?.id}
+                          // >
+                          //   <div className="flex gap-1">
+                          //     <div className="w-2 h-2 rounded-full bg-black mt-[6px]" />
+                          //     {course?.name}{" "}
+                          //     {deliver.branch === "KMITL" &&
+                          //       `${deliver.branch}`}
+                          //   </div>
 
-                            <p className="ml-3 whitespace-nowrap text-sm font-normal">
-                              {course?.term}
-                            </p>
+                          //   <p className="ml-3 whitespace-nowrap text-sm font-normal">
+                          //     {course?.term}
+                          //   </p>
+
+                          // </div>
+
+                          <div key={course?.id}>
+                            <div className="font-serif text-base">
+                              <div className="flex gap-1 leading-5">
+                                <div className="w-1 h-1 rounded-full bg-black mt-2 flex-shrink-0"></div>
+                                {course?.name}{" "}
+                                {deliver.branch === "KMITL" &&
+                                  `${deliver.branch}`}
+                              </div>
+                              <p className="ml-2 whitespace-nowrap text-sm font-normal text-default-400">
+                                {course?.term}
+                              </p>
+                            </div>
                           </div>
                         );
                       }
                     )}
                   </div>
                 </TableCell>
-                <TableCell>
-                  <button
-                    className="text-left"
-                    onClick={() => {
-                      if (status === "success" || deliver.type === "pickup")
-                        return;
-                      onEditAddress(deliver);
-                    }}
-                  >
+                <TableCell
+                  className="cursor-pointer"
+                  onClick={() => {
+                    if (status === "success" || deliver.type === "pickup")
+                      return;
+                    onEditAddress(deliver);
+                  }}
+                >
+                  <button className="text-left ">
                     <p className="w-[300px] font-serif">
                       {deliver.updatedAddress}
                     </p>
@@ -361,7 +362,6 @@ const TableDeliver = ({
           }}
         </TableBody>
       </Table>
- 
     </>
   );
 };
@@ -418,7 +418,7 @@ const TrackingDetail = ({
       {checkType === "pickup" && (
         <>
           <p className="text-secondary-fade text-xs font-serif">
-            {dayjs(tracking?.createdAt).format("HH:mm น.")} โดย{" "}
+            {dayjs(tracking?.updatedAt).format("HH:mm น.")} โดย{" "}
             {tracking?.webappAdminUsername}
           </p>
           <p className="text-secondary-default font-semibold font-serif text-base">

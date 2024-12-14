@@ -172,6 +172,41 @@ export const PDFDocument = ({
                 (course) => course.Course?.id !== undefined
               ) ? (
                 <View>
+                
+                  {delivery?.Delivery_WebappCourse.map((d) => {
+                    const checkCMapCourse = delivery.Delivery_Course.some(
+                      (course) => {
+                        return (
+                          course.webappCourseId === d.webappCourseId &&
+                          course.Course === null
+                        );
+                      }
+                    );
+
+                    if (checkCMapCourse) {
+                      return (
+                        <View
+                          style={{
+                            gap: 4,
+                            display: "flex",
+                            flexDirection: "row",
+                            paddingLeft: "16px",
+                            paddingVertical: 2,
+                            color: "#F31260",
+                            backgroundColor: "#FEE7EF",
+                            // alignItems: "center",
+                            borderRadius: 4,
+                          }}
+                        >
+                          <ErrorIcon />
+
+                          <Text style={{ fontSize: 8 }}>
+                            ไม่มีข้อมูลคอร์ส {d.WebappCourse?.name}
+                          </Text>
+                        </View>
+                      );
+                    }
+                  })}
                   {checkCourse.bookLesson.length > 0 && (
                     <View
                       style={{ display: "flex", flexDirection: "row", gap: 2 }}
@@ -193,7 +228,7 @@ export const PDFDocument = ({
                         {checkCourse.bookLesson.map((d) => {
                           return (
                             <View
-                            key={d.bookId}
+                              key={d.bookId}
                               style={{
                                 display: "flex",
                                 alignItems: "center",
@@ -219,7 +254,9 @@ export const PDFDocument = ({
                             </View>
                           );
                         })}
-                        <View style={{ display: "flex", gap: 1 , marginLeft: 12 }}>
+                        <View
+                          style={{ display: "flex", gap: 1, marginLeft: 12 }}
+                        >
                           {checkCourse.bookLesson.map((d) => {
                             return d.DocumentBook.image ? (
                               <Image
@@ -251,7 +288,7 @@ export const PDFDocument = ({
                         }}
                       >
                         เอกสาร
-                        </Text>
+                      </Text>
                       <View
                         style={{
                           fontSize: 10,
@@ -259,8 +296,8 @@ export const PDFDocument = ({
                       >
                         {checkCourse.sheetLesson.map((d) => {
                           return (
-                           <View
-                           key={d.sheetId}
+                            <View
+                              key={d.sheetId}
                               style={{
                                 display: "flex",
                                 alignItems: "center",
@@ -283,12 +320,9 @@ export const PDFDocument = ({
                               >
                                 {d.DocumentSheet.name}
                               </Text>
-                              
                             </View>
                           );
                         })}
-                         
-                        
                       </View>
                     </View>
                   )}
@@ -301,26 +335,39 @@ export const PDFDocument = ({
                     backgroundColor: "#F31260",
                   }}
                 >
-                  <View
-                    style={{
-                      gap: 4,
-                      display: "flex",
-                      flexDirection: "row",
-                      paddingLeft: "16px",
-                      paddingVertical: 2,
-                      color: "#F31260",
-                      backgroundColor: "#FEE7EF",
-                      // alignItems: "center",
-                      borderRadius: 4,
-                    }}
-                  >
-                    <ErrorIcon />
+                  {delivery?.Delivery_WebappCourse.map((d) => {
+                    if (
+                      !delivery.Delivery_Course.some(
+                        (course) => course.webappCourseId === d.webappCourseId
+                      )
+                    ) {
+                      return (
+                        <View
+                          style={{
+                            gap: 4,
+                            display: "flex",
+                            flexDirection: "row",
+                            paddingLeft: "16px",
+                            paddingVertical: 2,
+                            color: "#F31260",
+                            backgroundColor: "#FEE7EF",
+                            // alignItems: "center",
+                            borderRadius: 4,
+                          }}
+                        >
+                          {/* <ErrorIcon />
 
-                    <Text style={{ fontSize: 8 }}>
-                      ไม่มีข้อมูลคอร์ส{" "}
-                      {delivery.Delivery_WebappCourse[0].WebappCourse?.name}
-                    </Text>
-                  </View>
+                          <Text style={{ fontSize: 8 }}>
+                            ไม่มีข้อมูลคอร์ส{" "}
+                            {
+                              delivery.Delivery_WebappCourse[0].WebappCourse
+                                ?.name
+                            }
+                          </Text> */}
+                        </View>
+                      );
+                    }
+                  })}
                 </View>
               )}
             </View>

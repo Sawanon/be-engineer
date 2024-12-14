@@ -1,5 +1,9 @@
 import { deliveryTypeProps } from "@/@type";
-import { deliveryPrismaProps, getDeliver, getDeliverByFilter } from "@/lib/actions/deliver.actions";
+import {
+  deliveryPrismaProps,
+  getDeliver,
+  getDeliverByFilter,
+} from "@/lib/actions/deliver.actions";
 import {
   formatCourse,
   useDeliverByIds,
@@ -58,6 +62,7 @@ const ReceiveOrder = ({
     }
     return undefined;
   }, [queryData]);
+  console.log("checkCourse", data);
   return (
     <div className="flex flex-col ">
       <div className=" flex flex-col rounded-xl md:rounded-none   bg-white flex-1 px-4 space-y-2">
@@ -80,15 +85,18 @@ const ReceiveOrder = ({
         ) : (
           <>
             {data?.Delivery_WebappCourse.map((d) => {
-              if (
-                !data.Delivery_Course.some(
-                  (course) => course.courseId === d.webappCourseId
-                )
-              ) {
+              const checkCMapCourse = data.Delivery_Course.some((course) => {
+                return (
+                  course.webappCourseId === d.webappCourseId &&
+                  course.Course === null
+                );
+              });
+
+              if (checkCMapCourse) {
                 return (
                   <Alert
                     key={d.webappCourseId}
-                    label={`ไม่มีข้อมูลคอร์ส ${data?.Delivery_WebappCourse[0].WebappCourse?.name}`}
+                    label={`ไม่มีข้อมูลคอร์ส ${d.WebappCourse?.name}`}
                   />
                 );
               }
@@ -98,10 +106,13 @@ const ReceiveOrder = ({
                 <p className="font-bold text-sm text-default-400">หนังสือ</p>
 
                 <div className="space-y-1">
-                  <div className=" text-[10px] md:text-[12px]">
+                  <div className=" text-base">
                     {checkCourse?.bookLesson.map((d) => {
                       return (
-                        <div className="flex gap-2" key={d.DocumentBook.id}>
+                        <div
+                          className="flex gap-2 items-center"
+                          key={d.DocumentBook.id}
+                        >
                           <NextUiImage
                             width={24}
                             height={34}
@@ -122,7 +133,7 @@ const ReceiveOrder = ({
                 <p className="font-bold text-sm text-default-400 ">เอกสาร</p>
 
                 <div className="space-y-1">
-                  <div className=" text-[10px] md:text-[12px]">
+                  <div className=" text-base">
                     {checkCourse.sheetLesson.map((d) => {
                       return (
                         <div

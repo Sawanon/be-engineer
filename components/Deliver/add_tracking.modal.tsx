@@ -83,7 +83,6 @@ const AddTracking = ({
          // alert("Add track Success");
          // router.refresh();
          refetch();
-         console.log('86', d)
          onClose();
       },
    });
@@ -91,8 +90,7 @@ const AddTracking = ({
       onError: onError,
       onSuccess: () => {
          // alert("Update Pickup Success");
-         router.refresh();
-         // refetch();
+         refetch();
          onClose();
       },
    });

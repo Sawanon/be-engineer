@@ -170,6 +170,7 @@ const DeliverComp = ({
   };
   const onChangeTypeSuccess = (type: deliveryTypeProps) => {
     // alert("Change Type Success");
+    refetch()
     if (type === "ship") {
       onCloseAddTrack();
       onEditAddress(isAddTracking.data!);
@@ -184,6 +185,7 @@ const DeliverComp = ({
 
   const onCloseAddTrack = () => {
     setIsAddTracking({ open: false });
+    replacePath()
   };
 
   //   const updateDataTable = (data: typeof deliveryData.data)=>{
@@ -227,6 +229,7 @@ const DeliverComp = ({
       return { ...prev, data: cloneData };
     });
   };
+  console.log('selectState', selectState)
   return (
     <div className="flex flex-col pt-0 md:pt-6 px-app  bg-background relative overflow-y-hidden md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 ">
      
@@ -254,7 +257,7 @@ const DeliverComp = ({
         onClose={handleClosePrint}
       />
       <EditAddress
-        refetch={isEditAddress.refetch}
+        refetch={deliverQuery.refetch}
         dialogState={[isEditAddress, setIsEditAddress]}
         updatePrintModal={updatePrintModal}
         onEditAddress={onEditAddress}
