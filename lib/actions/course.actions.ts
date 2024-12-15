@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import { addBookTransactionAction } from "./bookTransactions";
 import { revalidatePath } from "next/cache";
 import { getBookById, updateBookInStock } from "./book.actions";
-import _ from 'lodash'
+import _, { startsWith } from 'lodash'
 
 const ENDPOINT_BE_ENGINEER_URL = process.env.ENDPOINT_BE_ENGINEER_URL;
 const B_API_KEY = process.env.B_API_KEY;
@@ -137,9 +137,94 @@ export const searchImageByCourseName = async (courseName: string) => {
   }
 }
 
-export const listCourseAction = async ()  => {
+export const getTotalCourse = async (search?: string, status?: string | string[], tutorId?: number) => {
   try {
+    console.time('getTotalCourse')
+    const response = await prisma.course.count({
+      where: {
+        name: search ? 
+        {
+          startsWith: search,
+        }
+        :
+        {
+          not: undefined,
+        },
+        status: status ?
+          typeof status === "string" ?
+          {
+            equals: status,
+          }
+          :
+          {
+            in: status,
+          }
+        :
+        {
+          not: undefined,
+        },
+        tutorId: tutorId ?
+        {
+          equals: tutorId,
+        }
+        :
+        {
+          not: undefined,
+        }
+      },
+    })
+    console.log("response",response);
+    
+    console.timeEnd('getTotalCourse')
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError) return error.message
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const listCourseAction = async (rowPerPages: number, page: number, search?: string, status?: string | string[], tutorId?: number)  => {
+  try {
+    if(page < 0){
+      throw `page should be positive number`
+    }
+    console.time('listCourseAction')
     const res = await prisma.course.findMany({
+      where: {
+        name: search ? 
+        {
+          startsWith: search,
+        }
+        :
+        {
+          not: undefined,
+        },
+        status: status ?
+          typeof status === "string" ?
+          {
+            equals: status,
+          }
+          :
+          {
+            in: status,
+          }
+        :
+        {
+          not: undefined,
+        },
+        tutorId: tutorId ?
+        {
+          equals: tutorId,
+        }
+        :
+        {
+          not: undefined,
+        }
+      },
+      skip: (page-1) * rowPerPages,
+      take: rowPerPages,
       include: {
         Tutor: true,
         CourseLesson: {
@@ -170,6 +255,7 @@ export const listCourseAction = async ()  => {
         createdAt: 'desc',
       },
     })
+    console.timeEnd('listCourseAction')
     return res
   } catch (error) {
     console.error(error);

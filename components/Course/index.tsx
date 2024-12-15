@@ -26,7 +26,7 @@ import { useQuery } from "@tanstack/react-query";
 import { listTutor } from "@/lib/actions/tutor.actions";
 import { CourseLesson, Course as CoursePrisma, DocumentBook, DocumentPreExam, DocumentSheet, LessonOnDocument, LessonOnDocumentBook, LessonOnDocumentSheet, Prisma} from '@prisma/client'
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import _ from 'lodash'
+import _, { forEach } from 'lodash'
 import { PrefetchKind } from "next/dist/client/components/router-reducer/router-reducer-types";
 
 const Status = ({ course }: { course: CourseT }) => {
@@ -59,15 +59,22 @@ const Status = ({ course }: { course: CourseT }) => {
 
 const CourseComponent = ({
   courses,
+  currentPage,
+  rowsPerPage,
+  pageSize,
 }:{
-  courses: Awaited<ReturnType<typeof listCourseAction>>
+  courses: Awaited<ReturnType<typeof listCourseAction>>,
+  currentPage: number,
+  rowsPerPage: number,
+  pageSize: number,
 }) => {
   const route = useRouter()
+  const searchParams = useSearchParams()
   //  const [selectedCourse, setSelectedCourse] = useState<CourseT | undefined>();
   //  const [isOpenDrawer, setIsOpenDrawer] = useState(false);
   //  const [isSort, setIsSort] = useState(false);
    const [page, setPage] = useState(1);
-   const [pageSize, setPageSize] = useState(30);
+  //  const [pageSize, setPageSize] = useState(30);
   //  const [isDeleteCourse, setIsDeleteCourse] = useState(false);
   //  const [errorDeleteCourse, setErrorDeleteCourse] = useState({
   //     isError: false,
@@ -78,7 +85,7 @@ const CourseComponent = ({
    const [filterStatusCourse, setFilterStatusCourse] = useState<Key[] | undefined>()
    const [searchCourseByTutorId, setSearchCourseByTutorId] = useState<any | undefined>()
 
-   const rowsPerPage = 30;
+  //  const rowsPerPage = 30;
   //  const {
   //     data: courses,
   //     isLoading,
@@ -209,7 +216,7 @@ const CourseComponent = ({
     }
     
     if (courseFromSearch) {
-      setPageSize(Math.ceil(courseFromSearch.length / rowsPerPage));
+      // setPageSize(Math.ceil(courseFromSearch.length / rowsPerPage));
     }
     return courseFromSearch?.slice(startIndex, endIndex);
   }, [page, courses, /*isLoading*/, searchCourse, filterStatusCourse, searchCourseByTutorId]);
@@ -269,8 +276,28 @@ const CourseComponent = ({
 
   const handleSearch = (value: string) => {
     console.log("search !", value);
-
-    setSearchCourse(value)
+    const params = new URLSearchParams(searchParams.toString())
+    if(value){
+      params.set('search', value)
+      params.set('page', '1')
+      console.log("boom !");
+      
+    }else{
+      params.delete('search')
+    }
+    console.log(params);
+    
+    route.replace(`/course?${params.toString()}`)
+    // setSearchCourse(value)
+    // const oldPage = searchParams.get('search')
+    // const newSearchPage = `search=${value}`
+    // let search = location.search
+    // console.log("before", search)
+    // // if(oldPage){
+    // //   search = search.replaceAll(`search=${oldPage}`, newSearchPage)
+    // // }
+    // console.log("after", search)
+    // route.replace(`/course${!search ? `?${newSearchPage}`: search}`)
   }
 
   const debouncedSearch = _.debounce(handleSearch, 500);
@@ -292,7 +319,8 @@ const CourseComponent = ({
     // setIsOpenDrawer((prev) => !prev);
     let mode = course.status === "noContent" ? `tutor` : `admin`
     if(onlyOneDontExistDoc) mode = `tutor`
-    route.push(`/course?drawerCourse=${course.id}&mode=${mode}`)
+    console.log("location.search", location.search);
+    route.push(`/course${location.search !== '' ? `${location.search}&` : `?`}drawerCourse=${course.id}&mode=${mode}`)
     // window.history.replaceState(null, "", newPath);
   }
 
@@ -349,6 +377,19 @@ const CourseComponent = ({
             startContent={<Search className="text-foreground-400" />}
             fullWidth
             onChange={e => setPreSearchCourse(e.target.value)}
+            // onChange={e => {
+            //   const searchValue = e.target.value
+            //   debouncedSearch(searchValue)
+            //   // const oldPage = searchParams.get('page')
+            //   // const newSearchPage = `page=${page}`
+            //   // let search = location.search
+            //   // console.log("before", search);
+            //   // if(oldPage){
+            //   //   search = search.replaceAll(`page=${oldPage}`, newSearchPage)
+            //   // }
+            //   // console.log("after", search);
+            //   // route.replace(`/course${!search ? `?${newSearchPage}`: search}`)
+            // }}
           />
           <div className="flex gap-2 mt-2 md:mt-0">
             <Select
@@ -369,7 +410,20 @@ const CourseComponent = ({
               selectorIcon={<ChevronDown size={24} />}
               renderValue={(items) => <div className={`text-default-foreground font-sans`}>สถานะ</div>}
               onSelectionChange={(key) => {
-                setFilterStatusCourse(Array.from(key))
+                // setFilterStatusCourse(Array.from(key))
+                console.log(key);
+                const arrKey = Array.from(key)
+                const params = new URLSearchParams(searchParams.toString())
+                params.delete('status')
+                params.set('page', '1')
+                for (let i = 0; i < arrKey.length; i++) {
+                  const key = arrKey[i];
+                  const isExist = params.has('status', key.toString())
+                  if(!isExist){
+                    params.append('status', key.toString())
+                  }
+                }
+                route.replace(`/course?${params.toString()}`)
               }}
             >
               {Object.keys(courseStatus).map((key, index) => {
@@ -399,8 +453,17 @@ const CourseComponent = ({
               selectorIcon={<ChevronDown size={24} />}
               disabled={tutorList === undefined}
               onSelectionChange={(key) => {
-                console.log("onchange tutor", key);
-                setSearchCourseByTutorId(key)
+                console.log("onchange tutor", key.currentKey);
+                const size = (key as any).size as number
+                // setSearchCourseByTutorId(key)
+                const params = new URLSearchParams(searchParams.toString())
+                params.set('page', '1')
+                if(size > 0 && key.currentKey){
+                  params.set('tutorId', key.currentKey)
+                }else{
+                  params.delete('tutorId')
+                }
+                route.replace(`/course?${params.toString()}`)
               }}
             >
               {tutorList ? (
@@ -507,13 +570,38 @@ const CourseComponent = ({
         <div className="py-2 flex justify-center">
           <Pagination
             total={pageSize}
+            // initialPage={currentPage}
+            page={currentPage}
+            className={`p-0 m-0 font-serif`}
+            classNames={{
+              cursor: "bg-default-foreground",
+            }}
+            onChange={(page) => {
+              const oldPage = searchParams.get('page')
+              const newSearchPage = `page=${page}`
+              let search = location.search
+              console.log("before", search);
+              if(oldPage){
+                search = search.replaceAll(`page=${oldPage}`, newSearchPage)
+              }
+              console.log("after", search);
+              route.replace(`/course${!search ? `?${newSearchPage}`: search}`)
+              // route.replace(, {
+              //   query: {
+              //     page: page,
+              //   }
+              // })
+            }}
+          />
+          {/* <Pagination
+            total={pageSize}
             initialPage={page}
             className={`p-0 m-0 font-serif`}
             classNames={{
               cursor: "bg-default-foreground",
             }}
             onChange={(page) => setPage(page)}
-          />
+          /> */}
         </div>
       </div>
     // </CourseContext.Provider>

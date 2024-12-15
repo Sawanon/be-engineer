@@ -177,7 +177,10 @@ const ManageCourse = ({
       }
     }
     // onClose();
-    route.replace('/course')
+    console.log(`history.state`, history.length);
+    const page = searchParams.get('page')
+    let params = page === "" ? "" : `?page=${page}`
+    route.replace(`/course${params}`)
     // setMode('tutor')
   };
 
