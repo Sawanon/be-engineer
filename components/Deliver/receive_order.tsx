@@ -106,7 +106,8 @@ const ReceiveOrder = ({
                 <p className="font-bold text-sm text-default-400">หนังสือ</p>
 
                 <div className="space-y-1">
-                  <div className=" text-base">
+                <div className=" text-base leading-6 font-serif">
+
                     {checkCourse?.bookLesson.map((d) => {
                       return (
                         <div
@@ -133,7 +134,7 @@ const ReceiveOrder = ({
                 <p className="font-bold text-sm text-default-400 ">เอกสาร</p>
 
                 <div className="space-y-1">
-                  <div className=" text-base">
+                  <div className=" text-base leading-6 font-serif">
                     {checkCourse.sheetLesson.map((d) => {
                       return (
                         <div
@@ -187,7 +188,8 @@ const ReceiveOrder = ({
               isLoading={mutation.isPending}
               type="submit"
               fullWidth
-              className="md:col-span-2 col-span-3 order-1 bg-default-foreground text-primary-foreground font-san"
+              color={"primary"}
+              className="md:col-span-2 col-span-3 order-1  font-san"
             >
               รับหนังสือ
             </Button>

@@ -229,11 +229,10 @@ const DeliverComp = ({
       return { ...prev, data: cloneData };
     });
   };
-  console.log('selectState', selectState)
   return (
     <div className="flex flex-col pt-0 md:pt-6 px-app  bg-background relative overflow-y-hidden md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 ">
      
-     <button onClick={testFn}>test refetch</button>
+     {/* <button onClick={testFn}>test refetch</button> */}
       {newData && (
         <div
           className={`flex justify-center md:justify-end absolute right-4 bottom-4 z-50 w-full`}

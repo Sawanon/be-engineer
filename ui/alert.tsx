@@ -22,9 +22,9 @@ const Alert = ({
    const checkIcon = icon ? icon : alertIcon[type];
    return (
       <div className={cn("bg-danger-400 mb-3  pl-1 rounded-l-md rounded-r-lg  md:text-base text-xs")}>
-         <div className="pl-4 flex gap-2 text-danger-400 bg-danger-50 py-2 items-center rounded font-serif">
+         <div className="pl-4 flex gap-2 text-danger-400 bg-danger-50 py-1 items-center rounded font-serif">
             {icon !== false && checkIcon} 
-            <p>
+            <p className="mt-1">
 
             {label}
             </p>

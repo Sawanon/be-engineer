@@ -259,7 +259,6 @@ export const getDeliverByFilter = async (
       skip: (page - 1) * 100,
     });
     const count = await prisma.delivery.count({ where: query.where });
-    console.log("count", count);
     // const test = _.uniqBy(res, "status");
     // test.map(d=> console.log('d.status', d.status))
     return parseStringify({
@@ -658,7 +657,6 @@ export const updateDeliver = async ({
       const getShipService = await getShipServiceByName(delivery);
       data["DeliverShipService"] = { connect: { id: getShipService!.id } };
     }
-    console.log("data", data);
     const res = await prisma.delivery.update({
       where: {
         id: id,
@@ -679,7 +677,7 @@ export const changeType = async ({
 }: Pick<NonNullable<deliveryPrismaProps>, "type" | "id">) => {
   try {
     // TODO: need admin id
-    const updatedAddress = type === "pickup" ? "รับที่สถาบัน" : "";
+    // const updatedAddress = type === "pickup" ? "รับที่สถาบัน" : "";
     const res = await prisma.delivery.update({
       where: {
         // webappOrderId: webAppOrderId,
@@ -688,7 +686,7 @@ export const changeType = async ({
       data: {
         type: type,
         status: "waiting",
-        updatedAddress,
+        // updatedAddress,iy[]
       },
     });
     // refetchData();

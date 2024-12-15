@@ -83,7 +83,7 @@ const EditTracking = ({
   const form = useForm<createProp>({
     defaultValues: {
       trackingNumber: "",
-      // delivery: "",
+      // delivery: ,
     },
   });
   const {
@@ -130,13 +130,17 @@ const EditTracking = ({
       webappAdminId: auth.data?.user.id,
     });
   };
-  console.log("form.watch()", form.watch());
   const handleClose = () => {
     onClose();
     form.setValue("delivery", undefined);
     form.setValue("note", "");
     form.setValue("trackingNumber", "");
   };
+const [deliverShip,setDeliverShip] = useState<deliverShipServiceKey | undefined>("flash")
+
+useMemo(()=>{
+
+},[])
 
   return (
     <Modal
@@ -277,6 +281,10 @@ const EditTracking = ({
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-2"
               >
+
+
+
+                
                 {data?.type === "ship" && (
                   <div className="space-y-2">
                     <Controller
@@ -299,27 +307,28 @@ const EditTracking = ({
                     />
 
                     <Select
-                      // {...register("delivery", {
-                      //   // required: true,
-                      // })}
+                      {...register("delivery", {
+                        // required: true,
+                      })}
                       color={errors.delivery && "danger"}
                       placeholder="ขนส่ง"
-                      isInvalid={errors.delivery && true}
+                      // isInvalid={errors.delivery && true}
                       startContent={
                         form.watch("delivery") &&
                         deliveryType[form.watch("delivery")!].logo
                       }
-                      value={watch("delivery")}
-                      // renderValue={() => {
-                      //   return deliveryType[form.watch("delivery")!].txt;
-                      // }}
+                      value={"kerry"}
+                      selectedKeys={form.watch("delivery") &&[form.watch("delivery")] as Iterable<any> } 
+                      renderValue={() => {
+                        return deliveryType[form.watch("delivery")!].txt;
+                      }}
                       // defaultSelectedKeys={["flash"]}
                     >
                       <SelectItem
                         classNames={{
                           base: cn("flex gap-1 font-sans"),
                         }}
-                        startContent={deliveryType["flash"].logo}
+                        startContent={[deliveryType["flash"].logo]}
                         key={"flash"}
                       >
                         Flash

@@ -62,7 +62,6 @@ const AddMultiTracking = ({
   const auth = useSession();
   const router = useRouter();
   const { open, data } = dialogState;
-  console.log('data', data)
   const handleClose = () => {
     form.reset();
     const valueForm = form.watch();

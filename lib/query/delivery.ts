@@ -105,7 +105,6 @@ export const useDeliverByFilter = (
   props: DeliverFilter & { page: number },
     initData?: Awaited<ReturnType<typeof getDeliverByFilter>>
 ) => {
-  console.log("props", props);
 
   return useQuery({
     queryKey: ["deliver", props],

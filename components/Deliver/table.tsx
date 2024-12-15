@@ -79,7 +79,6 @@ const TableDeliver = ({
 
   const [selectState] = state;
   const [selectKeys, setSelectKeys] = tableSelect;
-  console.log('selectKeys', selectKeys)
   // const [loaderRef, scrollerRef] = useInfiniteScroll({
   //    hasMore: query.hasNextPage,
   //    onLoadMore: query.fetchNextPage,
@@ -87,7 +86,6 @@ const TableDeliver = ({
 
 
   const onSelectRow = (key: Selection) => {
-    console.log("key", key);
     let data: Record<string, DeliverRes["data"][0]> = {};
     if (key === "all") {
       data = _.omit(deliverItem.allData, Object.keys(deliverItem.disable));
@@ -477,7 +475,6 @@ const AddTrackDetail = ({
             size="sm"
             startContent={<LuPrinter size={20} />}
             onClick={() => {
-              console.log("deliver", deliver);
               onPrint([deliver]);
             }}
           >
