@@ -5,7 +5,7 @@ import { isErrorMessageProps } from "./typeGuard";
 import { CustomError } from "@/@type/classes";
 import { AxiosError } from "axios";
 import { Course } from "./model/course";
-import { Prisma } from "@prisma/client";
+import { DocumentBook, Prisma } from "@prisma/client";
 
 export function cn(...inputs: ClassValue[]) {
    return twMerge(clsx(inputs));
@@ -139,5 +139,6 @@ export const checkStatus = {
    },
  };
  
-
-
+export const renderBookName = (book: DocumentBook) => {
+   return `${book.name} ${book.term} ${book.year}${!book.volume ? `` : ` vol.${book.volume}`}`
+}
