@@ -15,9 +15,7 @@ function middleware(request: NextRequest) {
          },
       });
    }else if (pathname.startsWith("/api")) {
-      console.log("pathname in if two", pathname);
    } else {
-      console.log("middleware");
       const requestHeaders = new Headers(request.headers);
       requestHeaders.set("x-pathname", request.nextUrl.pathname);
       NextResponse.next({
@@ -25,7 +23,6 @@ function middleware(request: NextRequest) {
             headers: requestHeaders,
          },
       });
-      console.log("pathname", pathname);
       // if (pathname.startsWith("/login")) {
       //    redirect("/");
       // }

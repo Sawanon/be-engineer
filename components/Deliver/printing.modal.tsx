@@ -225,15 +225,25 @@ const CardDeliver = ({
           {/* เบอร์โทร {delivery?.mobile} */}
         </p>
         <Divider className="my-2 bg-[#A1A1AA]" />
-        {!delivery?.Delivery_Course.some(
-          (course) => course.Course?.id !== undefined
-        ) ? (
-          <Alert
-            label={`
-                  ไม่มีข้อมูลคอร์ส ${delivery?.Delivery_WebappCourse[0].WebappCourse?.name}`}
-          />
-        ) : (
+        {
           <>
+            {delivery?.Delivery_WebappCourse.map((d) => {
+              const checkCMapCourse = delivery.Delivery_Course.some((course) => {
+                return (
+                  course.webappCourseId === d.webappCourseId &&
+                  course.Course === null
+                );
+              });
+
+              if (checkCMapCourse) {
+                return (
+                  <Alert
+                    key={d.webappCourseId}
+                    label={`ไม่มีข้อมูลคอร์ส ${d.WebappCourse?.name}`}
+                  />
+                );
+              }
+            })}
             {checkCourse.bookLesson.length > 0 && (
               <div className="flex gap-2">
                 <p className=" text-[8px] md:text-[10px] text-[#A1A1AA]">
@@ -243,12 +253,10 @@ const CardDeliver = ({
                   <div className="list-disc list-outside text-[10px] md:text-[12px]">
                     {checkCourse.bookLesson.map((d) => {
                       return (
-                        <li
-                          key={d.DocumentBook.id}
-                        >
-                          <span
-                          className="relative -left-[6px]"
-                          >{d.DocumentBook.name}</span>
+                        <li key={d.DocumentBook.id}>
+                          <span className="relative -left-[6px]">
+                            {d.DocumentBook.name}
+                          </span>
                         </li>
                       );
                     })}
@@ -282,11 +290,11 @@ const CardDeliver = ({
                     {checkCourse.sheetLesson.map((d) => {
                       return (
                         <li key={d.DocumentSheet.id}>
-                          <span
-                          className="relative -left-[6px]"
-                          >                          {d.DocumentSheet.name}
-</span>
-                          </li>
+                          <span className="relative -left-[6px]">
+                            {" "}
+                            {d.DocumentSheet.name}
+                          </span>
+                        </li>
                       );
                     })}
                   </div>
@@ -313,7 +321,7 @@ const CardDeliver = ({
               </div>
             )} */}
           </>
-        )}
+        }
       </CardBody>
     </Card>
   );

@@ -79,7 +79,7 @@ const ChangeReceiveType = ({
                      <p className="font-serif">
                         คุณแน่ใจหรือไม่ที่เปลี่ยนคำสั่งซื้อ{" "}
                         <span className="font-bold">
-                           {detail?.id} {detail?.member}
+                           {detail?.webappOrderId} {detail?.member}
                         </span>{" "}
                         เป็น <span className="font-bold">{txtType[type!]}</span>
                      </p>

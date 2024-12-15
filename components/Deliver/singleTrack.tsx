@@ -59,12 +59,11 @@ const SingleTrack = ({
          // courseId  : data?.courses.map(d=> d.id.toString())!
       });
    };
-
    return (
       <div className="flex flex-col ">
          <div className=" flex flex-col md:rounded-none   bg-white flex-1 px-4 space-y-2">
             <div className="flex gap-1 justify-center my-3  ">
-               <p className="text-3xl font-semibold font-IBM-Thai">
+               <p className="text-3xl font-semibold font-sans">
                   {data?.member}
                </p>
                <Button
@@ -105,13 +104,15 @@ const SingleTrack = ({
 
                <Select
                   {...register("delivery", { required: true })}
-                  color={errors.delivery && "danger"}
+                  color={errors.delivery ?"danger" : "primary"}
                   placeholder="ขนส่ง"
                   isInvalid={errors.delivery && true}
                   startContent={
                      form.watch("delivery") &&
                      deliveryType[form.watch("delivery")].logo
                   }
+                  renderValue={()=> deliveryType[form.watch("delivery")].txt}
+                  // value={form.watch("delivery")}
                   // defaultSelectedKeys={["flash"]}
                >
                   <SelectItem
