@@ -177,10 +177,13 @@ const ManageCourse = ({
       }
     }
     // onClose();
-    console.log(`history.state`, history.length);
-    const page = searchParams.get('page')
-    let params = page === "" ? "" : `?page=${page}`
-    route.replace(`/course${params}`)
+    // console.log(`history.state`, history.length);
+    // const page = searchParams.get('page')
+    // let params = page === "" ? "" : `?page=${page}`
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('drawerCourse')
+    params.delete('mode')
+    route.replace(`/course?${params}`)
     // setMode('tutor')
   };
 
