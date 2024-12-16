@@ -334,6 +334,67 @@ export const getDeliverByIds = cache(async (Ids: number[]) => {
     prisma.$disconnect();
   }
 });
+export const getDeliverById = (async (Id: number) => {
+  try {
+    const res = await prisma.delivery.findFirst({
+      where: {
+        id:  Id ,
+      },
+      include: {
+        RecordBook: {
+          include: {
+            DocumentBook: true,
+          },
+        },
+        RecordSheet: {
+          include: {
+            DocumentSheet: true,
+          },
+        },
+        DeliverShipService: true,
+        Delivery_Course: {
+          include: {
+            Course: {
+              include: {
+                CourseLesson: {
+                  include: {
+                    LessonOnDocument: {
+                      include: {
+                        DocumentPreExam: true,
+                      },
+                    },
+                    LessonOnDocumentBook: {
+                      include: {
+                        DocumentBook: true,
+                      },
+                    },
+                    LessonOnDocumentSheet: {
+                      include: {
+                        DocumentSheet: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        Delivery_WebappCourse: {
+          include: {
+            WebappCourse: true,
+          },
+        },
+      },
+      orderBy: { id: "desc" },
+    });
+
+    return parseStringify(res);
+  } catch (e) {
+    throw handleError(e);
+  } finally {
+    prisma.$disconnect();
+  }
+});
 export const getInfinityDeliver = cache(
   async ({
     pageParam = 1,

@@ -15,6 +15,7 @@ import {
 } from "@/lib/query/delivery";
 import AddMultiTracking from "./add_multi_tracking.modal";
 import {
+  changeType,
   DeliverRes,
   deliveryPrismaProps,
   getDeliver,
@@ -96,12 +97,15 @@ const DeliverComp = ({
     data: undefined,
   });
   const [isEditAddress, setIsEditAddress] = useState<
-    modalProps<DeliverRes["data"][0]> & { refetch?: () => void }
+    modalProps<DeliverRes["data"][0]> & { refetch?: () => void; id?: string }
   >({ open: false, data: undefined });
 
   const [isAddTracking, setIsAddTracking] = useState<
-    modalProps<DeliverRes["data"][0]> & { type?: deliveryTypeProps }
-  >({ open: false, data: undefined, type: undefined });
+    modalProps<DeliverRes["data"][0]> & {
+      type?: deliveryTypeProps;
+      id?: string;
+    }
+  >({ open: false, data: undefined, type: undefined, id: undefined });
 
   const [isEditTracking, setIsEditTracking] = useState<
     modalProps<DeliverRes["data"][0]>
@@ -144,7 +148,7 @@ const DeliverComp = ({
     const id = searchParams.get("editAddress");
     if (id && !isEditAddress.open) {
       const findDataByID = delivery.data.find((d) => d.id === parseInt(id));
-      setIsEditAddress({ open: true, data: findDataByID });
+      setIsEditAddress({ open: true, data: findDataByID, id });
     }
   }, [searchParams.get("editAddress")]);
 
@@ -156,6 +160,7 @@ const DeliverComp = ({
         open: true,
         data: findDataByID,
         type: findDataByID?.type as deliveryTypeProps,
+        id: id,
       });
     }
   }, [searchParams.get("addTracking")]);
@@ -164,18 +169,26 @@ const DeliverComp = ({
     data: DeliverRes["data"][0],
     type: deliveryTypeProps
   ) => {
+    console.log("169,data", data);
     const newPath = `${pathname}?addTracking=${data.id}`;
     window.history.replaceState(null, "", newPath);
-    setIsAddTracking({ open: true, data, type });
+    setIsAddTracking({ open: true, data, type, id: data.id.toString() });
   };
-  const onChangeTypeSuccess = (type: deliveryTypeProps) => {
+  const onChangeTypeSuccess = (
+    type: deliveryTypeProps,
+    newData: Awaited<ReturnType<typeof changeType>>
+  ) => {
     // alert("Change Type Success");
-    refetch()
+    if (isAddTracking.data !== undefined) {
+      refetch();
+    }
     if (type === "ship") {
+      // onEditAddress(newData as DeliverRes["data"][0]);
       onCloseAddTrack();
-      onEditAddress(isAddTracking.data!);
+      onEditAddress(newData as DeliverRes["data"][0]);
     } else {
-      onOpenAddTrack(isAddTracking.data!, type);
+      onOpenAddTrack(newData as DeliverRes["data"][0], "pickup");
+
       // setIsAddTracking((prev) => {
       //    return { open: true, data: prev.data, type: type };
       // });
@@ -185,7 +198,7 @@ const DeliverComp = ({
 
   const onCloseAddTrack = () => {
     setIsAddTracking({ open: false });
-    replacePath()
+    replacePath();
   };
 
   //   const updateDataTable = (data: typeof deliveryData.data)=>{
@@ -197,11 +210,11 @@ const DeliverComp = ({
 
   // const deliverQuery = useDeliver();
   const refetch = () => {
-     deliverQuery.refetch();
+    deliverQuery.refetch();
   };
-  const testFn = ()=>{
-   deliverQuery.refetch();
-  }
+  const testFn = () => {
+    deliverQuery.refetch();
+  };
   const onCloseSelect = () => {
     setSelectState({ open: false });
     setMultiTrackingState({
@@ -231,8 +244,7 @@ const DeliverComp = ({
   };
   return (
     <div className="flex flex-col pt-0 md:pt-6 px-app  bg-background relative overflow-y-hidden md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 ">
-     
-     {/* <button onClick={testFn}>test refetch</button> */}
+      {/* <button onClick={testFn}>test refetch</button> */}
       {newData && (
         <div
           className={`flex justify-center md:justify-end absolute right-4 bottom-4 z-50 w-full`}
@@ -241,6 +253,7 @@ const DeliverComp = ({
             onRefresh={() => {
               // refetchData();
               router.refresh();
+              setNewData(false);
             }}
             onClose={() => setNewData(false)}
           />

@@ -31,6 +31,7 @@ const ReceiveOrder = ({
   onClose,
   mutation,
   data,
+  id,
 }: {
   data: Awaited<ReturnType<typeof getDeliverByFilter>>["data"][0];
   mutation: ReturnType<typeof useUpdatePickup>;
@@ -39,6 +40,7 @@ const ReceiveOrder = ({
     type: deliveryTypeProps;
   }) => void;
   onClose: () => void;
+  id?: number;
 }) => {
   const form = useForm<{ note: string }>();
   const auth = useSession();
@@ -55,14 +57,13 @@ const ReceiveOrder = ({
   };
   // TODO: fetch data
 
-  const queryData = useDeliverByIds(data ? [data.id] : undefined);
+  const queryData = useDeliverByIds(id ? [id] : undefined);
   const checkCourse = useMemo(() => {
     if (queryData.data?.[0]) {
       return formatCourse(queryData.data[0]);
     }
     return undefined;
   }, [queryData]);
-  console.log("checkCourse", data);
   return (
     <div className="flex flex-col ">
       <div className=" flex flex-col rounded-xl md:rounded-none   bg-white flex-1 px-4 space-y-2">
@@ -84,8 +85,8 @@ const ReceiveOrder = ({
           </div>
         ) : (
           <>
-            {data?.Delivery_WebappCourse.map((d) => {
-              const checkCMapCourse = data.Delivery_Course.some((course) => {
+            {queryData.data?.[0]?.Delivery_WebappCourse.map((d) => {
+              const checkCMapCourse = queryData.data?.[0].Delivery_Course.some((course) => {
                 return (
                   course.webappCourseId === d.webappCourseId &&
                   course.Course === null
@@ -106,8 +107,7 @@ const ReceiveOrder = ({
                 <p className="font-bold text-sm text-default-400">หนังสือ</p>
 
                 <div className="space-y-1">
-                <div className=" text-base leading-6 font-serif">
-
+                  <div className=" text-base leading-6 font-serif">
                     {checkCourse?.bookLesson.map((d) => {
                       return (
                         <div

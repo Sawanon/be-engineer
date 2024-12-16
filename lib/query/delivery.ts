@@ -12,6 +12,7 @@ import {
   deliveryPrismaProps,
   getDeliver,
   getDeliverByFilter,
+  getDeliverById,
   getDeliverByIds,
   getInfinityDeliver,
   getTrackingByWebappIdArr,
@@ -127,6 +128,17 @@ export const useDeliverByIds = (Ids: number[] | undefined) => {
     },
     refetchInterval: 5 * 60 * 1000, // refetch every x minute
     enabled: Ids !== undefined && Ids.length !== 0,
+  });
+};
+export const useDeliverById = (Id: number | undefined,enabled : boolean) => {
+  return useQuery({
+    queryKey: ["deliver", Id],
+    queryFn: async () => {
+      const masterDeliver = await getDeliverById(Id!);
+      return masterDeliver;
+    },
+    refetchInterval: 5 * 60 * 1000, // refetch every x minute
+    enabled,
   });
 };
 
@@ -278,7 +290,7 @@ export const useChangeType = ({
   onSuccess,
   onError,
 }: {
-  onSuccess?: () => void;
+  onSuccess?: (data : Awaited<ReturnType<typeof changeType>>) => void;
   onError?: (error: Error) => void;
 }) => {
   return useMutation({
@@ -292,7 +304,7 @@ export const useChangeType = ({
       if (onError) onError(error);
     },
     onSuccess(data, variables, context) {
-      if (onSuccess) onSuccess();
+      if (onSuccess) onSuccess(data);
     },
   });
 };
