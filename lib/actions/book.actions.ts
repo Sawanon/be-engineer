@@ -213,6 +213,9 @@ export const getBookById = async (bookId: number) => {
     const response = await prisma.documentBook.findFirst({
       where: {
         id: bookId,
+      },
+      include: {
+        LessonOnDocumentBook: true,
       }
     })
     return response
