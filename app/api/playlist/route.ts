@@ -6,6 +6,7 @@ const ENDPOINT_BE_ENGINEER_URL = process.env.ENDPOINT_BE_ENGINEER_URL;
 const B_API_KEY = process.env.B_API_KEY;
 export const revalidate = 60
 export const GET = async  (req: NextRequest, res: NextResponse) => {
+  const searchParams = req.nextUrl.searchParams
   try {
     const response = await axios({
       url: `${ENDPOINT_BE_ENGINEER_URL}/api/playlist`,
@@ -18,7 +19,7 @@ export const GET = async  (req: NextRequest, res: NextResponse) => {
     if(!Array.isArray(playlist)){
       return Response.json([])
     }
-    const search = req.nextUrl.searchParams.get('search')
+    const search = searchParams.get('search')
     console.log("🚀 ~ GET ~ search:", search)
     if(search === null || search === ""){
       return Response.json(playlist.splice(0, 10))

@@ -19,7 +19,7 @@ import {
 import { X } from "lucide-react";
 import { addSheetAction, listSheetsAction } from "@/lib/actions/sheet.action";
 import { useQuery } from "@tanstack/react-query";
-import { listBooksAction } from "@/lib/actions/book.actions";
+import { getBookById, listBooksAction } from "@/lib/actions/book.actions";
 import TableBooks from "./Book/Table";
 import { DocumentBook, DocumentPreExam, DocumentSheet } from "@prisma/client";
 import { addPreExamAction, listPreExamAction } from "@/lib/actions/pre-exam.actions";
@@ -34,20 +34,30 @@ import EditPreExamModal from "./PreExam/EditPreExamModal";
 
 export type DocumentMode = "book" | "sheet" | "pre-exam";
 
-const DocumentComp = () => {
+const DocumentComp = ({
+   bookItems,
+   pageSize,
+   currentPage,
+   selectedBook,
+}:{
+   bookItems: Awaited<ReturnType<typeof listBooksAction>>,
+   pageSize: number,
+   currentPage: number,
+   selectedBook: Awaited<ReturnType<typeof getBookById>> ,
+}) => {
    const searchParams = useSearchParams()
    const pathName = usePathname()
    const route = useRouter()
-   const {
-      data: bookListData,
-      isLoading: isLoadingBook,
-      refetch: refetchBook,
-   } = useQuery({
-      queryKey: ["listBooksAction"],
-      queryFn: () => listBooksAction(),
-      // refetchOnWindowFocus: true,
-      refetchOnMount: true,
-   })
+   // const {
+   //    data: bookListData,
+   //    isLoading: isLoadingBook,
+   //    refetch: refetchBook,
+   // } = useQuery({
+   //    queryKey: ["listBooksAction"],
+   //    queryFn: () => listBooksAction(),
+   //    // refetchOnWindowFocus: true,
+   //    refetchOnMount: true,
+   // })
    const { data: sheetListData, refetch: refetchSheets } = useQuery({
       queryKey: ["listSheetsAction"],
       queryFn: () => listSheetsAction(),
@@ -78,7 +88,7 @@ const DocumentComp = () => {
    const [preExamName, setPreExamName] = useState<string | undefined>();
    const [preExamLink, setPreExamLink] = useState<string | undefined>();
    
-   const [selectedBook, setSelectedBook] = useState<DocumentBook | undefined>()
+   const [selectedBookViewUsage, setSelectedBookViewUsage] = useState<DocumentBook | undefined>()
    const [courseList, setCourseList] = useState<any[]>([])
 
    const [searchBookText, setSearchBookText] = useState("")
@@ -89,7 +99,7 @@ const DocumentComp = () => {
    const [preSearchPreExamText, setPreSearchPreExamText] = useState("")
    
    const [page, setPage] = useState(1)
-   const [pageSize, setPageSize] = useState(30)
+   // const [pageSize, setPageSize] = useState(30)
    const rowPerPage = 30
 
    const [isOpenSheetViewUsage, setIsOpenSheetViewUsage] = useState(false)
@@ -99,14 +109,14 @@ const DocumentComp = () => {
    const [isOpenEditPreExam, setIsOpenEditPreExam] = useState(false)
    
    // book search
-   const bookList = useMemo(() => {
-      if(searchBookText !== ""){
-         return bookListData?.filter(book => {
-            return book.name.toLowerCase().includes(searchBookText.toLowerCase()) || book.term?.toLowerCase().includes(searchBookText.toLowerCase()) || book.year?.toLowerCase().includes(searchBookText.toLowerCase())
-         })
-      }
-      return bookListData
-   }, [bookListData, searchBookText])
+   // const bookList = useMemo(() => {
+   //    if(searchBookText !== ""){
+   //       return bookListData?.filter(book => {
+   //          return book.name.toLowerCase().includes(searchBookText.toLowerCase()) || book.term?.toLowerCase().includes(searchBookText.toLowerCase()) || book.year?.toLowerCase().includes(searchBookText.toLowerCase())
+   //       })
+   //    }
+   //    return bookListData
+   // }, [bookListData, searchBookText])
    const handleSearchBook = (value: string) => {
       setSearchBookText(value)
    }
@@ -162,9 +172,9 @@ const DocumentComp = () => {
    useMemo(() => {
       let pageSize = 1
       if(documentMode === "book"){
-         if(bookList){
-            pageSize = Math.ceil(bookList.length / rowPerPage)
-         }
+         // if(bookList){
+         //    pageSize = Math.ceil(bookList.length / rowPerPage)
+         // }
       }else if(documentMode === "pre-exam"){
          if(preExamList){
             pageSize = Math.ceil(preExamList.length / rowPerPage)
@@ -176,14 +186,15 @@ const DocumentComp = () => {
       }
       console.log(pageSize);
       
-      setPageSize(pageSize)
-   }, [documentMode, bookList, preExamList, sheetList])
+      // setPageSize(pageSize)
+   // }, [documentMode, bookList, preExamList, sheetList])
+   }, [documentMode, preExamList, sheetList])
 
-   const bookItems = useMemo(() => {
-      const startIndex = (page - 1) * rowPerPage;
-      const endIndex = startIndex + rowPerPage;
-      return bookList?.slice(startIndex, endIndex)
-   }, [bookList, page])
+   // const bookItems = useMemo(() => {
+   //    const startIndex = (page - 1) * rowPerPage;
+   //    const endIndex = startIndex + rowPerPage;
+   //    return bookList?.slice(startIndex, endIndex)
+   // }, [bookList, page])
 
    const sheetItems = useMemo(() => {
       const startIndex = (page - 1) * rowPerPage;
@@ -245,34 +256,51 @@ const DocumentComp = () => {
    }
 
    const handleOnClickEditBook = (book: DocumentBook) => {
-      setSelectedBook(book)
-      setIsOpenEditDocumentBook(true)
-      const newPath = `${pathName}?bookId=${book.id}`;
-      window.history.replaceState(null, "", newPath);
+      // setSelectedBook(book)
+      // setIsOpenEditDocumentBook(true)
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('documentId', `${book.id}`)
+      params.set(`edit`, 'true')
+      route.replace(`/document?${params.toString()}`)
+      // const newPath = `${pathName}?bookId=${book.id}`;
+      // window.history.replaceState(null, "", newPath);
    }
 
    const handleOnCloseEditBook = () => {
-      setIsOpenEditDocumentBook(false)
-      setTimeout(() => {
-         setSelectedBook(undefined)
-      }, 250);
-      replacePath()
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete(`documentId`)
+      params.delete(`edit`)
+      route.replace(`/document?${params.toString()}`)
+      // setIsOpenEditDocumentBook(false)
+      // setTimeout(() => {
+      //    setSelectedBook(undefined)
+      // }, 250);
+      // replacePath()
    }
+
+   useEffect(() => {
+      const isEdit = searchParams.get('edit') === 'true'
+      if(isEdit){
+         setIsOpenEditDocumentBook(true)
+      }else{
+         setIsOpenEditDocumentBook(false)
+      }
+   }, [searchParams.get('documentId'), searchParams.get('edit')])
 
    const replacePath = () => {
       const newPath = `/document`;
       window.history.replaceState(null, "", newPath);
    };
 
-   useMemo(() => {
-      if(bookListData){
-         const bookId = searchParams.get('bookId')
-         if(!bookId) return
-         const book = bookListData.find(book => book.id === parseInt(bookId))
-         if(!book)return
-         handleOnClickEditBook(book)
-      }
-   }, [searchParams.get('bookId'), bookListData])
+   // useMemo(() => {
+   //    if(bookListData){
+   //       const bookId = searchParams.get('bookId')
+   //       if(!bookId) return
+   //       const book = bookListData.find(book => book.id === parseInt(bookId))
+   //       if(!book)return
+   //       handleOnClickEditBook(book)
+   //    }
+   // }, [searchParams.get('bookId'), bookListData])
 
    const handleOnClickEditSheet = (sheet: DocumentSheet) => {
       setSelectedSheet(sheet)
@@ -308,13 +336,28 @@ const DocumentComp = () => {
       setIsOpenEditPreExam(true)
    }
 
+   useMemo(() => {
+      const isAdd = searchParams.get('add') === 'true'
+      if(isAdd){
+         setIsAddDocumentBook(true)
+      }else{
+         setIsAddDocumentBook(false)
+      }
+   }, [searchParams.get('add')])
+
    return (
-      <div className="relative pt-6 px-app h-screenDevice flex flex-col">
+      <div className="relative flex flex-col">
          <BookInventory
             open={isInventory}
-            onClose={() => setIsInventory(false)}
+            onClose={() => {
+               // setIsInventory(false)
+               const params = new URLSearchParams(searchParams.toString())
+               // params.delete(`stock`)
+               params.delete(`stockBookId`)
+               route.replace(`/document?${params.toString()}`)
+            }}
             onEditStock={() => setIsEditStock(true)}
-            book={selectedBook}
+            book={selectedBook ?? undefined}
          />
          <EditInventory
             open={isEditStock}
@@ -323,7 +366,12 @@ const DocumentComp = () => {
          />
          <AddBook
             open={isAddDocumentBook}
-            onClose={() => setIsAddDocumentBook(false)}
+            // onClose={() => setIsAddDocumentBook(false)}
+            onClose={() => {
+               const params = new URLSearchParams(searchParams.toString())
+               params.delete('add')
+               route.replace(`/document?${params.toString()}`)
+            }}
          />
          {selectedBook &&
             <EditBookModal
@@ -353,7 +401,7 @@ const DocumentComp = () => {
             />
          }
          {/* <ConfirmBook open={isDelete} onClose={() => setIsDelete(false)} /> */}
-         <BookUsage courseList={courseList} book={selectedBook} open={isViewUsage} onClose={() => setIsViewUsage(false)} />
+         <BookUsage courseList={courseList} book={selectedBookViewUsage} open={isViewUsage} onClose={() => setIsViewUsage(false)} />
          <SheetUsage
             open={isOpenSheetViewUsage}
             courseList={courseList}
@@ -484,10 +532,10 @@ const DocumentComp = () => {
             </ModalContent>
          </Modal>
 
-         <div className="font-sans text-3xl font-bold py-2 hidden md:block">
+         {/* <div className="font-sans text-3xl font-bold py-2 hidden md:block">
             {title}
-         </div>
-         <FormDocument
+         </div> */}
+         {/* <FormDocument
             documentMode={documentMode}
             className={`py-2`}
             onAddDocument={() => {
@@ -502,33 +550,45 @@ const DocumentComp = () => {
             }}
             onChangeMode={handleOnChangeDocumentMode}
             onChangeSearch={(value) => {
-               if(documentMode === "book"){
-                  setPreSearchBookText(value)
-               }else if(documentMode === "sheet"){
-                  setPreSearchSheetText(value)
-               }else if(documentMode === "pre-exam"){
-                  setPreSearchPreExamText(value)
-               }
+               // if(documentMode === "book"){
+               //    setPreSearchBookText(value)
+               // }else if(documentMode === "sheet"){
+               //    setPreSearchSheetText(value)
+               // }else if(documentMode === "pre-exam"){
+               //    setPreSearchPreExamText(value)
+               // }
                console.log("value", value);
+               
+               const params = new URLSearchParams(searchParams.toString())
+               params.set('page', '1')
+               if(value){
+                  params.set('search', value)
+               }else{
+                  params.delete('search')
+               }
+               route.replace(`/document?${params.toString()}`)
             }}
-         />
+         /> */}
          <div className="flex-1">
             {documentMode === "book" &&
                <TableBooks
-                  isLoading={isLoadingBook}
+                  isLoading={false}
                   booksList={bookItems}
                   onEditBook={handleOnClickEditBook}
                   onViewStock={(book) => {
                      // console.log("onViewStock");
                      // setIsInventory(true)
                      // setSelectedBook(book)
-                     route.push(`/document?stockBookId=${book.id}`)
+                     const params = new URLSearchParams(searchParams.toString())
+                     params.set(`stockBookId`, `${book.id}`)
+                     route.push(`/document?${params.toString()}`)
+                     // route.push(`/document?stockBookId=${book.id}`)
                   }}
                   onViewUsage={(courseLise, book) => {
                      console.log("onViewUsage");
                      setIsViewUsage(true)
                      setCourseList(courseLise)
-                     setSelectedBook(book)
+                     setSelectedBookViewUsage(book)
                   }}
                />
             }
@@ -548,7 +608,7 @@ const DocumentComp = () => {
                />
             }
          </div>
-         <div className="flex w-full justify-center my-[14px]">
+         {/* <div className="flex w-full justify-center my-[14px]">
             <Pagination
                classNames={{
                   cursor: "bg-default-foreground",
@@ -557,11 +617,17 @@ const DocumentComp = () => {
                aria-label="pagination-document"
                showShadow
                color="primary"
-               page={page}
+               // page={page}
+               page={currentPage}
                total={pageSize}
-               onChange={(page) => setPage(page)}
+               // onChange={(page) => setPage(page)}
+               onChange={(page) => {
+                  const params = new URLSearchParams(searchParams.toString())
+                  params.set('page', page.toString())
+                  route.replace(`/document?${params.toString()}`)
+               }}
             />
-         </div>
+         </div> */}
       </div>
    );
 };

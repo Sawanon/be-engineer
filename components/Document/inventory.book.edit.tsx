@@ -22,7 +22,7 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import { addBookTransactionAction, listBookTransactionByBookId, revalidateBookTransaction } from "@/lib/actions/bookTransactions";
 import { useQuery } from "@tanstack/react-query";
-import { getBookById, listBooksAction } from "@/lib/actions/book.actions";
+import { getBookById, listBooksAction, revalidateBook } from "@/lib/actions/book.actions";
 import { DateValue as DateVal, parseDate } from '@internationalized/date';
 
 const EditInventory = ({
@@ -34,10 +34,10 @@ const EditInventory = ({
    onClose: () => void;
    book: Awaited<ReturnType<typeof getBookById>>
 }) => {
-   const {refetch: refetchBookList} = useQuery({
-      queryKey: ["listBooksAction"],
-      queryFn: () => listBooksAction(),
-   })
+   // const {refetch: refetchBookList} = useQuery({
+   //    queryKey: ["listBooksAction"],
+   //    queryFn: () => listBooksAction(),
+   // })
    const [date, setDate] = useState<{startDate:DateValue | undefined, endDate: DateValue | undefined}>({
       startDate: parseDate(dayjs().format("YYYY-MM-DD")),
       endDate: parseDate(dayjs().format("YYYY-MM-DD")),
@@ -90,8 +90,9 @@ const EditInventory = ({
          }
          handleOnClose()
          // refetchBookTransaction()
-         revalidateBookTransaction(book!.id)
-         refetchBookList()
+         await revalidateBookTransaction(book!.id)
+         await revalidateBook(`/document${location.search}`)
+         // refetchBookList()
       } catch (error) {
          console.error(error)
          setError({

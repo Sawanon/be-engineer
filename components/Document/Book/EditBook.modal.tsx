@@ -1,5 +1,5 @@
 import CustomInput from "@/components/CustomInput";
-import { deleteBookAction, deleteBookImage, editBookAction, listBooksAction } from "@/lib/actions/book.actions";
+import { deleteBookAction, deleteBookImage, editBookAction, listBooksAction, revalidateBook } from "@/lib/actions/book.actions";
 import { useUploadThing } from "@/lib/uploading/uploadthing";
 import { cn } from "@/lib/util";
 import Alert from "@/ui/alert";
@@ -106,7 +106,7 @@ const EditBookModal = ({
   const handleOnClose = () => {
     reset()
     setFiles([]);
-    setImagePreview(undefined);
+    // setImagePreview(undefined);
     // setName(undefined);
     // setTerm(undefined);
     // setYear(undefined);
@@ -156,7 +156,8 @@ const EditBookModal = ({
         throw response
       }
       handleOnClose();
-      refetchBookList()
+      // refetchBookList()
+      revalidateBook(`/document${location.search}`)
     } catch (error) {
       console.error(error)
       setError('root', {

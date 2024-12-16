@@ -53,7 +53,7 @@ const BookInventory = ({
    const {data: bookTransactionsList} =  useQuery({
       queryKey: ["listBookTransactionByBookIdGroupByYearMonth", book?.id],
       queryFn: () => listBookTransactionByBookIdGroupByYearMonth(book!.id),
-      enabled: book !== undefined
+      enabled: book !== undefined,
    })
    
    const rowPerPage = 10

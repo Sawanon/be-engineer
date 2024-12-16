@@ -24,15 +24,12 @@ const Course = async (
 ) => {
   // const showModal = props.searchParams?.modal === "true"
   // const id = props.searchParams?.id
-  console.log("drawerCourse", props.searchParams.drawerCourse);
-  console.log("mode", props.searchParams.mode);
-  console.log("status", props.searchParams.status);
   
   const currentPage = props.searchParams.page ?? "1"
   const searchCourse = props.searchParams.search
   const { status, tutorId } = props.searchParams
 
-  const rowsPerPage = 4
+  const rowsPerPage = 30
   const totalCourse = await getTotalCourse(
     searchCourse,
     status,

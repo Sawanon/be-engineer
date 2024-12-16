@@ -19,10 +19,11 @@ import { useUploadThing } from "@/lib/uploading/uploadthing";
 import { useDropzone } from "@uploadthing/react";
 import { generateClientDropzoneAccept, generatePermittedFileTypes } from 'uploadthing/client'
 import { useCallback, useState } from "react";
-import { addBookAction, editBookAction, listBooksAction } from "@/lib/actions/book.actions";
+import { addBookAction, editBookAction, listBooksAction, revalidateBook } from "@/lib/actions/book.actions";
 import { useQuery } from "@tanstack/react-query";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { CreateBook } from "@/lib/model/document";
+import { useSearchParams } from "next/navigation";
 
 const AddBook = ({
    open,
@@ -31,6 +32,7 @@ const AddBook = ({
    open: boolean;
    onClose: () => void;
 }) => {
+   const searchParams = useSearchParams()
    const {refetch: refetchBookList} = useQuery({
       queryKey: ["listBooksAction"],
       queryFn: () => listBooksAction(),
@@ -127,7 +129,10 @@ const AddBook = ({
          })
          console.log("🚀 ~ submitAddBook ~ updateImageToBook:", updateImageToBook)
          handleOnClose()
-         refetchBookList()
+         // refetchBookList()
+         const params = new URLSearchParams(searchParams.toString())
+         params.delete('add')
+         revalidateBook(`/document?${params.toString()}`)
          console.log(data);
       } catch (error) {
          console.error(error)
