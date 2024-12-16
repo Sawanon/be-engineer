@@ -215,7 +215,7 @@ const TableDeliver = ({
         classNames={{
           ...tableClassnames,
           emptyWrapper: "font-serif",
-          base: "flex-1  mb-4  overflow-y-auto",
+          base: "flex-1  mb-4  ",
           // tbody : "overflow-scroll scrollbar-hide",
           table: " flex-1 ",
           th: [
