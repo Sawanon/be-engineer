@@ -1,4 +1,4 @@
-import { cn, openSheetPage } from "@/lib/util";
+import { cn, openSheetPage, renderBookName } from "@/lib/util";
 import Alert from "@/ui/alert";
 import {
   Button,
@@ -66,12 +66,14 @@ const EditTracking = ({
 }: {
   dialogState: modalProps<Awaited<ReturnType<typeof getDeliver>>["data"][0]> & {
     type?: deliveryTypeProps;
+    id?: string;
   };
   // refetch: () => void;
   onClose: () => void;
 }) => {
   const router = useRouter();
-  const { open, data } = dialogState;
+  const { open, data, id } = dialogState;
+  console.log('id', id)
   const [isError, setIsError] = useState(false);
   const onError = (e: Error) => {
     console.error(e);
@@ -93,7 +95,15 @@ const EditTracking = ({
     formState: { errors },
   } = form;
 
-  const queryData = useDeliverByIds(data ? [data.id] : undefined);
+  const [newData, setNewData] = useState(data);
+  const queryData = useDeliverByIds(id ? [parseInt(id)] : undefined);
+  useMemo(() => {
+    if (queryData.data && open && data === undefined && id !== undefined) {
+      setNewData(queryData.data[0]);
+    } else {
+      setNewData(data);
+    }
+  }, [queryData.data, data]);
   const checkCourse = useMemo(() => {
     if (queryData.data?.[0]) {
       const data = queryData.data[0];
@@ -136,11 +146,11 @@ const EditTracking = ({
     form.setValue("note", "");
     form.setValue("trackingNumber", "");
   };
-const [deliverShip,setDeliverShip] = useState<deliverShipServiceKey | undefined>("flash")
+  const [deliverShip, setDeliverShip] = useState<
+    deliverShipServiceKey | undefined
+  >("flash");
 
-useMemo(()=>{
-
-},[])
+  useMemo(() => {}, []);
 
   return (
     <Modal
@@ -162,7 +172,7 @@ useMemo(()=>{
             <div className=" flex flex-col md:rounded-none   bg-white flex-1 px-4 space-y-2">
               <div className="flex gap-1 justify-center my-3  ">
                 <p className="text-3xl font-semibold font-IBM-Thai">
-                  {data?.member}
+                  {newData?.member}
                 </p>
                 <Button
                   variant="flat"
@@ -181,8 +191,8 @@ useMemo(()=>{
               </div>
             ) : (
               <>
-                {data?.Delivery_WebappCourse.map((d) => {
-                  const checkCMapCourse = data.Delivery_Course.some(
+                {newData?.Delivery_WebappCourse.map((d) => {
+                  const checkCMapCourse = newData.Delivery_Course.some(
                     (course) => {
                       return (
                         course.webappCourseId === d.webappCourseId &&
@@ -222,7 +232,7 @@ useMemo(()=>{
                               key={d.DocumentBook?.id}
                               className="leading-6 text-base font-serif"
                             >
-                              {d.DocumentBook?.name}
+                              {renderBookName(d.DocumentBook)}
                             </p>
                           </div>
                         ) : (
@@ -238,7 +248,7 @@ useMemo(()=>{
                     <div className="space-y-1">
                       <div className="text-[14px] md:text-[12px]">
                         {checkCourse.sheetRecord.map((d) => {
-                          console.log('2377', d)
+                          console.log("2377", d);
                           return (
                             <div
                               className=" flex gap-2 items-center"
@@ -252,7 +262,7 @@ useMemo(()=>{
                                 <Button
                                   variant="flat"
                                   onClick={() => {
-                                    window.open(d.DocumentSheet?.url)
+                                    window.open(d.DocumentSheet?.url);
                                     // openSheetPage(d.DocumentSheet?.id!);
                                   }}
                                   isIconOnly
@@ -281,11 +291,7 @@ useMemo(()=>{
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-2"
               >
-
-
-
-                
-                {data?.type === "ship" && (
+                {newData?.type === "ship" && (
                   <div className="space-y-2">
                     <Controller
                       name="trackingNumber"
@@ -318,7 +324,10 @@ useMemo(()=>{
                         deliveryType[form.watch("delivery")!].logo
                       }
                       value={"kerry"}
-                      selectedKeys={form.watch("delivery") &&[form.watch("delivery")] as Iterable<any> } 
+                      selectedKeys={
+                        form.watch("delivery") &&
+                        ([form.watch("delivery")] as Iterable<any>)
+                      }
                       renderValue={() => {
                         return deliveryType[form.watch("delivery")!].txt;
                       }}

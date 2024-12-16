@@ -16,10 +16,11 @@ const CustomInput = <T extends FieldValues>(prop: inputType<T>) => {
    return (
       <Input
          {...prop}
+         aria-label={prop.name}
          classNames={{
             ...prop.classNames,
             mainWrapper: cn(
-               "font-IBM-Thai-Looped",
+               "font-serif",
                prop.classNames?.mainWrapper
             ),
             input: cn("text-[1em]", prop.classNames?.input),

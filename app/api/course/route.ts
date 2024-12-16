@@ -5,7 +5,6 @@ const prisma = new PrismaClient()
 export const POST = async  (req: NextRequest, res: NextResponse) => {
   try {
     const res = await prisma.documentSheet.findMany()
-    prisma.documentSheet
     console.log("res", res);
     return Response.json({
       data: res,

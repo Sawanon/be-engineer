@@ -26,7 +26,7 @@ import { cn } from "@nextui-org/theme";
 import { LuDownload, LuPrinter, LuX } from "react-icons/lu";
 import { formatCourse } from "@/lib/query/delivery";
 import dayjs from "dayjs";
-import { downloadBlobToFile } from "@/lib/util";
+import { downloadBlobToFile, renderBookName } from "@/lib/util";
 
 Font.register({
   family: `sanLoop`,
@@ -172,7 +172,6 @@ export const PDFDocument = ({
                 (course) => course.Course?.id !== undefined
               ) ? (
                 <View>
-                
                   {delivery?.Delivery_WebappCourse.map((d) => {
                     const checkCMapCourse = delivery.Delivery_Course.some(
                       (course) => {
@@ -186,7 +185,7 @@ export const PDFDocument = ({
                     if (checkCMapCourse) {
                       return (
                         <View
-                        key={delivery.id}
+                          key={delivery.id}
                           style={{
                             gap: 4,
                             display: "flex",
@@ -226,7 +225,7 @@ export const PDFDocument = ({
                           fontSize: 10,
                         }}
                       >
-                        {checkCourse.bookLesson.map((d) => {
+                        {checkCourse.bookLesson.map((d, index) => {
                           return (
                             <View
                               key={d.bookId}
@@ -250,7 +249,8 @@ export const PDFDocument = ({
                                 style={{ marginLeft: "4px" }}
                                 key={d.DocumentBook.id}
                               >
-                                {d.DocumentBook.name}
+                                {renderBookName(d.DocumentBook)}
+                                {/* {d.DocumentBook.name} */}
                               </Text>
                             </View>
                           );
@@ -295,7 +295,7 @@ export const PDFDocument = ({
                           fontSize: 10,
                         }}
                       >
-                        {checkCourse.sheetLesson.map((d) => {
+                        {checkCourse.sheetLesson.map((d, index) => {
                           return (
                             <View
                               key={d.sheetId}
@@ -344,7 +344,7 @@ export const PDFDocument = ({
                     ) {
                       return (
                         <View
-                        key={delivery.id}
+                          key={delivery.id}
                           style={{
                             gap: 4,
                             display: "flex",

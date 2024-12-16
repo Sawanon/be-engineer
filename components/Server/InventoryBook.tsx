@@ -1,3 +1,5 @@
+"use client"
+import { getBookById } from "@/lib/actions/book.actions";
 import { listBookTransactionByBookId, listBookTransactionByBookIdGroupByYearMonth } from "@/lib/actions/bookTransactions";
 import { tableClassnames } from "@/lib/res/const";
 import { cn } from "@/lib/util";
@@ -32,17 +34,21 @@ import {
    LuPlus,
    LuPrinter,
 } from "react-icons/lu";
+import EditInventory from "../Document/inventory.book.edit";
+import { useRouter } from "next/navigation";
 
 const BookInventory = ({
-   open,
-   onClose,
-   onEditStock,
+  //  open,
+  //  onClose,
+  //  onEditStock,
    book,
+   bookTransactionsList,
 }: {
-   open: boolean;
-   onClose: () => void;
-   onEditStock: () => void;
-   book?: DocumentBook
+  //  open: boolean;
+  //  onClose: () => void;
+  //  onEditStock: () => void;
+   book: Awaited<ReturnType<typeof getBookById>>,
+   bookTransactionsList: Awaited<ReturnType<typeof listBookTransactionByBookIdGroupByYearMonth>>
 }) => {
 
    // const {data: bookTransactionsList} =  useQuery({
@@ -50,15 +56,16 @@ const BookInventory = ({
    //    queryFn: () => listBookTransactionByBookId(book!.id),
    //    enabled: book !== undefined
    // })
-   const {data: bookTransactionsList} =  useQuery({
-      queryKey: ["listBookTransactionByBookIdGroupByYearMonth", book?.id],
-      queryFn: () => listBookTransactionByBookIdGroupByYearMonth(book!.id),
-      enabled: book !== undefined,
-   })
-   
+  //  const {data: bookTransactionsList} =  useQuery({
+  //     queryKey: ["listBookTransactionByBookIdGroupByYearMonth", book?.id],
+  //     queryFn: () => listBookTransactionByBookIdGroupByYearMonth(book!.id),
+  //     enabled: book !== undefined
+  //  })
+   const route = useRouter()
    const rowPerPage = 10
    const [page, setPage] = useState(1)
    const [pageSize, setPageSize] = useState(5)
+   const [isEditStock, setIsEditStock] = useState(false)
 
    const booTransactionItems = useMemo(() => {
       const startIndex = (page - 1) * rowPerPage;
@@ -73,15 +80,15 @@ const BookInventory = ({
       dayjs.tz.setDefault('Asia/Bangkok')
       const startDayjs = dayjs(startDate)
       const endDayjs = dayjs(endDate)
-      console.log(new Date().getTimezoneOffset());
-      console.log("startDate:", startDate);
-      console.log("endDate:", endDate);
-      console.log('startDayjs:', `${startDayjs}`);
-      console.log('endDayjs:', `${endDayjs}`);
-      console.log('date start', startDayjs.date());
-      console.log('date end', endDayjs.date());
-      console.log('date start format', startDayjs.format('DD'));
-      console.log('date end format', endDayjs.format('DD'));
+      // console.log(new Date().getTimezoneOffset());
+      // console.log("startDate:", startDate);
+      // console.log("endDate:", endDate);
+      // console.log('startDayjs:', `${startDayjs}`);
+      // console.log('endDayjs:', `${endDayjs}`);
+      // console.log('date start', startDayjs.date());
+      // console.log('date end', endDayjs.date());
+      // console.log('date start format', startDayjs.format('DD'));
+      // console.log('date end format', endDayjs.format('DD'));
       
       
       if(startDayjs.isSame(endDayjs, 'date')){
@@ -123,6 +130,14 @@ const BookInventory = ({
       return detail
    }
 
+   const handleOnClose = () => {
+    route.back()
+   }
+
+   const handleOnEditStock = () => {
+    setIsEditStock(true)
+   }
+
    return (
       <Modal
          size={"full"}
@@ -131,7 +146,7 @@ const BookInventory = ({
             backdrop: 'bg-backdrop',
          }}
          closeButton={<></>}
-         isOpen={open}
+         isOpen={true}
          backdrop="blur"
          onClose={() => {}}
          scrollBehavior={"inside"}
@@ -158,6 +173,11 @@ const BookInventory = ({
       >
          <ModalContent>
             <ModalBody className={cn("p-0 flex flex-col  ")}>
+              <EditInventory
+                  open={isEditStock}
+                  onClose={() => setIsEditStock(false)}
+                  book={book}
+              />
                <div className="flex flex-1 md:flex-row-reverse overflow-y-hidden">
                   {/* <div className="hidden md:block flex-1"></div> */}
                   <div className="shadow-nextui-large flex flex-col h-full  w-full md:w-[480px] gap-2  bg-white px-4 py-2">
@@ -165,7 +185,7 @@ const BookInventory = ({
                         <Button
                            className="bg-default-100  text-default-foreground"
                            isIconOnly
-                           onClick={onClose}
+                           onClick={handleOnClose}
                         >
                            <LuArrowLeft size={24} />
                         </Button>
@@ -199,7 +219,7 @@ const BookInventory = ({
                         </div>
                      </div>
                      <Button
-                        onClick={onEditStock}
+                        onClick={handleOnEditStock}
                         className="bg-default-foreground text-primary-foreground font-IBM-Thai font-medium"
                      >
                         <LuPlus size={24} />

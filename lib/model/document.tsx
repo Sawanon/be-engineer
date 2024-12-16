@@ -3,3 +3,10 @@ export type Document = {
     imageUrl?: string,
     name: string,
 }
+
+export type CreateBook = {
+    name: string,
+    term: string,
+    year: string,
+    volume: string,
+ }

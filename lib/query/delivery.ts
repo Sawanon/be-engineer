@@ -20,7 +20,7 @@ import {
   updateAddress,
   updateDeliver,
 } from "@/lib/actions/deliver.actions";
-import { Prisma } from "@prisma/client";
+import { DocumentBook, Prisma } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -30,12 +30,7 @@ export const formatCourse = (
   delivery: NonNullable<Awaited<ReturnType<typeof getDeliverByIds>>[0]>
 ) => {
   let bookLesson: ({
-    DocumentBook: {
-      id: number;
-      name: string;
-      image: string | null;
-      inStock: number | null;
-    };
+    DocumentBook: DocumentBook;
   } & {
     lessonId: number;
     bookId: number;

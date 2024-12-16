@@ -1,10 +1,6 @@
-import { modalProps, stateProps } from "@/@type";
 import { tableClassnames } from "@/lib/res/const";
 import {
    Button,
-   Chip,
-   Image,
-   Pagination,
    Table,
    TableBody,
    TableCell,
@@ -12,16 +8,10 @@ import {
    TableHeader,
    TableRow,
 } from "@nextui-org/react";
-import { DocumentBook, DocumentSheet, LessonOnDocumentSheet } from "@prisma/client";
+import { DocumentSheet } from "@prisma/client";
 import { ExternalLink, ScrollText } from "lucide-react";
-import { HiOutlineTruck } from "react-icons/hi";
 import {
-   LuClipboard,
-   LuClipboardList,
-   LuFileSignature,
    LuListTree,
-   LuPackage,
-   LuPrinter,
 } from "react-icons/lu";
 
 const TableDocument = ({
@@ -35,7 +25,6 @@ const TableDocument = ({
 }) => {
 
    const renderCourseUsage = (sheet: DocumentSheet | any) => {
-      console.log("sheet", sheet);
       const LessonOnDocument: any[] = sheet.LessonOnDocumentSheet
       const courseMap: Map<string, any> = new Map();
       LessonOnDocument.forEach((lessonOnDocument) => {
@@ -78,7 +67,7 @@ const TableDocument = ({
          color={"primary"}
       >
          <TableHeader>
-            <TableColumn className={`font-IBM-Thai`}>หนังสือ</TableColumn>
+            <TableColumn className={`font-IBM-Thai`}>เอกสาร</TableColumn>
             <TableColumn className={`font-IBM-Thai`}>เปิดดู</TableColumn>
             <TableColumn className={`font-IBM-Thai`}>คอร์สที่ใช้งาน</TableColumn>
          </TableHeader>

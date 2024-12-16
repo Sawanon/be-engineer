@@ -8,7 +8,7 @@ import {
   revalidateCourse,
   searchImageByCourseName,
 } from "@/lib/actions/course.actions";
-import React , { useMemo, useState } from "react";
+import React , { useEffect, useMemo, useState } from "react";
 import CustomDrawer from "@/components/Drawer";
 import {
   ArrowLeft,
@@ -35,59 +35,65 @@ import LessonAdminMode from "@/components/Course/LessonAdminMode";
 import DeleteCourseDialog from "@/components/Course/DeleteCourseDialog";
 import AddCourseForm from "@/components/Course/AddCourseForm";
 import EditCourseForm from "@/components/Course/EditCourseForm";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Buttons from "./Buttons";
-
-const findUniqueDocument = (course: Awaited<ReturnType<typeof getCourseById>>) => {
-  if(!course || typeof course === "string") return
-  course.CourseLesson.flatMap(lesson => {
-    
-  })
-  const uniqueSheets = Array.from(
-    new Map(course.CourseLesson.flatMap(lesson => 
-       lesson.LessonOnDocumentSheet.map(sheet => [sheet.DocumentSheet.id, sheet.DocumentSheet])
-    )).values()
-  )
-  const uniquePreExam = Array.from(
-    new Map(course.CourseLesson.flatMap(lesson => 
-       lesson.LessonOnDocument.map(sheet => [sheet.DocumentPreExam.id, sheet.DocumentPreExam])
-    )).values()
-  )
-  const uniqueBooks = Array.from(
-    new Map(course.CourseLesson.flatMap(lesson => 
-       lesson.LessonOnDocumentBook.map(sheet => [sheet.DocumentBook.id, sheet.DocumentBook])
-    )).values()
-  )
-  
-  return {
-    ...course,
-    uniqueSheets,
-    uniquePreExam,
-    uniqueBooks,
-  }
-}
 
 const ManageCourse = ({
   isOpenDrawer,
   selectedCourse,
+  mode,
   // onClose,
   // onConfirmAdd,
   // onFetch,
 }: {
-  isOpenDrawer: boolean;
+  isOpenDrawer: boolean,
   // selectedCourse: Course | undefined | null;
-  selectedCourse: Awaited<ReturnType<typeof getCourseById>>;
+  selectedCourse: Awaited<ReturnType<typeof getCourseById>>,
+  mode: string,
   // onClose: () => void;
   // onConfirmAdd: (courseId: number) => Promise<void>;
   // onFetch?: () => Promise<void>;
 }) => {
   const route = useRouter()
+  const searchParams = useSearchParams()
   // const searchParams = useSearchParams()
-  const { data: webappBranchCourseList, isFetched } = useQuery({
+  const {
+    data: webappBranchCourseList,
+    isFetched
+  } = useQuery({
     queryKey: [`listCourseWebapp`],
     queryFn: () => listCourseWebapp(),
   });
+  const findUniqueDocument = (course: Awaited<ReturnType<typeof getCourseById>>) => {
+    if(!course || typeof course === "string") return
+    course.CourseLesson.flatMap(lesson => {
+      
+    })
+    const uniqueSheets = Array.from(
+      new Map(course.CourseLesson.flatMap(lesson => 
+         lesson.LessonOnDocumentSheet.map(sheet => [sheet.DocumentSheet.id, sheet.DocumentSheet])
+      )).values()
+    )
+    const uniquePreExam = Array.from(
+      new Map(course.CourseLesson.flatMap(lesson => 
+         lesson.LessonOnDocument.map(sheet => [sheet.DocumentPreExam.id, sheet.DocumentPreExam])
+      )).values()
+    )
+    const uniqueBooks = Array.from(
+      new Map(course.CourseLesson.flatMap(lesson => 
+         lesson.LessonOnDocumentBook.map(sheet => [sheet.DocumentBook.id, sheet.DocumentBook])
+      )).values()
+    )
+    
+    return {
+      ...course,
+      uniqueSheets,
+      uniquePreExam,
+      uniqueBooks,
+    }
+  }
+
   const courseWithUniqueDocuments = findUniqueDocument(selectedCourse)
   
   const sheets = courseWithUniqueDocuments?.uniqueSheets ?? []
@@ -95,18 +101,15 @@ const ManageCourse = ({
   const books = courseWithUniqueDocuments?.uniqueBooks ?? []
   const documentNumber = sheets.length + preExam.length + books.length
 
-  const [isAdd, setIsAdd] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
   const [manageCourseMode, setManageCourseMode] = useState<'add' | 'edit' | 'show'>('show')
   
-  const [isDelete, setIsDelete] = useState(false);
   const [isDeleteCourse, setIsDeleteCourse] = useState(false);
   const [errorDeleteCourse, setErrorDeleteCourse] = useState({
     isError: false,
     message: "ลบไม่สำเร็จ ดูเพิ่มเติมใน Console",
   });
 
-  const [mode, setMode] = useState<"tutor" | "admin" | string>("tutor");
+  // const [mode, setMode] = useState<"tutor" | "admin" | string>("tutor");
   const [courseImageList, setCourseImageList] = useState<string[]>([]);
   const [webappCourseList, setWebappCourseList] = useState<
     | { id: number; name: string; image: string; hasFeedback: boolean; term: string; }[]
@@ -128,11 +131,10 @@ const ManageCourse = ({
   //   }
   // }, [searchParams.get('mode')])
 
-  useMemo(() => {
+  useEffect(() => {
     if(!selectedCourse){
       setCourseImageList([])
     }
-    setIsAdd(selectedCourse === undefined);
     // setManageCourseMode(selectedCourse === undefined ? 'add' : 'show')
     if (selectedCourse && typeof selectedCourse !== "string") {
       listImageCourse(selectedCourse.name);
@@ -142,9 +144,9 @@ const ManageCourse = ({
         const coundDoc = lesson.LessonOnDocument.length + lesson.LessonOnDocumentBook.length + lesson.LessonOnDocumentSheet.length
         if(coundDoc === 0) onlyOneDontExistDoc = true
       })
-      let mode = selectedCourse.status === "noContent" ? `tutor` : `admin`
-      if(onlyOneDontExistDoc) mode = `tutor`
-      setMode(mode)
+      // let mode = selectedCourse.status === "noContent" ? `tutor` : `admin`
+      // if(onlyOneDontExistDoc) mode = `tutor`
+      // setMode(mode)
     }
   }, [selectedCourse]);
 
@@ -174,12 +176,15 @@ const ManageCourse = ({
         return
       }
     }
-    setIsEdit(false);
-    setIsDelete(false);
-    setIsAdd(true);
     // onClose();
-    route.back()
-    setMode('tutor')
+    // console.log(`history.state`, history.length);
+    // const page = searchParams.get('page')
+    // let params = page === "" ? "" : `?page=${page}`
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('drawerCourse')
+    params.delete('mode')
+    route.replace(`/course?${params}`)
+    // setMode('tutor')
   };
 
   const handleDeleteCourse = async () => {
@@ -187,7 +192,12 @@ const ManageCourse = ({
   };
 
   const handleSwitchMode = () => {
-    setMode((prev) => (prev === "tutor" ? "admin" : "tutor"));
+    // setMode((prev) => (prev === "tutor" ? "admin" : "tutor"));
+    const ogDrawerCourse = searchParams.get('drawerCourse')
+    const ogMode = searchParams.get('mode')
+    const mode = ogMode === 'tutor' ? 'admin' : 'tutor'
+    const newRoute = `/course?drawerCourse=${ogDrawerCourse}&mode=${mode}`
+    route.replace(newRoute)
   };
 
   const renderHourCourse = () => {
@@ -257,8 +267,8 @@ const ManageCourse = ({
         return;
     }
     setIsDeleteCourse(false);
-    await revalidateCourse()
-    handleClose();
+    // handleClose();
+    route.replace('/course')
     // refetchCourse();
   };
 
@@ -280,7 +290,8 @@ const ManageCourse = ({
         const responseDuplicate = await duplicationCourseAction(selectedCourse.id)
         if(!responseDuplicate) throw `responseDuplicate is ${responseDuplicate}`
         if(typeof responseDuplicate === "string") throw responseDuplicate
-        handleClose()
+        // handleClose()
+        route.replace('/course')
         // if(onFetch) onFetch()
       }
     } catch (error) {
@@ -410,6 +421,9 @@ const ManageCourse = ({
                     base: "p-0",
                     symbol: `p-0 hidden`,
                   }}
+                  tooltipProps={{
+                    className: `font-serif`,
+                  }}
                 />
               </div>
               <div className={`mt-2 flex gap-2 items-center`}>
@@ -419,14 +433,17 @@ const ManageCourse = ({
                   Link ติวเตอร์: {selectedCourse?.Tutor?.name}
                 </div>
                 <Snippet
-                  codeString={selectedCourse?.tutorLink!}
+                  codeString={selectedCourse?.Tutor?.tutorLink!}
                   hideSymbol
                   variant="flat"
                   className={`p-0 gap-0 bg-default-100 text-default-foreground`}
                   copyIcon={<Copy size={24} />}
                   classNames={{
-                    base: "p-0",
-                    symbol: `p-0 hidden`,
+                    base: ["p-0"],
+                    symbol: [`p-0 hidden`],
+                  }}
+                  tooltipProps={{
+                    className: `font-serif`,
                   }}
                 />
               </div>

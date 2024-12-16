@@ -62,7 +62,7 @@ const TableDeliver = ({
   }>;
   query: ReturnType<typeof useDeliverByFilter>;
   state: stateProps<modalProps>;
-  onOpenEditTracking: (data: DeliverRes["data"][0]) => void;
+  onOpenEditTracking: (data: DeliverRes["data"][0],id?: string) => void;
   onAddTrackings: (
     data: DeliverRes["data"][0],
     type: deliveryTypeProps
@@ -371,7 +371,7 @@ const TrackingDetail = ({
   checkType,
   onOpenEditTracking,
 }: {
-  onOpenEditTracking: (d: DeliverRes["data"][0]) => void;
+  onOpenEditTracking: (d: DeliverRes["data"][0],id?: string) => void;
   checkType: deliveryTypeProps;
   tracking?: DeliverRes["data"][0];
 }) => {
@@ -399,7 +399,7 @@ const TrackingDetail = ({
               </Button>
               <Button
                 onClick={() => {
-                  onOpenEditTracking(tracking!);
+                  onOpenEditTracking(tracking!,tracking?.id.toString());
                 }}
                 isIconOnly
                 className="bg-default-100"

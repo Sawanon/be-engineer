@@ -2,7 +2,7 @@ import DeleteCourseDialog from '@/components/Course/DeleteCourseDialog'
 import { deletePreExamAction, editPreExamAction } from '@/lib/actions/pre-exam.actions'
 import Alert from '@/ui/alert'
 import { Button, Input, Modal, ModalContent, Textarea } from '@nextui-org/react'
-import { DocumentPreExam } from '@prisma/client'
+import { DocumentPreExam, LessonOnDocument } from '@prisma/client'
 import { X } from 'lucide-react'
 import React, { useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
@@ -41,6 +41,7 @@ const EditPreExamModal = ({
     isError: false,
     message: "",
   })
+  const [isCantDelete, setIsCantDelete] = useState(false)
 
   const handleOnClose = () => {
     onClose()
@@ -83,6 +84,17 @@ const EditPreExamModal = ({
     }
   }
 
+  const handleOnDelete = () => {
+    console.log(preExam);
+    const _preExam:any = preExam
+    const lessonUsePreExam:LessonOnDocument[] = _preExam.LessonOnDocument
+    if(lessonUsePreExam.length > 0){
+      setIsCantDelete(true)
+      return
+    }
+    setIsOpenDelete(true)
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -94,6 +106,35 @@ const EditPreExamModal = ({
       }}
     >
       <ModalContent className={`p-app`}>
+        <Modal
+          isOpen={isCantDelete}
+          classNames={{
+            base: "bottom-0 absolute md:relative w-screen md:w-[428px] bg-white m-0 ",
+            body: "p-0",
+          }}
+          backdrop="blur"
+          onClose={() => {}}
+          closeButton={<></>}
+        >
+          <ModalContent
+            className={`p-app`}
+          >
+            <div className={`text-3xl font-semibold font-IBM-Thai`}>
+              ไม่สามารถลบได้ !
+            </div>
+            <div className={`mt-app font-IBM-Thai-Looped`}>
+              ไม่สามารถลบเอกสาร {preExam?.name} เพราะถูกใช้งานในคอร์สแล้ว
+            </div>
+            <div className={`pt-2 flex justify-end`}>
+              <Button
+                className={`bg-default-100 font-IBM-Thai`}
+                onClick={handleOnClose}
+              >
+                ตกลง
+              </Button>
+            </div>
+          </ModalContent>
+        </Modal>
         <DeleteCourseDialog
           isOpen={isOpenDelete}
           title='แน่ใจหรือไม่ ?'
@@ -128,6 +169,7 @@ const EditPreExamModal = ({
           }
           <div className={``}>
             <Input
+              aria-label='preExam name'
               className={`rounded-lg`}
               placeholder='ชื่อเอกสาร'
               color={errors.name ? `danger` : `default`}
@@ -153,7 +195,7 @@ const EditPreExamModal = ({
               />
             </div>
             <div className={`mt-app pt-2 flex gap-2`}>
-              <Button onClick={() => setIsOpenDelete(true)} disabled={isSubmitting} className={`bg-default-100 text-danger-500 font-serif min-w-0 font-medium text-base`}>
+              <Button onClick={handleOnDelete} disabled={isSubmitting} className={`bg-default-100 text-danger-500 font-sans min-w-0 font-medium text-base`}>
                 ลบ
               </Button>
               <Button

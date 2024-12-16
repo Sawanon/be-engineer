@@ -1,3 +1,4 @@
+import { renderBookName } from '@/lib/util';
 import { Accordion, AccordionItem, Button, Image, Popover, PopoverContent, PopoverTrigger } from '@nextui-org/react';
 import { Course, CourseLesson, CourseVideo, DocumentBook, DocumentPreExam, DocumentSheet } from '@prisma/client';
 import copy from 'copy-to-clipboard';
@@ -231,7 +232,7 @@ const LessonAdminMode = ({
               {books.map((book, index) => (
                 <div className={`flex gap-2 items-center`} key={`bookadmin${index}`}>
                   <Image src={book.image ?? ''} className={`h-10 rounded`} classNames={{wrapper: 'rounded'}} />
-                  {book.name}
+                  {renderBookName(book)}
                 </div> 
               ))}
             </div>

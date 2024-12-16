@@ -6,6 +6,7 @@ const ENDPOINT_BE_ENGINEER_URL = process.env.ENDPOINT_BE_ENGINEER_URL;
 const B_API_KEY = process.env.B_API_KEY;
 export const revalidate = 60
 export const GET = async  (req: NextRequest, res: NextResponse) => {
+  const searchParams = req.nextUrl.searchParams
   try {
     const response = await axios({
       url: `${ENDPOINT_BE_ENGINEER_URL}/api/video-description`,
@@ -18,8 +19,8 @@ export const GET = async  (req: NextRequest, res: NextResponse) => {
     if(!Array.isArray(videoDescriptions)){
       return Response.json([])
     }
-    const search = req.nextUrl.searchParams.get('search')
-    const defaultId = req.nextUrl.searchParams.get('defaultId')
+    const search = searchParams.get('search')
+    const defaultId = searchParams.get('defaultId')
     const defaultDescription = defaultId ? videoDescriptions.find(videoDes => `${videoDes.id}` === defaultId) : {}
     if(search === null || search === ""){
       const defaultVideoDes = videoDescriptions.splice(0, 10)

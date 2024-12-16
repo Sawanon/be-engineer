@@ -9,7 +9,7 @@ import {
   useDeliverByIds,
   useUpdatePickup,
 } from "@/lib/query/delivery";
-import { openSheetPage } from "@/lib/util";
+import { openSheetPage, renderBookName } from "@/lib/util";
 import Alert from "@/ui/alert";
 import {
   Button,
@@ -86,12 +86,14 @@ const ReceiveOrder = ({
         ) : (
           <>
             {queryData.data?.[0]?.Delivery_WebappCourse.map((d) => {
-              const checkCMapCourse = queryData.data?.[0].Delivery_Course.some((course) => {
-                return (
-                  course.webappCourseId === d.webappCourseId &&
-                  course.Course === null
-                );
-              });
+              const checkCMapCourse = queryData.data?.[0].Delivery_Course.some(
+                (course) => {
+                  return (
+                    course.webappCourseId === d.webappCourseId &&
+                    course.Course === null
+                  );
+                }
+              );
 
               if (checkCMapCourse) {
                 return (
@@ -121,7 +123,10 @@ const ReceiveOrder = ({
                             alt={d.DocumentBook.name}
                             src={d.DocumentBook.image!}
                           />
-                          <p>{d.DocumentBook.name}</p>
+                          <p>
+                            {renderBookName(d.DocumentBook)}
+                            {/* {d.DocumentBook.name} */}
+                          </p>
                         </div>
                       );
                     })}
@@ -189,7 +194,7 @@ const ReceiveOrder = ({
               type="submit"
               fullWidth
               color={"primary"}
-              className="md:col-span-2 col-span-3 order-1  font-san"
+              className="md:col-span-2 col-span-3 order-1  font-san font-medium"
             >
               รับหนังสือ
             </Button>

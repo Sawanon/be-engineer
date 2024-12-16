@@ -8,6 +8,8 @@ import { ChevronDown, ClipboardSignature, ScrollText, X } from 'lucide-react'
 import React, { Key, useMemo, useState } from 'react'
 import DisconnectDocument from './DisconnectDocument'
 import { updateBookInLesson } from '@/lib/actions/lesson.actions'
+import { renderBookName } from '@/lib/util'
+import { DocumentBook } from '@prisma/client'
 
 const EditDocument = ({
   isOpen,
@@ -241,15 +243,16 @@ const EditDocument = ({
             {
               documentList?
               documentList?.map((document, index) => {
-              return (
-                <AutocompleteItem
-                  key={`${document.id}:${document.type}`}
-                  startContent={renderStartContent(document)}
-                  className={`font-serif`}
-                >
-                  {document.name}
-                </AutocompleteItem>
-              )
+                const name = document.type === "book" ? renderBookName(document as DocumentBook) : document.name
+                return (
+                  <AutocompleteItem
+                    key={`${document.id}:${document.type}`}
+                    startContent={renderStartContent(document)}
+                    className={`font-serif`}
+                  >
+                    {name}
+                  </AutocompleteItem>
+                )
             })
           : (
             <AutocompleteItem key={`loading`}>

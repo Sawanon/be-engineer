@@ -39,6 +39,7 @@ import DeleteLesson from "./Course/Lesson/DeleteLesson";
 import AddLesson from "./Course/Lesson/AddLesson";
 import EditDocument from "./Course/Document/EditDocument";
 import { listBooksAction } from "@/lib/actions/book.actions";
+import { renderBookName } from "@/lib/util";
 
 const ManageLesson = ({
   courseId,
@@ -50,7 +51,7 @@ const ManageLesson = ({
   courseId: number;
   lessons?: any[];
   onFetch?: () => Promise<void>;
-  mode: "tutor" | "admin" | string
+  mode: string
   className: string
 }) => {
 
@@ -360,11 +361,12 @@ const ManageLesson = ({
                     </div>
                   )
                 }else if(document.type === "book"){
+                  
                   return (
                     <div onClick={() => handleOnClickEditDocument(document, lesson)} className={`cursor-pointer mt-2 flex items-center gap-2 font-IBM-Thai-Looped`} key={`documentBook${document.id}${lesson.id}`}>
                       <Image className={`h-10 rounded`} src={document.DocumentBook.image} alt="book image" />
                       <div>
-                        {document.DocumentBook.name}
+                        {renderBookName(document.DocumentBook)}
                       </div>
                     </div>
                   )

@@ -2,6 +2,7 @@ import { listBooksAction } from '@/lib/actions/book.actions'
 import { addBookToLessonAction, addDocumentToLesson, addPreExamToLessonAction } from '@/lib/actions/lesson.actions'
 import { listPreExamAction } from '@/lib/actions/pre-exam.actions'
 import { listSheetsAction } from '@/lib/actions/sheet.action'
+import { renderBookName } from '@/lib/util'
 import Alert from '@/ui/alert'
 import { Autocomplete, AutocompleteItem, Button, Image, Modal, ModalContent } from '@nextui-org/react'
 import { DocumentBook } from '@prisma/client'
@@ -188,7 +189,7 @@ const AddDocumentToLesson = ({
               return 0
             }).map((document, index) => {
               const book = document as DocumentBook
-              const name = document.type === "book" ? `${book.name} ${book.term} ${book.year} ${book.volume ?? ""}` : document.name
+              const name = document.type === "book" ? renderBookName(book) : document.name
               return (
                 <AutocompleteItem
                   className={`font-serif`}

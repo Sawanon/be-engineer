@@ -3,6 +3,7 @@
 import { PrismaClient, Prisma } from "@prisma/client"
 import { getBookById, updateBookInStock } from "./book.actions"
 import dayjs from "dayjs"
+import { revalidatePath } from "next/cache"
 
 const prisma = new PrismaClient()
 
@@ -73,9 +74,14 @@ export const listBookTransactionByBookIdGroupByYearMonth = async (bookId: number
         startDate: true,
         endDate: true,
       },
-      orderBy: {
-        startDate: 'desc',
-      },
+      orderBy: [
+        {
+          startDate: 'desc',
+        },
+        {
+          createdAt: 'desc',
+        },
+      ]
     })
     const response:any[] = await prisma.$queryRaw`
       SELECT detail, DATE_FORMAT(startDate, '%Y-%m') as year_months, SUM(qty) AS total_amount
@@ -105,3 +111,6 @@ export const listBookTransactionByBookIdGroupByYearMonth = async (bookId: number
   }
 }
 
+export const revalidateBookTransaction = async (bookId: number) => {
+  revalidatePath(`/document?stockBookId=${bookId}`)
+}

@@ -1,11 +1,12 @@
 import CustomInput from "@/components/CustomInput";
-import { deleteBookAction, deleteBookImage, editBookAction, listBooksAction } from "@/lib/actions/book.actions";
+import { deleteBookAction, deleteBookImage, editBookAction, listBooksAction, revalidateBook } from "@/lib/actions/book.actions";
 import { useUploadThing } from "@/lib/uploading/uploadthing";
 import { cn } from "@/lib/util";
 import Alert from "@/ui/alert";
 import {
   Button,
   Image,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -20,6 +21,8 @@ import {
 } from "uploadthing/client";
 import ConfirmBook from "../confirm.book";
 import { useQuery } from "@tanstack/react-query";
+import { CreateBook } from "@/lib/model/document";
+import { SubmitHandler, useForm } from "react-hook-form";
 
 const EditBookModal = ({
   open,
@@ -34,14 +37,28 @@ const EditBookModal = ({
     queryKey: ["listBooksAction"],
     queryFn: () => listBooksAction(),
   })
-  const [name, setName] = useState<string | undefined>();
-  const [term, setTerm] = useState<string | undefined | null>();
-  const [year, setYear] = useState<string | undefined | null>();
-  const [volume, setVolume] = useState<string | undefined | null>();
-  const [errorEditBook, setErrorEditBook] = useState({
-    isError: false,
-    message: "",
-  });
+  const {
+    register,
+    handleSubmit,
+    formState: {errors, isSubmitting},
+    setError,
+    reset,
+ } = useForm<CreateBook>({
+  defaultValues: {
+    name: selectedBook.name,
+    term: selectedBook.term ?? undefined,
+    year: selectedBook.year ?? undefined,
+    volume: selectedBook.volume ?? undefined,
+  }
+ })
+  // const [name, setName] = useState<string | undefined>();
+  // const [term, setTerm] = useState<string | undefined | null>();
+  // const [year, setYear] = useState<string | undefined | null>();
+  // const [volume, setVolume] = useState<string | undefined | null>();
+  // const [errorEditBook, setErrorEditBook] = useState({
+  //   isError: false,
+  //   message: "",
+  // });
   const [errorDeleteBook, setErrorDeleteBook] = useState({
     isError: false,
     message: "",
@@ -55,10 +72,10 @@ const EditBookModal = ({
   const [isCantDelete, setIsCantDelete] = useState(false)
 
   useMemo(() => {
-    setName(selectedBook.name)
-    setTerm(selectedBook.term)
-    setYear(selectedBook.year)
-    setVolume(selectedBook.volume)
+    // setName(selectedBook.name)
+    // setTerm(selectedBook.term)
+    // setYear(selectedBook.year)
+    // setVolume(selectedBook.volume)
     setImagePreview(selectedBook.image)
   }, [selectedBook])
 
@@ -87,20 +104,21 @@ const EditBookModal = ({
   });
 
   const handleOnClose = () => {
+    reset()
     setFiles([]);
-    setImagePreview(undefined);
-    setName(undefined);
-    setTerm(undefined);
-    setYear(undefined);
-    setVolume(undefined);
+    // setImagePreview(undefined);
+    // setName(undefined);
+    // setTerm(undefined);
+    // setYear(undefined);
+    // setVolume(undefined);
     setErrorDeleteBook({
       isError: false,
       message: '',
     })
-    setErrorEditBook({
-      isError: false,
-      message: '',
-    })
+    // setErrorEditBook({
+    //   isError: false,
+    //   message: '',
+    // })
     onClose();
   };
 
@@ -111,37 +129,10 @@ const EditBookModal = ({
     ),
   });
 
-  const validateForm = () => {
-    console.table({
-      name,
-      term,
-      year,
-      volume,
-      fileLength: files.length,
-    });
-    if (
-      !name ||
-      name === "" ||
-      !term ||
-      term === "" ||
-      !year ||
-      year === "" ||
-      !volume
-    ) {
-      return false;
-    }
-    return true;
-  };
-
-  const submitEditBook = async () => {
+  const submitUpdateBook:SubmitHandler<CreateBook> = async (data) => {
     try {
-      if (!validateForm()) {
-        return setErrorEditBook({
-          isError: true,
-          message: `กรุณากรอกข้อมูลให้ครบ`,
-        });
-      }
-      setIsLoading(true)
+      console.log(data);
+      const {name, term, year, volume} = data
       let payload:{[x: string]:any} = {
         name: name!,
         term: term,
@@ -164,22 +155,16 @@ const EditBookModal = ({
       if (typeof response === "string") {
         throw response
       }
-      setErrorEditBook({
-        isError: false,
-        message: ``,
-      });
       handleOnClose();
-      refetchBookList()
+      // refetchBookList()
+      revalidateBook(`/document${location.search}`)
     } catch (error) {
       console.error(error)
-      setErrorEditBook({
-        isError: true,
-        message: 'เกิดข้อผิดพลาดบางอย่าง ดูเพิ่มเติมใน Console',
+      setError('root', {
+        message: `เกิดข้อผิดพลาดบางอย่าง ดูเพิ่มเติมใน Console`,
       })
-    } finally {
-      setIsLoading(false)
     }
-  };
+  }
 
   const handleOnDelete = () => {
     const book:any = selectedBook
@@ -257,8 +242,8 @@ const EditBookModal = ({
       />
       <ModalContent>
         <ModalBody className={cn("p-0 flex-1 ")}>
-          <div className="flex flex-col pb-4 ">
-            <div className=" flex flex-col rounded-xl    bg-white flex-1 px-4 space-y-2">
+          <form onSubmit={handleSubmit(submitUpdateBook)}>
+            <div className=" flex flex-col rounded-xl bg-white flex-1 px-4 pb-4 space-y-2">
               <div className="flex gap-1 justify-center my-3  ">
                 <p className="text-3xl font-semibold font-sans">หนังสือ</p>
                 <Button
@@ -270,19 +255,35 @@ const EditBookModal = ({
                   <LuX size={24} />
                 </Button>
               </div>
-              {errorEditBook.isError && <Alert label={errorEditBook.message} />}
-              <CustomInput
+              {errors.root ?
+                <Alert label={errors.root.message} />
+                :
+                (errors.name || errors.term || errors.year || errors.volume) &&
+                  <Alert label={'กรุณากรอกข้อมูลให้ครบ'} />
+              }
+              {/* <CustomInput
                 classNames={{ inputWrapper: "h-11" }}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="ชื่อวิชา"
                 defaultValue={selectedBook.name}
+              /> */}
+              <Input
+                aria-label="book name"
+                placeholder={`ชื่อวิชา`}
+                classNames={{
+                  input: ['font-serif', 'text-[1em]'],
+                  inputWrapper: ['h-11'],
+                }}
+                className={`rounded-lg`}
+                color={errors.name ? `danger` : `default`}
+                {...register('name', {required: true})}
               />
               <div className="flex gap-2">
                 <div
                   className="cursor-pointer rounded-lg w-28 h-[148px] flex justify-center items-center bg-[#F4F4F5]"
                   {...getRootProps()}
                 >
-                  <input {...getInputProps()} multiple={false} />
+                  <input aria-label="book image" {...getInputProps()} multiple={false} />
                   {imagePreview ? (
                     <Image
                       className={`object-cover w-28 h-[148px] data-[loaded=true]:hover:opacity-80`}
@@ -294,23 +295,56 @@ const EditBookModal = ({
                   )}
                 </div>
                 <div className="flex-1 flex flex-col gap-2">
-                  <CustomInput
+                  {/* <CustomInput
                     classNames={{ inputWrapper: "h-11" }}
                     onChange={(e) => setTerm(e.target.value)}
                     placeholder="midterm/final"
                     defaultValue={selectedBook.term ?? ''}
+                  /> */}
+                  <Input
+                    aria-label="term"
+                    placeholder={`midterm/final`}
+                    classNames={{
+                      input: ['font-serif', 'text-[1em]'],
+                      inputWrapper: ['h-11'],
+                    }}
+                    className={`rounded-lg`}
+                    color={errors.term ? `danger` : `default`}
+                    {...register('term', {required: true})}
                   />
-                  <CustomInput
+                  {/* <CustomInput
                     classNames={{ inputWrapper: "h-11" }}
                     onChange={(e) => setYear(e.target.value)}
                     placeholder="ปีการศึกษา"
                     defaultValue={selectedBook.year ?? ''}
-                  />{" "}
-                  <CustomInput
+                  />{" "} */}
+                  <Input
+                    aria-label="year"
+                    placeholder={`ปีการศึกษา`}
+                    classNames={{
+                      input: ['font-serif', 'text-[1em]'],
+                      inputWrapper: ['h-11'],
+                    }}
+                    className={`rounded-lg`}
+                    color={errors.year ? `danger` : `default`}
+                    {...register('year', {required: true})}
+                  />
+                  {/* <CustomInput
                     classNames={{ inputWrapper: "h-11" }}
                     onChange={(e) => setVolume(e.target.value)}
                     placeholder="volume"
                     defaultValue={selectedBook.volume ?? ""}
+                  /> */}
+                  <Input
+                    aria-label="volume"
+                    placeholder={`volume`}
+                    classNames={{
+                      input: ['font-serif', 'text-[1em]'],
+                      inputWrapper: ['h-11'],
+                    }}
+                    className={`rounded-lg`}
+                    color={errors.volume ? `danger` : `default`}
+                    {...register('volume')}
                   />
                 </div>
               </div>
@@ -318,7 +352,7 @@ const EditBookModal = ({
                 <Button
                   color="danger"
                   variant="light"
-                  className="text-danger font-medium order-2 md:order-1 font-serif"
+                  className="text-danger font-medium order-2 md:order-1 font-sans text-base"
                   onClick={handleOnDelete}
                   disabled={isLoading}
                 >
@@ -327,15 +361,16 @@ const EditBookModal = ({
                 <Button
                   fullWidth
                   // color="primary"
-                  className="bg-default-foreground text-primary-foreground md:order-2 order-1"
-                  onClick={submitEditBook}
-                  isLoading={isLoading}
+                  className="bg-default-foreground text-primary-foreground md:order-2 order-1 font-sans font-medium text-base"
+                  // onClick={submitEditBook}
+                  isLoading={isSubmitting}
+                  type="submit"
                 >
                   บันทึก
                 </Button>
               </div>
             </div>
-          </div>
+          </form>
         </ModalBody>
       </ModalContent>
     </Modal>

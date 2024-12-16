@@ -108,8 +108,8 @@ const DeliverComp = ({
   >({ open: false, data: undefined, type: undefined, id: undefined });
 
   const [isEditTracking, setIsEditTracking] = useState<
-    modalProps<DeliverRes["data"][0]>
-  >({ open: false, data: undefined });
+    modalProps<DeliverRes["data"][0]> & {id? : string}
+  >({ open: false, data: undefined, id: undefined });
 
   const handleOpenMultiTracking = () => {
     setMultiTrackingState((prev) => ({ ...prev, open: true }));
@@ -118,10 +118,15 @@ const DeliverComp = ({
   const handleOpenPrintTracking = (data: DeliverRes["data"]) => {
     setPrintModalState((prev) => ({ open: true, data: data }));
   };
-  const onOpenEditTracking = (data: DeliverRes["data"][0]) => {
-    setIsEditTracking((prev) => ({ open: true, data: data }));
+  const onOpenEditTracking = (data: DeliverRes["data"][0], id?: string) => {
+    if (data) {
+      const newPath = `${pathname}?editTracking=${data.id}`;
+      window.history.replaceState(null, "", newPath);
+      setIsEditTracking((prev) => ({ open: true, data: data, id: id }));
+    }
   };
   const onCloseEditTracking = () => {
+    replacePath();
     setIsEditTracking((prev) => ({ open: false }));
   };
 
@@ -151,6 +156,13 @@ const DeliverComp = ({
       setIsEditAddress({ open: true, data: findDataByID, id });
     }
   }, [searchParams.get("editAddress")]);
+  useMemo(() => {
+    const id = searchParams.get("editTracking");
+    if (id && !isEditTracking.open) {
+      const findDataByID = delivery.data.find((d) => d.id === parseInt(id));
+      setIsEditTracking({ open: true, data: findDataByID, id });
+    }
+  }, [searchParams.get("editTracking")]);
 
   useMemo(() => {
     const id = searchParams.get("addTracking");
@@ -169,7 +181,6 @@ const DeliverComp = ({
     data: DeliverRes["data"][0],
     type: deliveryTypeProps
   ) => {
-    console.log("169,data", data);
     const newPath = `${pathname}?addTracking=${data.id}`;
     window.history.replaceState(null, "", newPath);
     setIsAddTracking({ open: true, data, type, id: data.id.toString() });

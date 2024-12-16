@@ -1,14 +1,15 @@
 import {
   getCourseById,
 } from "@/lib/actions/course.actions";
-import Buttons from "./Buttons";
 import ManageCourse from "./ManageCourse";
 import AddCourse from "./AddCourse";
 
 const ManageCourseWrapper = async ({
   id,
+  mode,
 }:{
-  id: string
+  id: string,
+  mode: string,
 }) => {
   if(!id){
     return <></>
@@ -22,6 +23,7 @@ const ManageCourseWrapper = async ({
       <ManageCourse
         isOpenDrawer={true}
         selectedCourse={selectedCourse}
+        mode={mode}
       />
     </div>
   )

@@ -81,6 +81,100 @@ export const updateBookInStock = async (bookId: number, inStock: number) => {
   }
 }
 
+export const getTotalBook = async (search?: string) => {
+  try {
+    let query:Prisma.DocumentBookCountArgs = {}
+    if(search){
+      const searchQuery:Prisma.DocumentBookCountArgs = {
+        where: {
+          OR: [
+            {
+              name: {
+                startsWith: search,
+              },
+            },
+            {
+              term: {
+                startsWith: search,
+              },
+            },
+            {
+              year: search,
+            }
+          ]
+        }
+      }
+      query = searchQuery
+    }
+    const response = await prisma.documentBook.count(query)
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError) return error.message
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
+export const listBooksActionPerPage = async (rowPerPages: number, page: number, search?: string) => {
+  try {
+    let queryWhere = {}
+    if(search){
+      const query:Prisma.DocumentBookCountArgs = {
+        where: {
+          OR: [
+            {
+              name: {
+                startsWith: search,
+              },
+            },
+            {
+              term: {
+                startsWith: search,
+              },
+            },
+            {
+              year: search,
+            }
+          ]
+        }
+      }
+      queryWhere = query
+    }
+    const reponse = await prisma.documentBook.findMany({
+      skip: (page-1) * rowPerPages,
+      take: rowPerPages,
+      ...queryWhere,
+      include: {
+        LessonOnDocumentBook :{
+          include: {
+            CourseLesson: {
+              include: {
+                Course: {
+                  select: {
+                    id: true,
+                    name: true,
+                    status: true,
+                  }
+                },
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+    return reponse
+  } catch (error) {
+    console.error(error)
+    // if(error instanceof Prisma.PrismaClientKnownRequestError) return error.message
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
 export const listBooksAction = async () => {
   try {
     const reponse = await prisma.documentBook.findMany({
@@ -108,6 +202,7 @@ export const listBooksAction = async () => {
     return reponse
   } catch (error) {
     console.error(error)
+    // if(error instanceof Prisma.PrismaClientKnownRequestError) return error.message
   } finally {
     prisma.$disconnect()
   }
@@ -118,6 +213,9 @@ export const getBookById = async (bookId: number) => {
     const response = await prisma.documentBook.findFirst({
       where: {
         id: bookId,
+      },
+      include: {
+        LessonOnDocumentBook: true,
       }
     })
     return response
@@ -164,7 +262,6 @@ export const deleteBookAction = async (bookId: number, imageKey: string) => {
     const responseDeleteFile = await utapi.deleteFiles(imageKey, {
       keyType: "fileKey",
     })
-    console.log(responseDeleteFile);
     return response
   } catch (error) {
     console.error(error)
@@ -233,11 +330,11 @@ export const cutBook = async (bookId: number, webAppCourseId: number, courseId: 
     const responseAddBookTransaction = await prisma.bookTransactions.createMany({
       data: bookTransactions,
     })
-    console.log("🚀 ~ courseConnectWebAppCourse ~ responseAddBookTransaction:", responseAddBookTransaction)
+    
     // const responseLinkDeliveryWithCourse = await prisma.delivery_Course.createMany({
     //   data: deliveryListWithCourse,
     // })
-    // console.log("🚀 ~ courseConnectWebAppCourse ~ responseLinkDeliveryWithCourse:", responseLinkDeliveryWithCourse)
+    
     // revalidatePath("/deliver")
     revalidatePath("/document")
     return responseAddBookTransaction
@@ -254,14 +351,14 @@ export const cutBook = async (bookId: number, webAppCourseId: number, courseId: 
 
 export const restoreBook = async (bookId: number, webAppCourseId: number) => {
   try {
-    console.log("start changeBindWebApp vvvv");
+    
     const deliverList:Delivery[] = await prisma.$queryRaw`
       SELECT *
       FROM Delivery
       WHERE FIND_IN_SET(${webAppCourseId}, webappCourseId) > 0
       AND status = 'waiting'
     `
-    console.log("🚀 ~ restoreBook ~ deliverList:", deliverList.length)
+    
     const bookTransactions:{
       startDate: Date,
       endDate: Date,
@@ -288,7 +385,7 @@ export const restoreBook = async (bookId: number, webAppCourseId: number) => {
     const responseAddBookTransaction = await prisma.bookTransactions.createMany({
       data: bookTransactions,
     })
-    console.log("🚀 ~ courseConnectWebAppCourse ~ responseAddBookTransaction:", responseAddBookTransaction)
+    
     // const responseLinkDeliveryWithCourse = await prisma.delivery_Course.deleteMany({
     //   where: {
     //     deliveryId: {
@@ -296,8 +393,7 @@ export const restoreBook = async (bookId: number, webAppCourseId: number) => {
     //     }
     //   }
     // })
-    // console.log("🚀 ~ changeBindWebApp ~ responseLinkDeliveryWithCourse:", responseLinkDeliveryWithCourse)
-    console.log("end changeBindWebApp ^^^^");
+    
     revalidatePath("/document")
   } catch (error) {
     console.error(error)
@@ -308,4 +404,8 @@ export const restoreBook = async (bookId: number, webAppCourseId: number) => {
   } finally {
     prisma.$disconnect()
   }
+}
+
+export const revalidateBook = async (path?: string) => {
+  revalidatePath(path ?? `/document`)
 }

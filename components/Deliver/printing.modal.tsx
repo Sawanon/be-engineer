@@ -3,7 +3,7 @@ import {
   deliveryPrismaProps,
   getDeliverByIds,
 } from "@/lib/actions/deliver.actions";
-import { cn, downloadBlobToFile } from "@/lib/util";
+import { cn, downloadBlobToFile, renderBookName } from "@/lib/util";
 import {
   Modal,
   ModalContent,
@@ -255,7 +255,7 @@ const CardDeliver = ({
                       return (
                         <li key={d.DocumentBook.id}>
                           <span className="relative -left-[6px]">
-                            {d.DocumentBook.name}
+                            {renderBookName(d.DocumentBook)}
                           </span>
                         </li>
                       );
