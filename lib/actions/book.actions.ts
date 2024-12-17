@@ -177,6 +177,7 @@ export const listBooksActionPerPage = async (rowPerPages: number, page: number, 
 
 export const listBooksAction = async () => {
   try {
+    console.log("listBooksAction");
     const reponse = await prisma.documentBook.findMany({
       include: {
         LessonOnDocumentBook :{
@@ -199,6 +200,7 @@ export const listBooksAction = async () => {
         createdAt: 'desc',
       },
     })
+    console.log("listBooksAction", reponse[0]);
     return reponse
   } catch (error) {
     console.error(error)

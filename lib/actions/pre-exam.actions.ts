@@ -74,6 +74,7 @@ export const listPreExamActionPerPage = async (rowPerPages: number, page: number
 
 export const listPreExamAction = async () => {
   try {
+    console.log('listPreExamAction');
     const response = await prisma.documentPreExam.findMany({
       include: {
         LessonOnDocument: {
@@ -96,6 +97,7 @@ export const listPreExamAction = async () => {
         createdAt: 'desc',
       },
     })
+    console.log('listPreExamAction', response[0]);
     return response
   } catch (error) {
     console.error(error)
