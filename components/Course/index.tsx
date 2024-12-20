@@ -28,6 +28,7 @@ import { CourseLesson, Course as CoursePrisma, DocumentBook, DocumentPreExam, Do
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import _, { forEach } from 'lodash'
 import { PrefetchKind } from "next/dist/client/components/router-reducer/router-reducer-types";
+import { renderBookName } from "@/lib/util";
 
 const Status = ({ course }: { course: CourseT }) => {
    let textColor = "";
@@ -541,7 +542,7 @@ const CourseComponent = ({
                       <div key={`book${index}${book.id}`} className={`flex items-center gap-2`}>
                         <Image className={`w-4 rounded`} src={book.image!} alt="book image" />
                         <div className={`text-xs font-IBM-Thai-Looped text-default-foreground`}>
-                          {book.name}
+                          {renderBookName(book)}
                         </div>
                       </div>
                     ))}

@@ -106,6 +106,11 @@ const EditLessonName = ({
                 input: "font-IBM-Thai-Looped text-lg font-medium",
               }}
               placeholder="ชื่อบทเรียน"
+              onKeyDown={(key) => {
+                if(key.code === `Enter`){
+                  submitChangeLessonName()
+                }
+              }}
               onChange={(e) => handleOnChangeLessonName(e.target.value)}
               defaultValue={lesson?.name}
             />

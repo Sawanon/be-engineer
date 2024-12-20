@@ -254,7 +254,7 @@ const DeliverComp = ({
     });
   };
   return (
-    <div className="flex flex-col pt-0 md:pt-6 px-app  bg-background relative overflow-y-hidden md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 ">
+    <div className="flex flex-col pt-0 md:pt-6 px-app  bg-background relative md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 ">
       {/* <button onClick={testFn}>test refetch</button> */}
       {newData && (
         <div

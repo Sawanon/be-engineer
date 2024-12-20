@@ -1,3 +1,4 @@
+"use client"
 import { listBooksAction } from '@/lib/actions/book.actions'
 import { addBookToLessonAction, addDocumentToLesson, addPreExamToLessonAction } from '@/lib/actions/lesson.actions'
 import { listPreExamAction } from '@/lib/actions/pre-exam.actions'
@@ -21,21 +22,24 @@ const AddDocumentToLesson = ({
   onClose: () => void,
   lessonId?: number,
 }) => {
-  const { data: sheetList } = useQuery({
-    queryKey: ['listSheetsAction'],
-    queryFn: () => listSheetsAction(),
-    // enabled: lessonId !== undefined,
-  })
-  const {data: bookList} = useQuery({
-    queryKey: ["listBooksAction"],
-    queryFn: () => listBooksAction(),
-    // enabled: lessonId !== undefined,
-  })
-  const {data: preExamList} = useQuery({
-    queryKey: ["listPreExamAction"],
-    queryFn: () => listPreExamAction(),
-    // enabled: lessonId !== undefined,
-  })
+  // const { data: sheetList, refetch: refetchSheet} = useQuery({
+  //   queryKey: ['listSheetsAction', 'add'],
+  //   queryFn: () => listSheetsAction(),
+  //   // enabled: lessonId !== undefined,
+  // })
+  // const {data: bookList, refetch: refetchBook } = useQuery({
+  //   queryKey: ["listBooksAction", 'add'],
+  //   queryFn: () => listBooksAction(),
+  //   // enabled: lessonId !== undefined,
+  // })
+  // const {data: preExamList, refetch: refetchPreExam} = useQuery({
+  //   queryKey: ["listPreExamAction", 'add'],
+  //   queryFn: () => listPreExamAction(),
+  //   // enabled: lessonId !== undefined,
+  // })
+  const [sheetList, setSheetList] = useState<Awaited<ReturnType<typeof listSheetsAction>>>()
+  const [bookList, setBookList] = useState<Awaited<ReturnType<typeof listBooksAction>>>()
+  const [preExamList, setPreExamList] = useState<Awaited<ReturnType<typeof listPreExamAction>>>()
   const [selectedDocument, setSelectedDocument] = useState<string | undefined>()
   const [error, setError] = useState({
     isError: false,
@@ -43,8 +47,29 @@ const AddDocumentToLesson = ({
   })
   const [isLoading, setIsLoading] = useState(false)
 
+  const setup = async () => {
+    const responseSheet = await listSheetsAction()
+    const responseBook = await listBooksAction()
+    const responsePreExam = await listPreExamAction()
+    setSheetList(responseSheet)
+    setBookList(responseBook)
+    setPreExamList(responsePreExam)
+  }
+
+  useMemo(() => {
+    if(open){
+      setup()
+    }
+  }, [open])
+
   const documentList = useMemo(() => {
-    if(!sheetList || !bookList || !preExamList) return []
+    console.log('bookList', bookList);
+    console.log('sheetList', sheetList);
+    console.log('preExamList', preExamList);
+    
+    if(!sheetList || !bookList || !preExamList) {
+      return []
+    }
     return [ ...sheetList.map(sheet => ({...sheet, type: 'sheet'})), ...bookList.map(book => ({...book, type: 'book'})), ...preExamList.map(preExam => ({...preExam, type: 'preExam'}))]
   }, [sheetList, bookList, preExamList])
 

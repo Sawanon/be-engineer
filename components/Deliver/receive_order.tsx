@@ -194,7 +194,7 @@ const ReceiveOrder = ({
               type="submit"
               fullWidth
               color={"primary"}
-              className="md:col-span-2 col-span-3 order-1  font-san font-medium"
+              className="md:col-span-2 col-span-3 order-1  font-sans font-medium text-base"
             >
               รับหนังสือ
             </Button>

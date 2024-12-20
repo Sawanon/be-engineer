@@ -87,10 +87,9 @@ export const listSheetActionPerPage = async (rowPerPages: number, page: number, 
    }
 }
 
-export const listSheetsAction = async (): Promise<
-   DocumentSheet[] | undefined
-> => {
+export const listSheetsAction = async () => {
    try {
+      console.log('listSheetsAction');
       const response = await prisma.documentSheet.findMany({
          include: {
             LessonOnDocumentSheet: {
@@ -113,6 +112,7 @@ export const listSheetsAction = async (): Promise<
             createdAt: "desc",
          },
       });
+      console.log('listSheetsAction', response[0]);
       return response;
    } catch (error) {
       console.error(error);

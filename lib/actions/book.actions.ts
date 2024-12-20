@@ -116,25 +116,31 @@ export const getTotalBook = async (search?: string) => {
   }
 }
 
-export const listBooksActionPerPage = async (rowPerPages: number, page: number, search?: string) => {
+export const listBooksActionPerPage = async (rowPerPages: number, page: number, searchText?: string) => {
   try {
     let queryWhere = {}
+    const search = searchText?.replaceAll(`vol.`, ``)
+    console.log("🚀 ~ listBooksActionPerPage ~ search:", search)
     if(search){
+      const [name, term, year, vol] = search.split(" ")
+      // console.table({name, term, year, vol})
       const query:Prisma.DocumentBookCountArgs = {
         where: {
           OR: [
             {
               name: {
-                startsWith: search,
+                contains: search,
               },
             },
             {
               term: {
-                startsWith: search,
+                contains: search,
               },
             },
             {
-              year: search,
+              year: {
+                contains: search,
+              },
             }
           ]
         }
@@ -177,6 +183,7 @@ export const listBooksActionPerPage = async (rowPerPages: number, page: number, 
 
 export const listBooksAction = async () => {
   try {
+    console.log("listBooksAction");
     const reponse = await prisma.documentBook.findMany({
       include: {
         LessonOnDocumentBook :{
@@ -199,6 +206,7 @@ export const listBooksAction = async () => {
         createdAt: 'desc',
       },
     })
+    console.log("listBooksAction", reponse[0]);
     return reponse
   } catch (error) {
     console.error(error)
