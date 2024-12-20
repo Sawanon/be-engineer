@@ -179,71 +179,103 @@ export const getDeliverByFilter = async (
         : (props.status?.split(",") as (keyof typeof checkStatus)[]);
     let query: Prisma.DeliveryFindManyArgs = {
       where: {
-        AND: [
+        OR: [
+        
+
           {
-            branch:
-              props.university && props.university !== ""
-                ? props.university
-                : undefined,
-          },
-          {
-            approved: {
-              gte: props.startDate
-                ? dayjs(props.startDate, "YYYYMMDD").startOf("date").toDate()
-                : undefined,
-              lte: props.endDate
-                ? dayjs(props.endDate, "YYYYMMDD").endOf("date").toDate()
-                : undefined,
-            },
-          },
-          {
-            OR: splitStatus?.map((staus) => {
-              if (checkStatus[staus] === undefined) {
-                return {};
-              }
-              return {
-                AND: [
-                  { status: checkStatus[staus].status },
-                  { type: checkStatus[staus].type },
-                ],
-              };
-            }),
+            AND: [
+              { OR: [
+                {
+                  webappOrderId:
+                    props.input && !isNaN(parseInt(props.input))
+                      ? parseInt(props?.input)
+                      : undefined,
+                },
+                {
+                  member: { contains: props.input },
+                },
+                {
+                  Delivery_WebappCourse: {
+                    every: {
+                      WebappCourse: {
+                        name: {
+                          contains: props.input,
+                        },
+                      },
+                    },
+                  },
+                },
+              ]},
+              {
+                branch:
+                  props.university && props.university !== ""
+                    ? props.university
+                    : undefined,
+              },
+              {
+                approved: {
+                  gte: props.startDate
+                    ? dayjs(props.startDate, "YYYYMMDD")
+                        .startOf("date")
+                        .toDate()
+                    : undefined,
+                  lte: props.endDate
+                    ? dayjs(props.endDate, "YYYYMMDD").endOf("date").toDate()
+                    : undefined,
+                },
+              },
+              {
+                OR: splitStatus?.map((staus) => {
+                  if (checkStatus[staus] === undefined) {
+                    return {};
+                  }
+                  return {
+                    AND: [
+                      { status: checkStatus[staus].status },
+                      { type: checkStatus[staus].type },
+                    ],
+                  };
+                }),
+              },
+            ],
           },
         ],
       },
     };
-    if (props.input !== "" && props.input) {
-      query = {
-        where: {
-          OR: [
-            {
-              webappOrderId: !isNaN(parseInt(props.input))
-                ? parseInt(props.input)
-                : undefined,
-            },
-            {
-              member: { contains: props.input },
-            },
-            {
-              Delivery_WebappCourse: {
-                every: {
-                  WebappCourse: {
-                    name: {
-                      contains: props.input,
-                    },
-                  },
-                },
-              },
-            },
-          ],
-        },
-      };
-    }
+    // if (props.input !== "" && props.input) {
+    //   query = {
+    //     where: {
+    //       OR: [
+    //         {
+    //           webappOrderId: !isNaN(parseInt(props.input))
+    //             ? parseInt(props.input)
+    //             : undefined,
+    //         },
+    //         {
+    //           member: { contains: props.input },
+    //         },
+    //         {
+    //           Delivery_WebappCourse: {
+    //             every: {
+    //               WebappCourse: {
+    //                 name: {
+    //                   contains: props.input,
+    //                 },
+    //               },
+    //             },
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   };
+    // }
     const res = await prisma.delivery.findMany({
       include: {
         Delivery_Course: {
           include: {
-            Course: true,
+            Course: 
+             true
+        
           },
         },
         Delivery_WebappCourse: {
@@ -253,12 +285,18 @@ export const getDeliverByFilter = async (
         },
         DeliverShipService: true,
       },
+      // where: {
+      //   webappOrderId: 27462,
+      // },
       where: query.where,
       orderBy: { id: "desc" },
       take: 100,
       skip: (page - 1) * 100,
     });
     const count = await prisma.delivery.count({ where: query.where });
+    res[0].Delivery_Course.map((d) => {
+      console.log("d", d);
+    });
     // const test = _.uniqBy(res, "status");
     // test.map(d=> console.log('d.status', d.status))
     return parseStringify({
@@ -334,11 +372,11 @@ export const getDeliverByIds = cache(async (Ids: number[]) => {
     prisma.$disconnect();
   }
 });
-export const getDeliverById = (async (Id: number) => {
+export const getDeliverById = async (Id: number) => {
   try {
     const res = await prisma.delivery.findFirst({
       where: {
-        id:  Id ,
+        id: Id,
       },
       include: {
         RecordBook: {
@@ -394,7 +432,7 @@ export const getDeliverById = (async (Id: number) => {
   } finally {
     prisma.$disconnect();
   }
-});
+};
 export const getInfinityDeliver = cache(
   async ({
     pageParam = 1,
@@ -681,7 +719,7 @@ export const receiveOrder = async ({
         status: "success",
         // updatedAddress: updateAddress,
         note: note,
-        updatedAt:  new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         webappAdminId,
         webappAdminUsername,
       },

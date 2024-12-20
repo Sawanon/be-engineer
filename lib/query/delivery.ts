@@ -25,6 +25,7 @@ import { PrismaClient } from "@prisma/client";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { addRecordData } from "../actions/record.actions";
+import _ from "lodash";
 
 export const formatCourse = (
   delivery: NonNullable<Awaited<ReturnType<typeof getDeliverByIds>>[0]>
@@ -58,18 +59,24 @@ export const formatCourse = (
 
   delivery.Delivery_Course?.forEach((course) => {
     course.Course?.CourseLesson?.forEach((lesson) => {
+      console.log('lesson', lesson)
       if (lesson.LessonOnDocumentBook.length > 0) {
-        bookLesson = lesson.LessonOnDocumentBook;
+        // bookLesson.push(lesson.LessonOnDocumentBook)
+        bookLesson = [...bookLesson, ...lesson.LessonOnDocumentBook];
       }
       if (lesson.LessonOnDocument.length > 0) {
-        preExamLesson = lesson.LessonOnDocument;
+        preExamLesson = [...preExamLesson, ...lesson.LessonOnDocument];
       }
       if (lesson.LessonOnDocumentSheet.length > 0) {
-        sheetLesson = lesson.LessonOnDocumentSheet;
+        sheetLesson = [...sheetLesson, ...lesson.LessonOnDocumentSheet];
       }
     });
   });
-  return { bookLesson, preExamLesson, sheetLesson };
+  return {
+    bookLesson: _.uniqBy(bookLesson, "bookId"),
+    preExamLesson: _.uniqBy(preExamLesson, "preExamId"),
+    sheetLesson: _.uniqBy(sheetLesson, "sheetId"),
+  };
 };
 export const formatRecord = (
   delivery: NonNullable<Awaited<ReturnType<typeof getDeliverByIds>>[0]>
@@ -99,17 +106,16 @@ export const useDeliver = () => {
 
 export const useDeliverByFilter = (
   props: DeliverFilter & { page: number },
-    initData?: Awaited<ReturnType<typeof getDeliverByFilter>>
+  initData?: Awaited<ReturnType<typeof getDeliverByFilter>>
 ) => {
-
   return useQuery({
     queryKey: ["deliver", props],
     queryFn: async () => {
       const masterDeliver = await getDeliverByFilter(props);
       return masterDeliver;
     },
-   //  enabled:false,
-   //   initialData: props.status === "pickup,ship" && props.page === 1 ? initData : undefined,
+    //  enabled:false,
+    //   initialData: props.status === "pickup,ship" && props.page === 1 ? initData : undefined,
     refetchInterval: 5 * 60 * 1000, // refetch every x minute
   });
 };
@@ -125,7 +131,7 @@ export const useDeliverByIds = (Ids: number[] | undefined) => {
     enabled: Ids !== undefined && Ids.length !== 0,
   });
 };
-export const useDeliverById = (Id: number | undefined,enabled : boolean) => {
+export const useDeliverById = (Id: number | undefined, enabled: boolean) => {
   return useQuery({
     queryKey: ["deliver", Id],
     queryFn: async () => {
@@ -177,7 +183,7 @@ export const useAddTracking = ({
   onSuccess,
   onError,
 }: {
-  onSuccess?: (data : Awaited<ReturnType<typeof addTracking>>) => void;
+  onSuccess?: (data: Awaited<ReturnType<typeof addTracking>>) => void;
 
   onError?: (error: Error) => void;
 }) => {
@@ -285,7 +291,7 @@ export const useChangeType = ({
   onSuccess,
   onError,
 }: {
-  onSuccess?: (data : Awaited<ReturnType<typeof changeType>>) => void;
+  onSuccess?: (data: Awaited<ReturnType<typeof changeType>>) => void;
   onError?: (error: Error) => void;
 }) => {
   return useMutation({

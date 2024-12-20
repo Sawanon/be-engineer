@@ -108,7 +108,7 @@ const DeliverComp = ({
   >({ open: false, data: undefined, type: undefined, id: undefined });
 
   const [isEditTracking, setIsEditTracking] = useState<
-    modalProps<DeliverRes["data"][0]> & {id? : string}
+    modalProps<DeliverRes["data"][0]> & { id?: string }
   >({ open: false, data: undefined, id: undefined });
 
   const handleOpenMultiTracking = () => {
@@ -262,7 +262,7 @@ const DeliverComp = ({
         >
           <NotifyModal
             onRefresh={() => {
-              // refetchData();
+              refetchData();
               router.refresh();
               setNewData(false);
             }}
