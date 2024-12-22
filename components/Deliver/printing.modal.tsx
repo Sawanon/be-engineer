@@ -65,7 +65,6 @@ const PrintModal = ({
   const PDFDoc = useMemo(() => {
     return <PDFDocument data={queryData.data!} />;
   }, [queryData.data]);
-  console.log("queryData.data", queryData.data);
   return (
     <>
       <PrintPdf

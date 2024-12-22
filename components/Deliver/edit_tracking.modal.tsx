@@ -42,6 +42,7 @@ import {
   formatRecord,
   useAddTracking,
   useChangeType,
+  useDeliverById,
   useDeliverByIds,
   useUpdatePickup,
   useUpdateTracking,
@@ -61,19 +62,18 @@ type createProp = {
 };
 const EditTracking = ({
   onClose,
-  // refetch,
+  refetch,
   dialogState,
 }: {
   dialogState: modalProps<Awaited<ReturnType<typeof getDeliver>>["data"][0]> & {
     type?: deliveryTypeProps;
     id?: string;
   };
-  // refetch: () => void;
+  refetch: () => void;
   onClose: () => void;
 }) => {
   const router = useRouter();
   const { open, data, id } = dialogState;
-  console.log('id', id)
   const [isError, setIsError] = useState(false);
   const onError = (e: Error) => {
     console.error(e);
@@ -96,17 +96,20 @@ const EditTracking = ({
   } = form;
 
   const [newData, setNewData] = useState(data);
-  const queryData = useDeliverByIds(id ? [parseInt(id)] : undefined);
+  const queryData = useDeliverById(
+    id ? parseInt(id) : undefined,
+    id !== undefined
+  );
   useMemo(() => {
     if (queryData.data && open && data === undefined && id !== undefined) {
-      setNewData(queryData.data[0]);
+      setNewData(queryData.data);
     } else {
       setNewData(data);
     }
   }, [queryData.data, data]);
   const checkCourse = useMemo(() => {
-    if (queryData.data?.[0]) {
-      const data = queryData.data[0];
+    if (queryData.data) {
+      const data = queryData.data;
       if (data.type === "pickup") {
         setValue("note", data.note!);
       } else if (data.type === "ship") {
@@ -118,7 +121,7 @@ const EditTracking = ({
         );
       }
 
-      return formatRecord(queryData.data[0]);
+      return formatRecord(queryData.data);
     }
     return undefined;
   }, [queryData.data]);
@@ -126,9 +129,9 @@ const EditTracking = ({
     onError: onError,
     onSuccess: () => {
       // alert("Update Success");
-      queryData.refetch();
-      router.refresh();
+      refetch();
       handleClose();
+      queryData.refetch();
     },
   });
 
@@ -146,11 +149,6 @@ const EditTracking = ({
     form.setValue("note", "");
     form.setValue("trackingNumber", "");
   };
-  const [deliverShip, setDeliverShip] = useState<
-    deliverShipServiceKey | undefined
-  >("flash");
-
-  useMemo(() => {}, []);
 
   return (
     <Modal
@@ -191,6 +189,7 @@ const EditTracking = ({
               </div>
             ) : (
               <>
+                {/* TODO: Check Course */}
                 {newData?.Delivery_WebappCourse.map((d) => {
                   const checkCMapCourse = newData.Delivery_Course.some(
                     (course) => {
@@ -248,7 +247,6 @@ const EditTracking = ({
                     <div className="space-y-1">
                       <div className="text-[14px] md:text-[12px]">
                         {checkCourse.sheetRecord.map((d) => {
-                          console.log("2377", d);
                           return (
                             <div
                               className=" flex gap-2 items-center"
@@ -380,6 +378,7 @@ const EditTracking = ({
                     }}
                     placeholder="หมายเหตุ(ถ้ามี)"
                     minRows={1}
+                    value={form.watch("note")}
                     // defaultValue="ได้ Calculus ไปแล้ว ขาด Physics กัับ Chemistry จะส่งให้วันพฤหัสที่ 8 ธ.ค. นะครับ"
                   />
                 </div>

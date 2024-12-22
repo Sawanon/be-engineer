@@ -83,9 +83,10 @@ export const formatRecord = (
 ) => {
   let bookRecord: (typeof delivery.RecordBook)[0][] = [];
   let sheetRecord: (typeof delivery.RecordSheet)[0][] = [];
-
+  console.log('delivery 86', delivery)
   delivery.RecordBook?.forEach((book) => {
     bookRecord.push(book);
+    
   });
   delivery.RecordSheet?.forEach((sheet) => {
     sheetRecord.push(sheet);
@@ -122,7 +123,7 @@ export const useDeliverByFilter = (
 
 export const useDeliverByIds = (Ids: number[] | undefined) => {
   return useQuery({
-    queryKey: ["deliver", Ids],
+    queryKey: ["deliverByIds", Ids],
     queryFn: async () => {
       const masterDeliver = await getDeliverByIds(Ids!);
       return masterDeliver;
@@ -133,7 +134,7 @@ export const useDeliverByIds = (Ids: number[] | undefined) => {
 };
 export const useDeliverById = (Id: number | undefined, enabled: boolean) => {
   return useQuery({
-    queryKey: ["deliver", Id],
+    queryKey: ["deliverById", Id],
     queryFn: async () => {
       const masterDeliver = await getDeliverById(Id!);
       return masterDeliver;
@@ -195,7 +196,8 @@ export const useAddTracking = ({
       if (onError) onError(error);
     },
     async onSuccess(data, variables, context) {
-      await addRecordData(data.id);
+      console.log('199', data)
+      await addRecordData(data!.id);
 
       if (onSuccess) onSuccess(data);
     },

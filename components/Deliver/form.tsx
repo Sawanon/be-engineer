@@ -201,7 +201,7 @@ const FormDeliver = ({
                 >
                   Today
                 </Button>
-                <Button
+                {/* <Button
                   onClick={() => {
                     onClickButtonCalendar(2);
                   }}
@@ -218,7 +218,7 @@ const FormDeliver = ({
                   className="bg-default-100 text-default-foreground font-sans text-base font-medium"
                 >
                   30 days
-                </Button>
+                </Button> */}
               </div>
             }
           />
