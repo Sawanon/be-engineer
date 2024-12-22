@@ -64,7 +64,7 @@ model CourseOnCourseLesson {
 
 model CourseVideo {
   id            Int          @id @default(autoincrement())
-  videoLink     String       @db.VarChar(255)
+  videoLink     String       @db.LongText
   hour          Int
   minute        Int
   position      Int
@@ -89,6 +89,7 @@ model DocumentBook {
   createdAt            DateTime?              @default(now())
   updatedAt            DateTime?              @default(now())
   volume               String?
+  fullName             String?
   BookTransactions     BookTransactions[]
   LessonOnDocumentBook LessonOnDocumentBook[]
   RecordBook           RecordBook[]
@@ -161,7 +162,7 @@ model Delivery {
   id                    Int                     @id @default(autoincrement())
   type                  String                  @db.VarChar(45)
   status                String                  @db.VarChar(45)
-  updatedAddress        String?                 @db.VarChar(255)
+  updatedAddress        String?                 @db.VarChar(2048)
   courseId              Int?
   webappOrderId         Int                     @unique(map: "webappOrderId_UNIQUE")
   webappCourseId        String?                 @db.VarChar(255)

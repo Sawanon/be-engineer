@@ -4,6 +4,7 @@ import { PrismaClient, Prisma, Delivery } from "@prisma/client"
 import { addBookTransactionAction } from "./bookTransactions"
 import { utapi } from "../uploading/server"
 import { revalidatePath } from "next/cache"
+import { renderBookName } from "../util"
 
 const prisma = new PrismaClient()
 
@@ -17,15 +18,20 @@ export const addBookAction = async (book: Prisma.DocumentBookCreateInput) => {
         volume: book.volume,
       }
     })
+    
     if(responseBook !== null){
       return 'name_UNIQUE'
     }
+    
+    // return
     const response = await prisma.documentBook.create({
       data: {
         ...book,
         inStock: 0,
       }
     })
+    console.log('response', response);
+    
     // addBookTransactionAction({
     //   detail: 'ค่าเริ่มต้น',
     //   startDate: new Date(),
@@ -50,8 +56,26 @@ export const editBookAction = async (bookId: number, book: Prisma.DocumentBookUp
       where: {
         id: bookId,
       },
-      data: book,
+      data: {
+        ...book,
+      },
     })
+    const responseBook = await prisma.documentBook.findFirst({
+      where: {
+        id: bookId,
+      }
+    })
+    if(!responseBook) throw `Can't find book id: ${bookId}`
+    const fullName = renderBookName(responseBook);
+    const responseUpdateFullName = await prisma.documentBook.update({
+      where: {
+        id: bookId,
+      },
+      data: {
+        fullName: fullName,
+      }
+    })
+    console.log('generate full name: ', responseUpdateFullName.fullName);
     return response
   } catch (error) {
     console.error(error)
@@ -123,29 +147,52 @@ export const listBooksActionPerPage = async (rowPerPages: number, page: number, 
     console.log("🚀 ~ listBooksActionPerPage ~ search:", search)
     if(search){
       const [name, term, year, vol] = search.split(" ")
-      // console.table({name, term, year, vol})
-      const query:Prisma.DocumentBookCountArgs = {
-        where: {
-          OR: [
-            {
-              name: {
-                contains: search,
-              },
-            },
-            {
-              term: {
-                contains: search,
-              },
-            },
-            {
-              year: {
-                contains: search,
-              },
-            }
-          ]
+      if(name && term && year && vol){
+        const _conditions:Prisma.DocumentBookCountArgs = {
+          where: {
+            OR: [
+              {
+                name: {
+                  contains: name,
+                },
+                term: {
+                  contains: term,
+                },
+                year: {
+                  contains: year,
+                },
+                volume: {
+                  contains: vol,
+                }
+              }
+            ]
+          }
         }
+        queryWhere = _conditions
+      } else {
+        const query:Prisma.DocumentBookCountArgs = {
+          where: {
+            OR: [
+              {
+                name: {
+                  contains: search,
+                },
+              },
+              {
+                term: {
+                  contains: search,
+                },
+              },
+              {
+                year: {
+                  contains: search,
+                },
+              }
+            ]
+          }
+        }
+        queryWhere = query
       }
-      queryWhere = query
     }
     const reponse = await prisma.documentBook.findMany({
       skip: (page-1) * rowPerPages,
@@ -416,4 +463,32 @@ export const restoreBook = async (bookId: number, webAppCourseId: number) => {
 
 export const revalidateBook = async (path?: string) => {
   revalidatePath(path ?? `/document`)
+}
+
+export const createFullNameBookAction = async () => {
+  try {
+    const responseBook = await prisma.documentBook.findMany()
+    for (let i = 0; i < responseBook.length; i++) {
+      const book = responseBook[i];
+      console.log("book", book);
+      let fullName = `${book.name} ${book.term} ${book.year}`
+      if(book.volume){
+        fullName = `${fullName} vol.${book.volume}`
+      }
+      const response = await prisma.documentBook.update({
+        where: {
+          id: book.id,
+        },
+        data: {
+          fullName: fullName,
+        }
+      })
+      console.log('response', response);
+    }
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError) return error.message
+  } finally {
+    prisma.$disconnect()
+  }
 }

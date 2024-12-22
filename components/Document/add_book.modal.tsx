@@ -1,4 +1,4 @@
-import { cn } from "@/lib/util";
+import { cn, renderBookName } from "@/lib/util";
 import Alert from "@/ui/alert";
 import {
    Button,
@@ -103,6 +103,7 @@ const AddBook = ({
             term: term,
             year: year,
             volume: volume,
+            fullName: `${name!} ${term} ${year}${volume ? ` vol.${volume}` : ``}`
          })
          console.log("🚀 ~ submitAddBook ~ response:", response)
          if(typeof response === "string"){
