@@ -65,7 +65,6 @@ const PrintModal = ({
   const PDFDoc = useMemo(() => {
     return <PDFDocument data={queryData.data!} />;
   }, [queryData.data]);
-
   return (
     <>
       <PrintPdf
@@ -88,7 +87,7 @@ const PrintModal = ({
           <ModalBody className={cn("p-0 font-IBM-Thai-Looped")}>
             <div className="flex flex-1  overflow-y-hidden">
               <div className="hidden md:block flex-1"></div>
-              {/* TODO: check width in mobile */}
+
               <div className=" md:w-[460px] w-screen flex flex-col   bg-gradient-to-b from-[#838388] to-[#9B9BA5] px-4 py-2">
                 <div className="flex gap-1 justify-between ">
                   <Button
@@ -228,12 +227,14 @@ const CardDeliver = ({
         {
           <>
             {delivery?.Delivery_WebappCourse.map((d) => {
-              const checkCMapCourse = delivery.Delivery_Course.some((course) => {
-                return (
-                  course.webappCourseId === d.webappCourseId &&
-                  course.Course === null
-                );
-              });
+              const checkCMapCourse = delivery.Delivery_Course.some(
+                (course) => {
+                  return (
+                    course.webappCourseId === d.webappCourseId &&
+                    course.Course === null
+                  );
+                }
+              );
 
               if (checkCMapCourse) {
                 return (

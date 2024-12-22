@@ -4,7 +4,7 @@ import { deliveryTypeProps, modalProps } from "@/@type";
 import FormDeliver, { DeliverFilter } from "./form";
 import PrintModal from "./printing.modal";
 import TableDeliver from "./table";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import EditAddress from "./edit_address.modal";
 import AddTracking from "./add_tracking.modal";
 import { cn, rowsPerPage } from "@/lib/util";
@@ -19,6 +19,7 @@ import {
   DeliverRes,
   deliveryPrismaProps,
   getDeliver,
+  getDeliverByFilter,
   refetchData,
   testAddBook,
   updateAddress,
@@ -44,8 +45,13 @@ const DeliverComp = ({
   isNewData: boolean;
   deliveryData: DeliverRes;
 }) => {
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const scrollToSection = () => {
+    sectionRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  const isLoadPage = useRef<boolean>(false);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const queryClient = getQueryClient();
   const [delivery, setDelivery] = useState(deliveryData);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -57,27 +63,50 @@ const DeliverComp = ({
   const [searchData, setSearchData] = useState<DeliverFilter>({
     status: "pickup,ship",
   });
-
   const [allPage, setAllPage] = useState(
     Math.ceil(deliveryData.total / rowsPerPage)
   );
-  const deliverQuery = useDeliverByFilter(
-    { ...searchData, page: page },
-    deliveryData
-  );
-  useMemo(() => {
-    setPage(1);
-    // deliverQuery.refetch()
-  }, [searchData]);
-  useMemo(() => {
-    if (deliverQuery.data) {
-      setAllPage(Math.ceil(deliverQuery.data.total / rowsPerPage));
-      setDelivery(deliverQuery.data);
+  // const deliverQuery = useDeliverByFilter(
+  //   { ...searchData, page: page },
+  //   deliveryData
+  // );
+
+  const fetchData = async () => {
+    const masterDeliver = await getDeliverByFilter({
+      ...searchData,
+      page: page,
+    });
+    setAllPage(Math.ceil(masterDeliver.total / rowsPerPage));
+    setDelivery(masterDeliver);
+    setLoading(false);
+    console.log("82", "fetchData");
+  };
+  console.log("isLoadPage.current", isLoadPage.current);
+  useEffect(() => {
+    if (isLoadPage.current === false) {
+      isLoadPage.current = true;
+      // refetchData()
+      return;
     }
-  }, [deliverQuery.data]);
+    setLoading(true);
+    fetchData();
+    console.log("do", 91, isLoadPage.current);
+    console.log("searchData", searchData);
+  }, [searchData, page]);
+
+  // useMemo(() => {
+  //   if (!isLoadPage.current === false) {
+  //     isLoadPage.current = true;
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   fetchData();
+  //   console.log("page", page);
+  // }, [page]);
 
   const onChangePage = (newPage: number) => {
     setPage(newPage);
+    scrollToSection();
   };
 
   const [multiTrackingState, setMultiTrackingState] =
@@ -108,7 +137,7 @@ const DeliverComp = ({
   >({ open: false, data: undefined, type: undefined, id: undefined });
 
   const [isEditTracking, setIsEditTracking] = useState<
-    modalProps<DeliverRes["data"][0]> & {id? : string}
+    modalProps<DeliverRes["data"][0]> & { id?: string }
   >({ open: false, data: undefined, id: undefined });
 
   const handleOpenMultiTracking = () => {
@@ -221,11 +250,10 @@ const DeliverComp = ({
 
   // const deliverQuery = useDeliver();
   const refetch = () => {
-    deliverQuery.refetch();
+    setLoading(true);
+    fetchData();
   };
-  const testFn = () => {
-    deliverQuery.refetch();
-  };
+
   const onCloseSelect = () => {
     setSelectState({ open: false });
     setMultiTrackingState({
@@ -254,17 +282,21 @@ const DeliverComp = ({
     });
   };
   return (
-    <div className="flex flex-col pt-0 md:pt-6 px-app  bg-background relative md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 ">
+    <div
+      ref={sectionRef}
+      className="flex  flex-col pt-0 md:pt-6 px-app  bg-background  md:h-screenDevice h-[calc(100dvh-64px)] bg-default-50 "
+    >
       {/* <button onClick={testFn}>test refetch</button> */}
       {newData && (
         <div
-          className={`flex justify-center md:justify-end absolute right-4 bottom-4 z-50 w-full`}
+          className={` absolute justify-center md:justify-end  right-4 bottom-4 z-50 w-fit`}
         >
           <NotifyModal
             onRefresh={() => {
               // refetchData();
-              router.refresh();
-              setNewData(false);
+              window.location.reload();
+              // router.refresh();
+              // setNewData(false);
             }}
             onClose={() => setNewData(false)}
           />
@@ -280,7 +312,7 @@ const DeliverComp = ({
         onClose={handleClosePrint}
       />
       <EditAddress
-        refetch={deliverQuery.refetch}
+        refetch={refetch}
         dialogState={[isEditAddress, setIsEditAddress]}
         updatePrintModal={updatePrintModal}
         onEditAddress={onEditAddress}
@@ -293,7 +325,7 @@ const DeliverComp = ({
       />
       <EditTracking
         dialogState={isEditTracking}
-        // refetch={refetch}
+        refetch={refetch}
         onClose={onCloseEditTracking}
       />
 
@@ -313,7 +345,8 @@ const DeliverComp = ({
         selectData={multiTrackingState}
       />
       <TableDeliver
-        query={deliverQuery}
+        isLoading={loading}
+        // query={deliverQuery}
         page={page}
         onChangePage={onChangePage}
         onOpenEditTracking={onOpenEditTracking}

@@ -40,7 +40,8 @@ type dataItem = {
 };
 const TableDeliver = ({
   data,
-  query,
+  isLoading,
+  // query,
   state,
   onOpenEditTracking,
   onAddTrackings,
@@ -51,6 +52,7 @@ const TableDeliver = ({
   onChangePage,
   page,
 }: {
+  isLoading: boolean;
   page: number;
   onChangePage: (newPage: number) => void;
   onPrintTrackings: (data: DeliverRes["data"]) => void;
@@ -60,9 +62,9 @@ const TableDeliver = ({
     key: Set<number>;
     data?: Record<string, deliveryPrismaProps>;
   }>;
-  query: ReturnType<typeof useDeliverByFilter>;
+  // query: ReturnType<typeof useDeliverByFilter>;
   state: stateProps<modalProps>;
-  onOpenEditTracking: (data: DeliverRes["data"][0],id?: string) => void;
+  onOpenEditTracking: (data: DeliverRes["data"][0], id?: string) => void;
   onAddTrackings: (
     data: DeliverRes["data"][0],
     type: deliveryTypeProps
@@ -84,7 +86,6 @@ const TableDeliver = ({
   //    onLoadMore: query.fetchNextPage,
   // });
 
-
   const onSelectRow = (key: Selection) => {
     let data: Record<string, DeliverRes["data"][0]> = {};
     if (key === "all") {
@@ -95,7 +96,7 @@ const TableDeliver = ({
         data[id.toString()] = delivery;
       });
     }
-    console.log('data', data)
+    console.log("data", data);
     setSelectKeys({ key, data });
   };
 
@@ -260,7 +261,7 @@ const TableDeliver = ({
           emptyContent={"ไม่มีคำสั่งซื่อในวันนี้"}
           // items={deliverItem.data}
           items={data.data}
-          isLoading={query.isFetching}
+          isLoading={isLoading}
           loadingContent={<Spinner />}
           className=""
         >
@@ -277,9 +278,9 @@ const TableDeliver = ({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <p className="font-serif whitespace-nowrap">
-                    {deliver.member}
-                  </p>
+                  <pre className="font-serif whitespace-nowrap">
+                    {`${deliver.member}`}
+                  </pre>
                 </TableCell>
                 <TableCell>
                   <div>
@@ -371,7 +372,7 @@ const TrackingDetail = ({
   checkType,
   onOpenEditTracking,
 }: {
-  onOpenEditTracking: (d: DeliverRes["data"][0],id?: string) => void;
+  onOpenEditTracking: (d: DeliverRes["data"][0], id?: string) => void;
   checkType: deliveryTypeProps;
   tracking?: DeliverRes["data"][0];
 }) => {
@@ -399,7 +400,7 @@ const TrackingDetail = ({
               </Button>
               <Button
                 onClick={() => {
-                  onOpenEditTracking(tracking!,tracking?.id.toString());
+                  onOpenEditTracking(tracking!, tracking?.id.toString());
                 }}
                 isIconOnly
                 className="bg-default-100"
@@ -424,7 +425,7 @@ const TrackingDetail = ({
           </p>
           <Button
             onClick={() => {
-              onOpenEditTracking(tracking!);
+              onOpenEditTracking(tracking!, tracking?.id.toString());
             }}
             isIconOnly
             className="bg-default-100"

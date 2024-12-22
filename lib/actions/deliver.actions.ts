@@ -62,24 +62,24 @@ export const cloneNewData = async () => {
       (await getLastsIdNew("KMITL"))?.webappOrderId ?? 0;
     if (getLastIdKmitl !== lastWebappOrderIdKmitl) {
       newData = true;
-      updateDataByBranch({
+       updateDataByBranch({
         branch: "KMITL",
         startId: lastWebappOrderIdKmitl + 1,
       });
     }
     if (getLastIdOdm !== lastWebappOrderIdOdm) {
       newData = true;
-      updateDataByBranch({
+       updateDataByBranch({
         branch: "ODM",
         startId: lastWebappOrderIdOdm + 1,
       });
     }
-    // console.table({
-    //   lastODM: getLastIdOdm,
-    //   lastKMITL: getLastIdKmitl,
-    //   lastWebappOrderIdOdm,
-    //   lastWebappOrderIdKmitl,
-    // });
+    console.table({
+      lastODM: getLastIdOdm,
+      lastKMITL: getLastIdKmitl,
+      lastWebappOrderIdOdm,
+      lastWebappOrderIdKmitl,
+    });
     return newData;
   } catch (error) {
     throw handleError(error);
@@ -177,68 +177,101 @@ export const getDeliverByFilter = async (
       props?.status === ","
         ? undefined
         : (props.status?.split(",") as (keyof typeof checkStatus)[]);
+    console.log("props.input", props.input);
     let query: Prisma.DeliveryFindManyArgs = {
       where: {
-        AND: [
+        OR: [
           {
-            branch:
-              props.university && props.university !== ""
-                ? props.university
-                : undefined,
-          },
-          {
-            approved: {
-              gte: props.startDate
-                ? dayjs(props.startDate, "YYYYMMDD").startOf("date").toDate()
-                : undefined,
-              lte: props.endDate
-                ? dayjs(props.endDate, "YYYYMMDD").endOf("date").toDate()
-                : undefined,
-            },
-          },
-          {
-            OR: splitStatus?.map((staus) => {
-              if (checkStatus[staus] === undefined) {
-                return {};
-              }
-              return {
-                AND: [
-                  { status: checkStatus[staus].status },
-                  { type: checkStatus[staus].type },
+            AND: [
+              {
+                OR: [
+                  {
+                    webappOrderId:
+                      props.input && !isNaN(parseInt(props.input))
+                        ? parseInt(props?.input)
+                        : undefined,
+                  },
+                  {
+                    member: {
+                      contains: props.input?.trim(),
+                    },
+                  },
+                  {
+                    Delivery_WebappCourse: {
+                      some: {
+                        WebappCourse: {
+                          name: {
+                            contains: props.input,
+                          },
+                        },
+                      },
+                    },
+                  },
                 ],
-              };
-            }),
+              },
+              {
+                branch:
+                  props.university && props.university !== ""
+                    ? props.university
+                    : undefined,
+              },
+              {
+                approved: {
+                  gte: props.startDate
+                    ? dayjs(props.startDate, "YYYYMMDD")
+                        .startOf("date")
+                        .toDate()
+                    : undefined,
+                  lte: props.endDate
+                    ? dayjs(props.endDate, "YYYYMMDD").endOf("date").toDate()
+                    : undefined,
+                },
+              },
+              {
+                OR: splitStatus?.map((staus) => {
+                  if (checkStatus[staus] === undefined) {
+                    return {};
+                  }
+                  return {
+                    AND: [
+                      { status: checkStatus[staus].status },
+                      { type: checkStatus[staus].type },
+                    ],
+                  };
+                }),
+              },
+            ],
           },
         ],
       },
     };
-    if (props.input !== "" && props.input) {
-      query = {
-        where: {
-          OR: [
-            {
-              webappOrderId: !isNaN(parseInt(props.input))
-                ? parseInt(props.input)
-                : undefined,
-            },
-            {
-              member: { contains: props.input },
-            },
-            {
-              Delivery_WebappCourse: {
-                every: {
-                  WebappCourse: {
-                    name: {
-                      contains: props.input,
-                    },
-                  },
-                },
-              },
-            },
-          ],
-        },
-      };
-    }
+    // if (props.input !== "" && props.input) {
+    //   query = {
+    //     where: {
+    //       OR: [
+    //         {
+    //           webappOrderId: !isNaN(parseInt(props.input))
+    //             ? parseInt(props.input)
+    //             : undefined,
+    //         },
+    //         {
+    //           member: { contains: props.input },
+    //         },
+    //         {
+    //           Delivery_WebappCourse: {
+    //             every: {
+    //               WebappCourse: {
+    //                 name: {
+    //                   contains: props.input,
+    //                 },
+    //               },
+    //             },
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   };
+    // }
     const res = await prisma.delivery.findMany({
       include: {
         Delivery_Course: {
@@ -253,12 +286,19 @@ export const getDeliverByFilter = async (
         },
         DeliverShipService: true,
       },
+      // where: {
+      //   webappOrderId: 27462,
+      // },
       where: query.where,
       orderBy: { id: "desc" },
       take: 100,
       skip: (page - 1) * 100,
     });
     const count = await prisma.delivery.count({ where: query.where });
+    // console.log("res", res);
+    // res[0]?.Delivery_Course.map((d) => {
+    //   console.log("d", d);
+    // });
     // const test = _.uniqBy(res, "status");
     // test.map(d=> console.log('d.status', d.status))
     return parseStringify({
@@ -334,11 +374,11 @@ export const getDeliverByIds = cache(async (Ids: number[]) => {
     prisma.$disconnect();
   }
 });
-export const getDeliverById = (async (Id: number) => {
+export const getDeliverById = async (Id: number) => {
   try {
     const res = await prisma.delivery.findFirst({
       where: {
-        id:  Id ,
+        id: Id,
       },
       include: {
         RecordBook: {
@@ -394,7 +434,7 @@ export const getDeliverById = (async (Id: number) => {
   } finally {
     prisma.$disconnect();
   }
-});
+};
 export const getInfinityDeliver = cache(
   async ({
     pageParam = 1,
@@ -681,7 +721,7 @@ export const receiveOrder = async ({
         status: "success",
         // updatedAddress: updateAddress,
         note: note,
-        updatedAt:  new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         webappAdminId,
         webappAdminUsername,
       },
@@ -854,6 +894,54 @@ const createDelivery = async ({
   }
 };
 
+export const testFn = async () => {
+  const resData = await axios({
+    method: "GET",
+    url: `${B_END_POINT}/api/deliver?start-id=${27429}&branch=${`ODM`}`,
+    headers: {
+      "B-API-KEY": B_API_KEY,
+    },
+  });
+  const findData = resData.data.find((d: any) => d.id === 27430);
+  console.log("findData", findData);
+
+  const deliver = findData as deliveryProps;
+  const type = deliver.note?.includes("รับที่สถาบัน") ? "pickup" : "ship";
+  const res = await createDelivery({
+    data: {
+      status: "waiting",
+      type,
+      approved: deliver.last_updated,
+      webappOrderId: deliver.id,
+      updatedAddress: `${deliver.member} ${deliver.note} โทร. ${deliver.mobile}`,
+      // updatedAddress: deliver.note,
+      branch: deliver.branch,
+      member: deliver.member,
+      webappCourseId: deliver.courses.map((course) => course.id).toString(),
+      mobile: deliver.mobile,
+    },
+    courses: deliver.courses,
+  });
+
+  const getDataById = await getDeliverByIds([res.id]);
+  const data = getDataById[0];
+  for (let index = 0; index < data.Delivery_Course.length; index++) {
+    const deliveryCourse = data.Delivery_Course[index];
+    const findBook = deliveryCourse.Course?.CourseLesson?.find((lesson) => {
+      return lesson.LessonOnDocumentBook.length > 0;
+    });
+    if (findBook) {
+      await addBookTransactionAction({
+        startDate: data.approved!,
+        endDate: data.approved!,
+        detail: data.type,
+        qty: -1,
+        bookId: findBook.LessonOnDocumentBook[0].bookId,
+      });
+    }
+  }
+};
+
 export const updateDataByBranch = async ({
   branch,
   startId,
@@ -873,40 +961,47 @@ export const updateDataByBranch = async ({
     for (let index = 0; index < orderData.length; index++) {
       const deliver = orderData[index] as deliveryProps;
       const type = deliver.note?.includes("รับที่สถาบัน") ? "pickup" : "ship";
-      const res = await createDelivery({
-        data: {
-          status: "waiting",
-          type,
-          approved: deliver.last_updated,
-          webappOrderId: deliver.id,
-          updatedAddress: `${deliver.member} ${deliver.note} โทร. ${deliver.mobile}`,
-          // updatedAddress: deliver.note,
-          branch: deliver.branch,
-          member: deliver.member,
-          webappCourseId: deliver.courses.map((course) => course.id).toString(),
-          mobile: deliver.mobile,
-        },
-        courses: deliver.courses,
-      });
-
-      const getDataById = await getDeliverByIds([res.id]);
-      const data = getDataById[0];
-      for (let index = 0; index < data.Delivery_Course.length; index++) {
-        const deliveryCourse = data.Delivery_Course[index];
-        const findBook = deliveryCourse.Course?.CourseLesson?.find((lesson) => {
-          return lesson.LessonOnDocumentBook.length > 0;
+      try {
+        const res = await createDelivery({
+          data: {
+            status: "waiting",
+            type,
+            approved: deliver.last_updated,
+            webappOrderId: deliver.id,
+            updatedAddress: `${deliver.member} ${deliver.note} โทร. ${deliver.mobile}`,
+            // updatedAddress: deliver.note,
+            branch: deliver.branch,
+            member: deliver.member,
+            webappCourseId: deliver.courses
+              .map((course) => course.id)
+              .toString(),
+            mobile: deliver.mobile,
+          },
+          courses: deliver.courses,
         });
-        if (findBook) {
-          await addBookTransactionAction({
-            startDate: data.approved!,
-            endDate: data.approved!,
-            detail: data.type,
-            qty: -1,
-            bookId: findBook.LessonOnDocumentBook[0].bookId,
-          });
-        }
-      }
+        const getDataById = await getDeliverByIds([res.id]);
 
+        const data = getDataById[0];
+        for (let index = 0; index < data.Delivery_Course.length; index++) {
+          const deliveryCourse = data.Delivery_Course[index];
+          const findBook = deliveryCourse.Course?.CourseLesson?.find(
+            (lesson) => {
+              return lesson.LessonOnDocumentBook.length > 0;
+            }
+          );
+          if (findBook) {
+            await addBookTransactionAction({
+              startDate: data.approved!,
+              endDate: data.approved!,
+              detail: data.type,
+              qty: -1,
+              bookId: findBook.LessonOnDocumentBook[0].bookId,
+            });
+          }
+        }
+      } catch (error) {
+        console.error(handleError(error));
+      }
       // console.log("done", deliver.id);
     }
 

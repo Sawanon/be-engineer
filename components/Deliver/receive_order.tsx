@@ -109,7 +109,7 @@ const ReceiveOrder = ({
                 <p className="font-bold text-sm text-default-400">หนังสือ</p>
 
                 <div className="space-y-1">
-                  <div className=" text-base leading-6 font-serif">
+                  <div className="space-y-1 text-base leading-6 font-serif">
                     {checkCourse?.bookLesson.map((d) => {
                       return (
                         <div
