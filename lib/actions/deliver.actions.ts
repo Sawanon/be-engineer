@@ -177,7 +177,7 @@ export const getDeliverByFilter = async (
       props?.status === ","
         ? undefined
         : (props.status?.split(",") as (keyof typeof checkStatus)[]);
-    console.log("props.input", props.input);
+    console.log("props.input", props.status);
     let query: Prisma.DeliveryFindManyArgs = {
       where: {
         OR: [

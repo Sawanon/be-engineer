@@ -72,6 +72,7 @@ const DeliverComp = ({
   // );
 
   const fetchData = async () => {
+    console.log("searchData", searchData);
     const masterDeliver = await getDeliverByFilter({
       ...searchData,
       page: page,
@@ -81,7 +82,15 @@ const DeliverComp = ({
     setLoading(false);
     console.log("82", "fetchData");
   };
-  console.log("isLoadPage.current", isLoadPage.current);
+
+  const fetchPage = async () => {
+    const masterDeliver = await getDeliverByFilter({
+      ...searchData,
+      page: page,
+    });
+    setDelivery(masterDeliver);
+    setLoading(false);
+  };
   useEffect(() => {
     if (isLoadPage.current === false) {
       isLoadPage.current = true;
@@ -90,19 +99,14 @@ const DeliverComp = ({
     }
     setLoading(true);
     fetchData();
-    console.log("do", 91, isLoadPage.current);
-    console.log("searchData", searchData);
-  }, [searchData, page]);
-
-  // useMemo(() => {
-  //   if (!isLoadPage.current === false) {
-  //     isLoadPage.current = true;
-  //     return;
-  //   }
-  //   setLoading(true);
-  //   fetchData();
-  //   console.log("page", page);
-  // }, [page]);
+    setPage(1);
+  }, [searchData]);
+  useEffect(() => {
+    if (isLoadPage.current === true) {
+      setLoading(true);
+      fetchPage();
+    }
+  }, [page]);
 
   const onChangePage = (newPage: number) => {
     setPage(newPage);
