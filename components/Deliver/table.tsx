@@ -1,5 +1,9 @@
 import { deliveryTypeProps, modalProps, QueryProps, stateProps } from "@/@type";
-import { DeliverRes, deliveryPrismaProps } from "@/lib/actions/deliver.actions";
+import {
+  DeliverRes,
+  deliveryPrismaProps,
+  getDeliver,
+} from "@/lib/actions/deliver.actions";
 import {
   useDeliver,
   useDeliverByFilter,
@@ -33,6 +37,7 @@ import {
 } from "react-icons/lu";
 import { DeliverFilter } from "./form";
 import { checkStatus, rowsPerPage } from "@/lib/util";
+import ViewDetail from "./view_detail";
 type dataItem = {
   data: DeliverRes["data"];
   disable: Record<string, DeliverRes["data"][0]>;
@@ -76,6 +81,30 @@ const TableDeliver = ({
     disable: {},
     allData: {},
   });
+  const [detailState, setDetailState] = useState<
+    modalProps<Awaited<ReturnType<typeof getDeliver>>["data"][0]> & {
+      id?: string;
+    }
+  >({
+    open: false,
+    data: undefined,
+    id: undefined,
+  });
+
+  const closeDetail = () => {
+    setDetailState({
+      open: false,
+    });
+  };
+  const onOpenDetail = (
+    data: Awaited<ReturnType<typeof getDeliver>>["data"][0]
+  ) => {
+    setDetailState({
+      open: true,
+      data: data,
+      id: data.id.toString(),
+    });
+  };
 
   const [search, setSearch] = searchState;
 
@@ -105,17 +134,7 @@ const TableDeliver = ({
     const endIndex = startIndex + rowsPerPage + 1;
     const disabledKeys: Record<string, DeliverRes["data"][0]> = {};
     const deliverMap: Record<string, DeliverRes["data"][0]> = {};
-    // if (
-    //   !_.isEmpty(search.endDate) ||
-    //   !_.isEmpty(search.input) ||
-    //   !_.isEmpty(search.startDate) ||
-    //   (!_.isEmpty(search.status) && search.status !== "") ||
-    //   !_.isEmpty(search.university)
-    // ) {
-    //   const statusSearch = search.status
-    //     ? (search.status.split(",") as (keyof typeof checkStatus)[])
-    //     : [];
-    //   const ArrData: DeliverRes["data"] = [];
+
     data.data.forEach((deliver) => {
       const checkType = deliver?.type;
       if (checkType === "pickup" || deliver?.status === "success") {
@@ -123,75 +142,6 @@ const TableDeliver = ({
       }
       deliverMap[deliver.id.toString()] = deliver;
     });
-    //     const inputSearch = search.input ?? "";
-
-    //     const checkInput =
-    //       _.isEmpty(search.input) ||
-    //       deliver.member?.toLowerCase().includes(inputSearch) ||
-    //       deliver.webappOrderId
-    //         ?.toString()
-    //         .toLowerCase()
-    //         .includes(inputSearch) ||
-    //       deliver.Delivery_WebappCourse?.some((course) =>
-    //         course.WebappCourse?.name
-    //           ?.toLowerCase()
-    //           .includes(inputSearch.toLowerCase())
-    //       );
-
-    //     const checkStatusSearch =
-    //       _.isEmpty(search.status) ||
-    //       statusSearch.some((status) => {
-    //         return (
-    //           checkStatus[status]?.status === deliver.status &&
-    //           checkStatus[status]?.type === deliver.type
-    //         );
-    //       });
-    //     const checkStartDate =
-    //       _.isEmpty(search.startDate) ||
-    //       dayjs(search.startDate)
-    //         .startOf("date")
-    //         .isSameOrBefore(dayjs(deliver.approved));
-
-    //     const checkEndDate =
-    //       _.isEmpty(search.endDate) ||
-    //       dayjs(search.endDate)
-    //         .endOf("date")
-    //         .isSameOrAfter(dayjs(deliver.approved));
-    //     const checkUniversity =
-    //       _.isEmpty(search.university) ||
-    //       deliver.branch?.toLowerCase().includes(search?.university!);
-
-    //     if (deliver.id === 2560) {
-    //       console.table({
-    //         startDate: search.startDate,
-    //         endDate: search.endDate,
-    //         checkStartDate,
-    //         checkEndDate,
-    //       });
-    //     }
-    //     if (
-    //       checkInput &&
-    //       checkStatusSearch &&
-    //       checkUniversity &&
-    //       checkStartDate &&
-    //       checkEndDate
-    //     ) {
-    //       ArrData.push(deliver);
-    //     }
-    //   });
-
-    //   setAllPage(Math.ceil(ArrData.length / rowsPerPage));
-    //   setDeliverItem({
-    //     data: ArrData.slice(startIndex, endIndex),
-    //     disable: disabledKeys,
-    //     allData: deliverMap,
-    //   });
-    // } else {
-
-    // const currentData = data.data?.slice(startIndex, endIndex);
-
-    // const keys = Object.keys(deliverMap).slice(startIndex, endIndex);
-    // const slicedObject = _.pick(deliverMap, keys);
     setDeliverItem({
       data: data.data.slice(startIndex, endIndex),
       disable: disabledKeys,
@@ -200,11 +150,8 @@ const TableDeliver = ({
     // }
   }, [data, search]);
 
-  // useMemo(() => {
-  //   setPage(1);
-  // }, [allPage]);
-  return (
-    <>
+  const RenderTable = useMemo(() => {
+    return (
       <Table
         // color={"secondary"}
         disabledKeys={selectState.open ? Object.keys(deliverItem.disable) : ""}
@@ -277,7 +224,12 @@ const TableDeliver = ({
                     )}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell
+                  className="cursor-pointer"
+                  onClick={() => {
+                    onOpenDetail(deliver)
+                  }}
+                >
                   <pre className="font-serif whitespace-nowrap">
                     {`${deliver.member}`}
                   </pre>
@@ -361,6 +313,16 @@ const TableDeliver = ({
           }}
         </TableBody>
       </Table>
+    );
+  }, [data.data]);
+
+  // useMemo(() => {
+  //   setPage(1);
+  // }, [allPage]);
+  return (
+    <>
+      {RenderTable}
+      <ViewDetail dialogState={detailState} onClose={closeDetail} />
     </>
   );
 };

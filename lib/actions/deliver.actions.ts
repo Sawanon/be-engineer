@@ -49,29 +49,44 @@ export const refetchData = () => {
 export const cloneNewData = async () => {
   try {
     let newData = false;
-    const getLastIdKmitl = await getLatestId("KMITL");
-    const getLastIdOdm = await getLatestId("ODM");
+    const getLastIdKmitl = await getLastApproveId("KMITL");
+    const getLastIdOdm = await getLastApproveId("ODM");
 
     // const lastItemsByBranch = _.chain(delivery.data)
     //   .groupBy("branch") // Group items by 'branch'
     //   .mapValues((group) => _.maxBy(group, "webappOrderId")) // Get the item with the max 'id' in each group
     //   .value();
-    const lastWebappOrderIdOdm =
-      (await getLastsIdNew("ODM"))?.webappOrderId ?? 0;
-    const lastWebappOrderIdKmitl =
-      (await getLastsIdNew("KMITL"))?.webappOrderId ?? 0;
-    if (getLastIdKmitl !== lastWebappOrderIdKmitl) {
+
+    console.log("getLastIdKmitl", getLastIdKmitl);
+
+    const lastWebappOrderIdOdm = (await getLastsApprove("ODM"))?.approved;
+    const lastWebappOrderIdKmitl = (await getLastsApprove("KMITL"))?.approved;
+    console.log(
+      "lastWebappOrderIdKmitl",
+
+      new Date(getLastIdKmitl).toISOString(),
+      lastWebappOrderIdKmitl
+    );
+    if (
+      dayjs(getLastIdKmitl)
+        .millisecond(0)
+        .isAfter(dayjs(lastWebappOrderIdKmitl).millisecond(0))
+    ) {
       newData = true;
-       updateDataByBranch({
+      await updateDataByBranchLastApprove({
         branch: "KMITL",
-        startId: lastWebappOrderIdKmitl + 1,
+        startApprove: lastWebappOrderIdKmitl,
       });
     }
-    if (getLastIdOdm !== lastWebappOrderIdOdm) {
+    if (
+      dayjs(getLastIdOdm)
+        .millisecond(0)
+        .isAfter(dayjs(lastWebappOrderIdOdm).millisecond(0))
+    ) {
       newData = true;
-       updateDataByBranch({
+      await updateDataByBranchLastApprove({
         branch: "ODM",
-        startId: lastWebappOrderIdOdm + 1,
+        startApprove: lastWebappOrderIdOdm,
       });
     }
     console.table({
@@ -98,12 +113,40 @@ export const getLastsIdNew = async (branch: "ODM" | "KMITL") => {
     throw handleError(error);
   }
 };
+export const getLastsApprove = async (branch: "ODM" | "KMITL") => {
+  try {
+    const res = await prisma.delivery.findFirst({
+      orderBy: { approved: "desc" },
+      take: 1,
+      where: { branch: branch },
+    });
+    return JSON.parse(JSON.stringify(res));
+  } catch (error) {
+    throw handleError(error);
+  }
+};
 
 export const getLatestId = async (branch: "ODM" | "KMITL") => {
   try {
     const res = await axios({
       method: "GET",
       url: `${B_END_POINT}/api/deliver/latest-id?branch=${branch.toUpperCase()}`,
+      headers: {
+        "B-API-KEY": B_API_KEY,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    throw handleError(error);
+  } finally {
+    // prisma.$disconnect();
+  }
+};
+export const getLastApproveId = async (branch: "ODM" | "KMITL") => {
+  try {
+    const res = await axios({
+      method: "GET",
+      url: `${B_END_POINT}/api/deliver/latest-approved-date?branch=${branch.toUpperCase()}`,
       headers: {
         "B-API-KEY": B_API_KEY,
       },
@@ -177,7 +220,6 @@ export const getDeliverByFilter = async (
       props?.status === ","
         ? undefined
         : (props.status?.split(",") as (keyof typeof checkStatus)[]);
-    console.log("props.input", props.status);
     let query: Prisma.DeliveryFindManyArgs = {
       where: {
         OR: [
@@ -290,7 +332,7 @@ export const getDeliverByFilter = async (
       //   webappOrderId: 27462,
       // },
       where: query.where,
-      orderBy: { id: "desc" },
+      orderBy: { approved: "desc" },
       take: 100,
       skip: (page - 1) * 100,
     });
@@ -887,7 +929,7 @@ const createDelivery = async ({
     // console.log("create Tracking res", res);
     return parseStringify(res);
   } catch (error) {
-    console.error(error);
+    console.error("createDelivery", error);
     throw handleError(error);
   } finally {
     prisma.$disconnect();
@@ -967,6 +1009,75 @@ export const updateDataByBranch = async ({
             status: "waiting",
             type,
             approved: deliver.last_updated,
+            webappOrderId: deliver.id,
+            updatedAddress: `${deliver.member} ${deliver.note} โทร. ${deliver.mobile}`,
+            // updatedAddress: deliver.note,
+            branch: deliver.branch,
+            member: deliver.member,
+            webappCourseId: deliver.courses
+              .map((course) => course.id)
+              .toString(),
+            mobile: deliver.mobile,
+          },
+          courses: deliver.courses,
+        });
+        const getDataById = await getDeliverByIds([res.id]);
+
+        const data = getDataById[0];
+        for (let index = 0; index < data.Delivery_Course.length; index++) {
+          const deliveryCourse = data.Delivery_Course[index];
+          const findBook = deliveryCourse.Course?.CourseLesson?.find(
+            (lesson) => {
+              return lesson.LessonOnDocumentBook.length > 0;
+            }
+          );
+          if (findBook) {
+            await addBookTransactionAction({
+              startDate: data.approved!,
+              endDate: data.approved!,
+              detail: data.type,
+              qty: -1,
+              bookId: findBook.LessonOnDocumentBook[0].bookId,
+            });
+          }
+        }
+      } catch (error) {
+        console.error(handleError(error));
+      }
+      // console.log("done", deliver.id);
+    }
+
+    return parseStringify(res.data as deliveryPrismaProps[]);
+  } catch (error) {
+  } finally {
+    prisma.$disconnect();
+  }
+};
+export const updateDataByBranchLastApprove = async ({
+  branch,
+  startApprove,
+}: {
+  startApprove: Date;
+  branch: "ODM" | "KMITL";
+}) => {
+  try {
+    const res = await axios({
+      method: "GET",
+      url: `${B_END_POINT}/api/deliver?start-approved-date=${startApprove}&branch=${branch}`,
+      headers: {
+        "B-API-KEY": B_API_KEY,
+      },
+    });
+    const orderData = _.orderBy(res.data, ["id"], ["asc"]);
+    for (let index = 0; index < orderData.length; index++) {
+      const deliver = orderData[index] as deliveryProps;
+      const type = deliver.note?.includes("รับที่สถาบัน") ? "pickup" : "ship";
+      try {
+        const res = await createDelivery({
+          data: {
+            status: "waiting",
+            type,
+            approved: dayjs(deliver.last_updated).millisecond(0).toDate(),
             webappOrderId: deliver.id,
             updatedAddress: `${deliver.member} ${deliver.note} โทร. ${deliver.mobile}`,
             // updatedAddress: deliver.note,

@@ -26,6 +26,7 @@ import {
   LuScrollText,
   LuX,
 } from "react-icons/lu";
+import { RenderPopoverImg } from ".";
 const ReceiveOrder = ({
   onChangeType,
   onClose,
@@ -116,13 +117,7 @@ const ReceiveOrder = ({
                           className="flex gap-2 items-center"
                           key={d.DocumentBook.id}
                         >
-                          <NextUiImage
-                            width={24}
-                            height={34}
-                            className="rounded-small"
-                            alt={d.DocumentBook.name}
-                            src={d.DocumentBook.image!}
-                          />
+                          <RenderPopoverImg imgUrl={d.DocumentBook.image!} />
                           <p>
                             {renderBookName(d.DocumentBook)}
                             {/* {d.DocumentBook.name} */}

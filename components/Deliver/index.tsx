@@ -26,7 +26,14 @@ import {
 } from "@/lib/actions/deliver.actions";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import _ from "lodash";
-import { Button, Pagination } from "@nextui-org/react";
+import {
+  Button,
+  Image,
+  Pagination,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@nextui-org/react";
 import { Refresh } from "iconsax-react";
 import { LuX } from "react-icons/lu";
 import EditTracking from "./edit_tracking.modal";
@@ -50,6 +57,7 @@ const DeliverComp = ({
     sectionRef.current?.scrollIntoView({ behavior: "smooth" });
   };
   const isLoadPage = useRef<boolean>(false);
+  const isLoadSearchData = useRef<boolean>(false);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [delivery, setDelivery] = useState(deliveryData);
@@ -80,7 +88,6 @@ const DeliverComp = ({
     setAllPage(Math.ceil(masterDeliver.total / rowsPerPage));
     setDelivery(masterDeliver);
     setLoading(false);
-    console.log("82", "fetchData");
   };
 
   const fetchPage = async () => {
@@ -92,8 +99,8 @@ const DeliverComp = ({
     setLoading(false);
   };
   useEffect(() => {
-    if (isLoadPage.current === false) {
-      isLoadPage.current = true;
+    if (isLoadSearchData.current === false) {
+      isLoadSearchData.current = true;
       // refetchData()
       return;
     }
@@ -418,3 +425,29 @@ const NotifyModal = ({
 };
 
 export default DeliverComp;
+
+export const RenderPopoverImg = (props: { imgUrl: string }) => {
+  const { imgUrl } = props;
+  return (
+    <Popover placement="right">
+      <PopoverTrigger className="cursor-pointer">
+        <Image
+          className="rounded-sm"
+          width={24}
+          height={34}
+          alt="NextUI hero Image"
+          src={imgUrl}
+        />
+      </PopoverTrigger>
+      <PopoverContent className="p-0">
+        <Image
+          className="rounded-sm"
+          // width={}
+          height={136}
+          alt="NextUI hero Image"
+          src={imgUrl}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+};
