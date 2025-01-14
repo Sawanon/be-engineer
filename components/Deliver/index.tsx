@@ -84,7 +84,7 @@ const DeliverComp = ({
       ...searchData,
       page: page,
     });
-    console.log('masterDeliver', masterDeliver)
+    console.log("masterDeliver", masterDeliver);
     setAllPage(Math.ceil(masterDeliver.total / rowsPerPage));
     setDelivery(masterDeliver);
     setLoading(false);
@@ -261,6 +261,8 @@ const DeliverComp = ({
 
   // const deliverQuery = useDeliver();
   const refetch = () => {
+    console.log("call refetch");
+
     setLoading(true);
     fetchData();
   };

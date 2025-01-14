@@ -59,7 +59,7 @@ export const formatCourse = (
 
   delivery.Delivery_Course?.forEach((course) => {
     course.Course?.CourseLesson?.forEach((lesson) => {
-      console.log('lesson', lesson)
+      console.log("lesson", lesson);
       if (lesson.LessonOnDocumentBook.length > 0) {
         // bookLesson.push(lesson.LessonOnDocumentBook)
         bookLesson = [...bookLesson, ...lesson.LessonOnDocumentBook];
@@ -83,10 +83,9 @@ export const formatRecord = (
 ) => {
   let bookRecord: (typeof delivery.RecordBook)[0][] = [];
   let sheetRecord: (typeof delivery.RecordSheet)[0][] = [];
-  console.log('delivery 86', delivery)
+  console.log("delivery 86", delivery);
   delivery.RecordBook?.forEach((book) => {
     bookRecord.push(book);
-    
   });
   delivery.RecordSheet?.forEach((sheet) => {
     sheetRecord.push(sheet);
@@ -196,9 +195,11 @@ export const useAddTracking = ({
       if (onError) onError(error);
     },
     async onSuccess(data, variables, context) {
-      console.log('199', data)
-      await addRecordData(data!.id);
-
+      try {
+        await addRecordData(data!.id);
+      } catch (error) {
+        console.log("error", error);
+      }
       if (onSuccess) onSuccess(data);
     },
   });
