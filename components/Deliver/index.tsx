@@ -80,14 +80,18 @@ const DeliverComp = ({
   // );
 
   const fetchData = async () => {
-    console.log("call FetchData");
-    const masterDeliver = await getDeliverByFilter({
-      ...searchData,
-      page: page,
-    });
-    console.log("masterDeliver", masterDeliver);
-    setAllPage(Math.ceil(masterDeliver.total / rowsPerPage));
-    setDelivery(masterDeliver);
+    try {
+      console.log("call FetchData");
+      const masterDeliver = await getDeliverByFilter({
+        ...searchData,
+        page: page,
+      });
+      console.log("masterDeliver", masterDeliver);
+      setAllPage(Math.ceil(masterDeliver.total / rowsPerPage));
+      setDelivery(masterDeliver);
+    } catch (error) {
+      console.log("error", error);
+    }
     setLoading(false);
   };
 
