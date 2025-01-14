@@ -80,6 +80,7 @@ const DeliverComp = ({
   // );
 
   const fetchData = async () => {
+    console.log("call FetchData");
     const masterDeliver = await getDeliverByFilter({
       ...searchData,
       page: page,

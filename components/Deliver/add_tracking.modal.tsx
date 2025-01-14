@@ -122,7 +122,7 @@ const AddTracking = ({
   });
   // console.log(addSingleTrack);
   const handleAddTrack = async (data: addTrackingProps) => {
-    await addSingleTrack.mutate(data);
+    addSingleTrack.mutate(data);
   };
   const onCloseChangeType = () => {
     setChangeType({
