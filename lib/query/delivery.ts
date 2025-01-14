@@ -189,8 +189,8 @@ export const useAddTracking = ({
   onError?: (error: Error) => void;
 }) => {
   return useMutation({
-    mutationFn: (data: addTrackingProps) => {
-      return addTracking(data);
+    mutationFn: async (data: addTrackingProps) => {
+      return await addTracking(data);
     },
     onError(error, variables, context) {
       if (onError) onError(error);
