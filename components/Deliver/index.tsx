@@ -80,11 +80,11 @@ const DeliverComp = ({
   // );
 
   const fetchData = async () => {
-    console.log("searchData", searchData);
     const masterDeliver = await getDeliverByFilter({
       ...searchData,
       page: page,
     });
+    console.log('masterDeliver', masterDeliver)
     setAllPage(Math.ceil(masterDeliver.total / rowsPerPage));
     setDelivery(masterDeliver);
     setLoading(false);
