@@ -82,13 +82,15 @@ const DeliverComp = ({
   const fetchData = async () => {
     try {
       console.log("call FetchData");
-      const masterDeliver = await getDeliverByFilter({
-        ...searchData,
-        page: page,
-      });
-      console.log("masterDeliver", masterDeliver);
-      setAllPage(Math.ceil(masterDeliver.total / rowsPerPage));
-      setDelivery(masterDeliver);
+      setTimeout(async () => {
+        const masterDeliver = await getDeliverByFilter({
+          ...searchData,
+          page: page,
+        });
+        console.log("masterDeliver", masterDeliver);
+        setAllPage(Math.ceil(masterDeliver.total / rowsPerPage));
+        setDelivery(masterDeliver);
+      }, 100);
     } catch (error) {
       console.log("error", error);
     }
