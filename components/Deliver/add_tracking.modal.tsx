@@ -88,6 +88,7 @@ const AddTracking = ({
       setNewData(cloneData);
       onCloseChangeType();
       onChangeTypeSuccess(changeType.data?.type!, returnData!);
+      refetch();
       // router.refresh()
     },
     // onError
@@ -120,7 +121,7 @@ const AddTracking = ({
     },
   });
   // console.log(addSingleTrack);
-  const handleAddTrack = (data: addTrackingProps) => {
+  const handleAddTrack = async (data: addTrackingProps) => {
     addSingleTrack.mutate(data);
   };
   const onCloseChangeType = () => {

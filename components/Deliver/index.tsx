@@ -80,13 +80,20 @@ const DeliverComp = ({
   // );
 
   const fetchData = async () => {
-    console.log("searchData", searchData);
-    const masterDeliver = await getDeliverByFilter({
-      ...searchData,
-      page: page,
-    });
-    setAllPage(Math.ceil(masterDeliver.total / rowsPerPage));
-    setDelivery(masterDeliver);
+    try {
+      console.log("call FetchData");
+      setTimeout(async () => {
+        const masterDeliver = await getDeliverByFilter({
+          ...searchData,
+          page: page,
+        });
+        console.log("masterDeliver", masterDeliver);
+        setAllPage(Math.ceil(masterDeliver.total / rowsPerPage));
+        setDelivery(masterDeliver);
+      }, 100);
+    } catch (error) {
+      console.log("error", error);
+    }
     setLoading(false);
   };
 
@@ -261,6 +268,8 @@ const DeliverComp = ({
 
   // const deliverQuery = useDeliver();
   const refetch = () => {
+    console.log("call refetch");
+
     setLoading(true);
     fetchData();
   };
