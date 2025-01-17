@@ -16,12 +16,33 @@ import _ from "lodash";
 import { Suspense } from "react";
 import { dehydrate, QueryClient } from "@tanstack/react-query";
 // export const revalidate = 3600;
-export const revalidate = 0
+export const revalidate = 60;
 // export const fetchCache = "force-no-store";
-const DeliverPage = async () => {
+const DeliverPage = async (props: {
+  searchParams: {
+    endDate?: string;
+    startDate?: string;
+    page?: string;
+    search?: string;
+    status?: string;
+    university?: string;
+  };
+}) => {
+  const {
+    page = 1,
+    status = "pickup,ship",
+    search,
+    endDate,
+    startDate,
+    university,
+  } = props.searchParams;
   const delivery = await getDeliverByFilter({
-    status: "pickup,ship",
-    page: 1,
+    status: status,
+    page: parseInt(page.toString()),
+    input: search,
+    endDate,
+    startDate,
+    university,
   });
   const newData = await cloneNewData();
   return (

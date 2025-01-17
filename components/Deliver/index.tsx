@@ -39,6 +39,7 @@ import { LuX } from "react-icons/lu";
 import EditTracking from "./edit_tracking.modal";
 import { X } from "lucide-react";
 import { getQueryClient } from "@/app/provider";
+import { revalidate } from "@/app/deliver/page";
 
 export type multiTrackDialog = {
   key: Set<number>;
@@ -52,6 +53,10 @@ const DeliverComp = ({
   isNewData: boolean;
   deliveryData: DeliverRes;
 }) => {
+  console.log("deliveryData.data[0]", deliveryData.data[0]);
+  const searchParams = useSearchParams();
+
+  const route = useRouter();
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const scrollToSection = () => {
     sectionRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,9 +64,10 @@ const DeliverComp = ({
   const isLoadPage = useRef<boolean>(false);
   const isLoadSearchData = useRef<boolean>(false);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(
+    searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1
+  );
   const [delivery, setDelivery] = useState(deliveryData);
-  const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const [newData, setNewData] = useState(isNewData);
@@ -69,33 +75,45 @@ const DeliverComp = ({
     setNewData(isNewData);
   }, [isNewData]);
   const [searchData, setSearchData] = useState<DeliverFilter>({
-    status: "pickup,ship",
+    status: searchParams.get("status") ?? "pickup,ship",
+    endDate : searchParams.get("endDate") ?? undefined,
+    startDate : searchParams.get("startDate") ?? undefined,
+    input : searchParams.get("search") ?? undefined,
+    university : searchParams.get("university") ?? undefined,
+
   });
   const [allPage, setAllPage] = useState(
     Math.ceil(deliveryData.total / rowsPerPage)
   );
+
+  const [oldParams, setOldParams] = useState(searchParams.toString());
+
   // const deliverQuery = useDeliverByFilter(
   //   { ...searchData, page: page },
   //   deliveryData
   // );
+  // const fetchData = async () => {
+  //   try {
+  //     console.log("call FetchData");
+  //     setTimeout(async () => {
+  //       const masterDeliver = await getDeliverByFilter({
+  //         ...searchData,
+  //         page: page,
+  //       });
+  //       console.log("masterDeliver", masterDeliver);
+  //       setAllPage(Math.ceil(masterDeliver.total / rowsPerPage));
+  //       setDelivery(masterDeliver);
+  //     }, 100);
+  //   } catch (error) {
+  //     console.log("error", error);
+  //   }
+  //   setLoading(false);
+  // };
 
-  const fetchData = async () => {
-    try {
-      console.log("call FetchData");
-      setTimeout(async () => {
-        const masterDeliver = await getDeliverByFilter({
-          ...searchData,
-          page: page,
-        });
-        console.log("masterDeliver", masterDeliver);
-        setAllPage(Math.ceil(masterDeliver.total / rowsPerPage));
-        setDelivery(masterDeliver);
-      }, 100);
-    } catch (error) {
-      console.log("error", error);
-    }
-    setLoading(false);
-  };
+  useEffect(() => {
+    setDelivery(deliveryData);
+    setAllPage(Math.ceil(deliveryData.total / rowsPerPage));
+  }, [deliveryData]);
 
   const fetchPage = async () => {
     const masterDeliver = await getDeliverByFilter({
@@ -111,8 +129,38 @@ const DeliverComp = ({
       // refetchData()
       return;
     }
-    setLoading(true);
-    fetchData();
+    const params = new URLSearchParams(searchParams.toString());
+    if (searchData.status) {
+      params.set("status", searchData.status);
+    } else {
+      params.delete("status");
+    }
+    if (searchData.endDate) {
+      params.set("endDate", searchData.endDate);
+    } else {
+      params.delete("endDate");
+    }
+    if (searchData.startDate) {
+      params.set("startDate", searchData.startDate);
+    } else {
+      params.delete("startDate");
+    }
+    console.log("searchData.input", searchData.input);
+    if (searchData.input) {
+      params.set("search", searchData.input);
+    } else {
+      console.log("143", 143);
+      params.delete("search");
+    }
+    if (searchData.university) {
+      params.set("university", searchData.university);
+    } else {
+      params.delete("university");
+    }
+    params.set("page", "1");
+    setOldParams(`?${params.toString()}`);
+    route.replace(`/deliver?${params.toString()}`);
+
     setPage(1);
   }, [searchData]);
   useEffect(() => {
@@ -120,6 +168,17 @@ const DeliverComp = ({
       setLoading(true);
       fetchPage();
     }
+    const oldPage = searchParams.get("page");
+    const newSearchPage = `page=${page}`;
+    let search = location.search;
+    if (oldPage) {
+      search = search.replaceAll(`page=${oldPage}`, newSearchPage);
+    }
+    const newParam = !search ? `?${newSearchPage}` : search;
+    route.replace(`/deliver${newParam}`);
+    setOldParams(newParam.toString());
+
+    setPage(page);
   }, [page]);
 
   const onChangePage = (newPage: number) => {
@@ -192,7 +251,7 @@ const DeliverComp = ({
   };
 
   const replacePath = () => {
-    const newPath = `/deliver`;
+    const newPath = `/deliver${oldParams}`;
     window.history.replaceState(null, "", newPath);
   };
 
@@ -270,8 +329,13 @@ const DeliverComp = ({
   const refetch = () => {
     console.log("call refetch");
 
-    setLoading(true);
-    fetchData();
+    // setLoading(true);
+    setTimeout(() => {
+      refetchData();
+    }, 100);
+    // router.refresh()
+
+    // fetchData();
   };
 
   const onCloseSelect = () => {
@@ -374,7 +438,7 @@ const DeliverComp = ({
         searchState={[searchData, setSearchData]}
         tableSelect={[multiTrackingState, setMultiTrackingState]}
         // query={deliverQuery}
-        data={delivery}
+        data={deliveryData}
         onEditAddress={onEditAddress}
         state={[selectState, setSelectState]}
         // onPrint={handleClosePrint}
