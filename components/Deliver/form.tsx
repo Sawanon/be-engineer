@@ -59,6 +59,7 @@ const FormDeliver = ({
   onCloseSelect: () => void;
 }) => {
   const [search, setSearch] = searchState;
+  console.log("search", search);
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const [selectState, setSelectState] = state;
   const onOpenSelect = () => {
@@ -125,6 +126,7 @@ const FormDeliver = ({
     <section className=" py-2  grid grid-cols-12  gap-2  items-center">
       <div className="col-span-12 md:col-span-8 order-1">
         <CustomInput
+          value={search.input}
           classNames={{
             input: "bg-default-foreground rounded-[12px] ",
             // base: "",
@@ -336,7 +338,10 @@ const FormDeliver = ({
       >
         <div className="flex flex-1 gap-2 ">
           <StatusSelect value={search.status} onChange={onChangeSearch} />
-          <StatusInstitution onChange={onChangeSearch} />
+          <StatusInstitution
+            onChange={onChangeSearch}
+            value={search.university}
+          />
         </div>
       </div>
     </section>
@@ -352,9 +357,7 @@ const StatusSelect = ({
   value?: string;
   onChange: (key: keyof DeliverFilter, value: string) => void;
 }) => {
-  const [statusSearch, setStatusSearch] = useState<string | undefined>(
-   value
-  );
+  const [statusSearch, setStatusSearch] = useState<string | undefined>(value);
   return (
     <Select
       placeholder="สถานะ"
@@ -418,16 +421,22 @@ const StatusSelect = ({
 };
 
 const StatusInstitution = ({
+  value,
   onChange,
 }: {
+  value: string | undefined;
   onChange: (key: keyof DeliverFilter, value: string) => void;
 }) => {
+  console.log("value", value);
   return (
     <Select
       onChange={(e) => {
+        console.log("e.target.value", e.target.value);
         onChange("university", e.target.value);
       }}
       placeholder={`สถาบัน`}
+      selectedKeys={value ? new Set([value]) : undefined}
+      // defaultSelectedKeys={value}
       classNames={{
         value: ["text-default-foreground font-medium font-sans text-base"],
         trigger: cn("flex items-center justify-center  "),

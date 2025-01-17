@@ -90,7 +90,6 @@ const TableDeliver = ({
     data: undefined,
     id: undefined,
   });
-
   const closeDetail = () => {
     setDetailState({
       open: false,

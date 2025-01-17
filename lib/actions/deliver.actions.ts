@@ -89,12 +89,12 @@ export const cloneNewData = async () => {
         startApprove: lastWebappOrderIdOdm,
       });
     }
-    console.table({
-      lastODM: getLastIdOdm,
-      lastKMITL: getLastIdKmitl,
-      lastWebappOrderIdOdm,
-      lastWebappOrderIdKmitl,
-    });
+    // console.table({
+    //   lastODM: getLastIdOdm,
+    //   lastKMITL: getLastIdKmitl,
+    //   lastWebappOrderIdOdm,
+    //   lastWebappOrderIdKmitl,
+    // });
     return newData;
   } catch (error) {
     throw handleError(error);
@@ -287,33 +287,7 @@ export const getDeliverByFilter = async (
         ],
       },
     };
-    // if (props.input !== "" && props.input) {
-    //   query = {
-    //     where: {
-    //       OR: [
-    //         {
-    //           webappOrderId: !isNaN(parseInt(props.input))
-    //             ? parseInt(props.input)
-    //             : undefined,
-    //         },
-    //         {
-    //           member: { contains: props.input },
-    //         },
-    //         {
-    //           Delivery_WebappCourse: {
-    //             every: {
-    //               WebappCourse: {
-    //                 name: {
-    //                   contains: props.input,
-    //                 },
-    //               },
-    //             },
-    //           },
-    //         },
-    //       ],
-    //     },
-    //   };
-    // }
+
     const res = await prisma.delivery.findMany({
       include: {
         Delivery_Course: {

@@ -39,6 +39,7 @@ import {
 import { register } from "module";
 import _ from "lodash";
 import {
+  formatCourse,
   formatRecord,
   useAddTracking,
   useChangeType,
@@ -88,7 +89,7 @@ const ViewDetail = ({
   }, [queryData.data, data]);
   const checkCourse = useMemo(() => {
     if (queryData.data) {
-      return formatRecord(queryData.data);
+      return formatCourse(queryData.data);
     }
     return undefined;
   }, [queryData.data]);
@@ -158,11 +159,11 @@ const ViewDetail = ({
                   }
                 })}
 
-                {checkCourse && checkCourse.bookRecord.length > 0 && (
+                {checkCourse && checkCourse.bookLesson.length > 0 && (
                   <div className="gap-2">
                     <p className=" text-[14px] text-[#A1A1AA]">หนังสือ</p>
                     <div className="space-y-1">
-                      {checkCourse.bookRecord.map((d) => {
+                      {checkCourse.bookLesson.map((d) => {
                         return d.DocumentBook?.image ? (
                           <div
                             className="flex gap-2 items-center"
@@ -189,12 +190,12 @@ const ViewDetail = ({
                     </div>
                   </div>
                 )}
-                {checkCourse && checkCourse.sheetRecord.length > 0 && (
+                {checkCourse && checkCourse.sheetLesson.length > 0 && (
                   <div className="">
                     <p className=" text-[14px] text-[#A1A1AA]">เอกสาร</p>
                     <div className="space-y-1">
                       <div className="text-[14px] md:text-[12px]">
-                        {checkCourse.sheetRecord.map((d) => {
+                        {checkCourse.sheetLesson.map((d) => {
                           return (
                             <div
                               className=" flex gap-2 items-center"
