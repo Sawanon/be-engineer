@@ -141,7 +141,7 @@ const ReceiveOrder = ({
                           key={d.DocumentSheet.id}
                           className="flex gap-2 items-center "
                         >
-                          <LuScrollText size={20} />
+                               <LuScrollText size={20}  className="min-w-5"/>
                           <p className="flex items-center gap-2">
                             {d.DocumentSheet.name}
                             <Button

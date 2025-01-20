@@ -17,7 +17,7 @@ import {
 } from "@internationalized/date";
 import { I18nProvider } from "@react-aria/i18n";
 import { CgClose } from "react-icons/cg";
-import { cloneElement, forwardRef, useRef, useState } from "react";
+import { cloneElement, forwardRef, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/util";
 import { HiOutlineTruck } from "react-icons/hi";
 import {
@@ -36,6 +36,8 @@ import { multiTrackDialog } from ".";
 import { DeliverRes, deliveryPrismaProps } from "@/lib/actions/deliver.actions";
 import { Calendar } from "iconsax-react";
 import { ChevronDown } from "lucide-react";
+import _ from "lodash";
+import { useSearchParams ,useRouter} from "next/navigation";
 export type DeliverFilter = {
   input?: string | undefined;
   status?: string | undefined;
@@ -50,6 +52,7 @@ const FormDeliver = ({
   onCloseSelect,
   onPrintTrackings,
   selectData,
+  
 }: {
   selectData: multiTrackDialog;
   searchState: stateProps<DeliverFilter>;
@@ -58,8 +61,10 @@ const FormDeliver = ({
   onPrintTrackings: (data: DeliverRes["data"]) => void;
   onCloseSelect: () => void;
 }) => {
+  const route = useRouter()
+  const searchParams = useSearchParams()
   const [search, setSearch] = searchState;
-  console.log("search", search);
+  const [preSearchInput, setPresearchInput] = useState("");
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const [selectState, setSelectState] = state;
   const onOpenSelect = () => {
@@ -69,23 +74,37 @@ const FormDeliver = ({
     });
   };
 
-  const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    clearTimeout(timeoutRef.current);
-    if (value && value?.length >= 1) {
-      timeoutRef.current = setTimeout(() => {
-        setSearch((prev: DeliverFilter) => ({
-          ...prev,
-          input: value,
-        }));
-      }, 500);
-    } else {
-      setSearch((prev: DeliverFilter) => ({
-        ...prev,
-        input: undefined,
-      }));
+  const handleChangeSearch = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if(value){
+      params.set('search', value)
+      params.set('page', '1')
+      
+    }else{
+      params.delete('search')
     }
+    
+    route.replace(`/deliver?${params.toString()}`)
+    // if (value && value?.length >= 1) {
+    //   setSearch((prev: DeliverFilter) => ({
+    //     // ...prev,
+    //     input: value,
+    //   }));
+    // } else {
+    //   setSearch((prev: DeliverFilter) => ({
+    //     // ...prev,
+    //     input: undefined,
+    //   }));
+    // }
   };
+
+  const debouncedSearch = _.debounce(handleChangeSearch, 500);
+  useEffect(() => {
+    debouncedSearch(preSearchInput);
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [preSearchInput]);
 
   const onClickButtonCalendar = (subDate: number) => {
     setSearch((prev: DeliverFilter) => ({
@@ -131,7 +150,7 @@ const FormDeliver = ({
             input: "bg-default-foreground rounded-[12px] ",
             // base: "",
           }}
-          onChange={handleChangeSearch}
+          onChange={(e) => setPresearchInput(e.target.value)}
           type="text"
           placeholder="ชื่อผู้เรียน คอร์สเรียน หรือ ลำดับ"
           startContent={
@@ -427,7 +446,6 @@ const StatusInstitution = ({
   value: string | undefined;
   onChange: (key: keyof DeliverFilter, value: string) => void;
 }) => {
-  console.log("value", value);
   return (
     <Select
       onChange={(e) => {

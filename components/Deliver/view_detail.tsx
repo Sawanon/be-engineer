@@ -56,6 +56,7 @@ import ReceiveOrder from "./receive_order";
 import { deliveryPrismaProps, getDeliver } from "@/lib/actions/deliver.actions";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { RenderPopoverImg } from ".";
 type createProp = {
   trackingNumber?: string;
   delivery?: deliverShipServiceKey;
@@ -96,7 +97,6 @@ const ViewDetail = ({
 
   const handleClose = () => {
     onClose();
-
   };
 
   return (
@@ -169,13 +169,14 @@ const ViewDetail = ({
                             className="flex gap-2 items-center"
                             key={d.DocumentBook.id}
                           >
-                            <Image
-                              className="rounded-sm"
+                            {/* <Image
+                              className="min-w-6 rounded-sm"
                               width={24}
                               height={34}
                               alt="NextUI hero Image"
                               src={d.DocumentBook.image}
-                            />
+                            /> */}
+                            <RenderPopoverImg imgUrl={d.DocumentBook.image!} />
                             <p
                               key={d.DocumentBook?.id}
                               className="leading-6 text-base font-serif"
@@ -191,7 +192,7 @@ const ViewDetail = ({
                   </div>
                 )}
                 {checkCourse && checkCourse.sheetLesson.length > 0 && (
-                  <div className="">
+                  <div className="mt-3">
                     <p className=" text-[14px] text-[#A1A1AA]">เอกสาร</p>
                     <div className="space-y-1">
                       <div className="text-[14px] md:text-[12px]">
@@ -201,7 +202,7 @@ const ViewDetail = ({
                               className=" flex gap-2 items-center"
                               key={d.DocumentSheet?.id}
                             >
-                              <LuScrollText size={24} />
+                              <LuScrollText className="min-w-5" size={20} />
                               <div className="flex items-center gap-2">
                                 <p className="leading-6 text-base font-serif">
                                   {d.DocumentSheet?.name}{" "}
