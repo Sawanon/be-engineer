@@ -540,7 +540,7 @@ const CourseComponent = ({
                   <TableCell className="font-IBM-Thai-Looped space-y-1">
                     {course.uniqueBooks.map((book, index) => (
                       <div key={`book${index}${book.id}`} className={`flex items-center gap-2`}>
-                        <Image className={`w-4 rounded`} src={book.image!} alt="book image" />
+                        <Image className={`w-4 min-w-4 rounded`} src={book.image!} alt="book image" />
                         <div className={`text-xs font-IBM-Thai-Looped text-default-foreground`}>
                           {renderBookName(book)}
                         </div>
