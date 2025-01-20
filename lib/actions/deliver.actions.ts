@@ -272,7 +272,13 @@ export const getDeliverByFilter = async (
               {
                 OR: splitStatus?.map((staus) => {
                   if (checkStatus[staus] === undefined) {
-                    return {};
+                    return {
+                      OR: Object.values(checkStatus).map((value) => {
+                        return {
+                          AND: [{ status: value.status }, { type: value.type }],
+                        };
+                      }),
+                    };
                   }
                   return {
                     AND: [

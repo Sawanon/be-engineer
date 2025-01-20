@@ -9,7 +9,7 @@ import {
   updateDataByBranch,
 } from "@/lib/actions/deliver.actions";
 import { addDeliverShipService } from "@/lib/actions/delivery_ship.actions";
-import { Spinner } from "@nextui-org/react";
+import { input, Spinner } from "@nextui-org/react";
 import dayjs from "dayjs";
 import { m } from "framer-motion";
 import _ from "lodash";
@@ -45,6 +45,14 @@ const DeliverPage = async (props: {
     university,
   });
   const newData = await cloneNewData();
+  const searchData = {
+    page,
+    status,
+    input: search,
+    endDate,
+    startDate,
+    university,
+  };
   return (
     // <section className="absolute inset-0  flex flex-col bg-[#FAFAFA] overflow-x-hidden  ">
     <section className="flex-1 flex flex-col">
@@ -57,7 +65,12 @@ const DeliverPage = async (props: {
           </div>
         }
       >
-        <DeliverComp isNewData={newData} deliveryData={delivery} />
+        <DeliverComp
+          searchFilter={searchData}
+          page={parseInt(page.toString())}
+          isNewData={newData}
+          deliveryData={delivery}
+        />
       </Suspense>
     </section>
   );

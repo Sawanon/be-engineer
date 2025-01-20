@@ -251,7 +251,7 @@ const EditTracking = ({
                               className=" flex gap-2 items-center"
                               key={d.DocumentSheet?.id}
                             >
-                              <LuScrollText size={24} />
+                              <LuScrollText size={20}  className="min-w-5"/>
                               <div className="flex items-center gap-2">
                                 <p className="leading-6 text-base font-serif">
                                   {d.DocumentSheet?.name}{" "}

@@ -49,7 +49,11 @@ export type multiTrackDialog = {
 const DeliverComp = ({
   isNewData,
   deliveryData,
+  page,
+  searchFilter,
 }: {
+  searchFilter: DeliverFilter;
+  page: number;
   isNewData: boolean;
   deliveryData: DeliverRes;
 }) => {
@@ -64,29 +68,22 @@ const DeliverComp = ({
   const isLoadPage = useRef<boolean>(false);
   const isLoadSearchData = useRef<boolean>(false);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(
-    searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1
-  );
-  const [delivery, setDelivery] = useState(deliveryData);
+  // const [page, setPage] = useState(
+  //   searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1
+  // );
+  // const [delivery, setDelivery] = useState(deliveryData);
   const router = useRouter();
   const pathname = usePathname();
   const [newData, setNewData] = useState(isNewData);
   useEffect(() => {
     setNewData(isNewData);
   }, [isNewData]);
-  const [searchData, setSearchData] = useState<DeliverFilter>({
-    status: searchParams.get("status") ?? "pickup,ship",
-    endDate : searchParams.get("endDate") ?? undefined,
-    startDate : searchParams.get("startDate") ?? undefined,
-    input : searchParams.get("search") ?? undefined,
-    university : searchParams.get("university") ?? undefined,
-
-  });
+  const [searchData, setSearchData] = useState<DeliverFilter>(searchFilter);
   const [allPage, setAllPage] = useState(
     Math.ceil(deliveryData.total / rowsPerPage)
   );
 
-  const [oldParams, setOldParams] = useState(searchParams.toString());
+  // const [oldParams, setOldParams] = useState(searchParams.toString());
 
   // const deliverQuery = useDeliverByFilter(
   //   { ...searchData, page: page },
@@ -111,18 +108,19 @@ const DeliverComp = ({
   // };
 
   useEffect(() => {
-    setDelivery(deliveryData);
+    // setDelivery(deliveryData);
     setAllPage(Math.ceil(deliveryData.total / rowsPerPage));
   }, [deliveryData]);
 
-  const fetchPage = async () => {
-    const masterDeliver = await getDeliverByFilter({
-      ...searchData,
-      page: page,
-    });
-    setDelivery(masterDeliver);
-    setLoading(false);
-  };
+  // const fetchPage = async () => {
+  //   const masterDeliver = await getDeliverByFilter({
+  //     ...searchData,
+  //     page: page,
+  //   });
+  //   // setDelivery(masterDeliver);
+  //   setLoading(false);
+  // };
+
   useEffect(() => {
     if (isLoadSearchData.current === false) {
       isLoadSearchData.current = true;
@@ -145,44 +143,52 @@ const DeliverComp = ({
     } else {
       params.delete("startDate");
     }
-    console.log("searchData.input", searchData.input);
-    if (searchData.input) {
-      params.set("search", searchData.input);
-    } else {
-      console.log("143", 143);
-      params.delete("search");
-    }
+    // if (searchData.input) {
+    //   params.set("search", searchData.input);
+    // } else {
+    //   console.log("143", 143);
+    //   params.delete("search");
+    // }
     if (searchData.university) {
       params.set("university", searchData.university);
     } else {
       params.delete("university");
     }
     params.set("page", "1");
-    setOldParams(`?${params.toString()}`);
+    // setOldParams(`?${params.toString()}`);
     route.replace(`/deliver?${params.toString()}`);
-
-    setPage(1);
+    // setPage(1);
   }, [searchData]);
-  useEffect(() => {
-    if (isLoadPage.current === true) {
-      setLoading(true);
-      fetchPage();
-    }
+  // useEffect(() => {
+  //   if (isLoadPage.current === true) {
+  //     setLoading(true);
+  //     // fetchPage();
+  //   }
+  //   const oldPage = searchParams.get("page");
+  //   const newSearchPage = `page=${page}`;
+  //   let search = location.search;
+  //   if (oldPage) {
+  //     search = search.replaceAll(`page=${oldPage}`, newSearchPage);
+  //   }
+  //   const newParam = !search ? `?${newSearchPage}` : search;
+  //   route.replace(`/deliver${newParam}`);
+  //   // if (newParam.includes("addTracking") || !newParam.includes("editAddress")) {
+  //   // setOldParams(newParam.toString());
+  //   // }
+
+  //   setPage(page);
+  // }, [page]);
+
+  const onChangePage = (newPage: number) => {
+    // setPage(newPage);
     const oldPage = searchParams.get("page");
-    const newSearchPage = `page=${page}`;
+    const newSearchPage = `page=${newPage}`;
     let search = location.search;
     if (oldPage) {
       search = search.replaceAll(`page=${oldPage}`, newSearchPage);
     }
     const newParam = !search ? `?${newSearchPage}` : search;
     route.replace(`/deliver${newParam}`);
-    setOldParams(newParam.toString());
-
-    setPage(page);
-  }, [page]);
-
-  const onChangePage = (newPage: number) => {
-    setPage(newPage);
     scrollToSection();
   };
 
@@ -226,13 +232,15 @@ const DeliverComp = ({
   };
   const onOpenEditTracking = (data: DeliverRes["data"][0], id?: string) => {
     if (data) {
-      const newPath = `${pathname}?editTracking=${data.id}`;
+      const param = new URLSearchParams(searchParams.toString());
+      param.set("editTracking", data.id.toString());
+      const newPath = `${pathname}?${param.toString()}`;
       window.history.replaceState(null, "", newPath);
       setIsEditTracking((prev) => ({ open: true, data: data, id: id }));
     }
   };
   const onCloseEditTracking = () => {
-    replacePath();
+    replacePath("editTracking");
     setIsEditTracking((prev) => ({ open: false }));
   };
 
@@ -241,31 +249,42 @@ const DeliverComp = ({
     refetch?: () => void
   ) => {
     if (data) {
-      const newPath = `${pathname}?editAddress=${data.id}`;
+      const param = new URLSearchParams(searchParams.toString());
+      param.set("editAddress", data.id.toString());
+      const newPath = `${pathname}?${param.toString()}`;
       window.history.replaceState(null, "", newPath);
       setIsEditAddress({ open: true, data: data, refetch: refetch });
     } else {
-      replacePath();
+      replacePath("editAddress");
       setIsEditAddress({ open: false });
     }
   };
-
-  const replacePath = () => {
-    const newPath = `/deliver${oldParams}`;
-    window.history.replaceState(null, "", newPath);
+  const replacePath = (path: string) => {
+    // if (
+    //   oldParams.includes("addTracking") ||
+    //   oldParams.includes("editAddress") ||
+    //   oldParams.includes("editTracking")
+    // ) {
+    //   const newPath = `/deliver`;
+    //   window.history.replaceState(null, "", newPath);
+    // }
+    const param = new URLSearchParams(searchParams.toString());
+    param.delete(path);
+    // route.replace(`/deliver?${param.toString()}`)
+    window.history.replaceState(null, "", `/deliver?${param.toString()}`);
   };
 
   useMemo(() => {
     const id = searchParams.get("editAddress");
     if (id && !isEditAddress.open) {
-      const findDataByID = delivery.data.find((d) => d.id === parseInt(id));
+      const findDataByID = deliveryData.data.find((d) => d.id === parseInt(id));
       setIsEditAddress({ open: true, data: findDataByID, id });
     }
   }, [searchParams.get("editAddress")]);
   useMemo(() => {
     const id = searchParams.get("editTracking");
     if (id && !isEditTracking.open) {
-      const findDataByID = delivery.data.find((d) => d.id === parseInt(id));
+      const findDataByID = deliveryData.data.find((d) => d.id === parseInt(id));
       setIsEditTracking({ open: true, data: findDataByID, id });
     }
   }, [searchParams.get("editTracking")]);
@@ -273,7 +292,7 @@ const DeliverComp = ({
   useMemo(() => {
     const id = searchParams.get("addTracking");
     if (id) {
-      const findDataByID = delivery.data.find((d) => d.id === parseInt(id));
+      const findDataByID = deliveryData.data.find((d) => d.id === parseInt(id));
       setIsAddTracking({
         open: true,
         data: findDataByID,
@@ -287,7 +306,9 @@ const DeliverComp = ({
     data: DeliverRes["data"][0],
     type: deliveryTypeProps
   ) => {
-    const newPath = `${pathname}?addTracking=${data.id}`;
+    const param = new URLSearchParams(searchParams.toString());
+    param.set("addTracking", data.id.toString());
+    const newPath = `${pathname}?${param.toString()}`;
     window.history.replaceState(null, "", newPath);
     setIsAddTracking({ open: true, data, type, id: data.id.toString() });
   };
@@ -315,7 +336,7 @@ const DeliverComp = ({
 
   const onCloseAddTrack = () => {
     setIsAddTracking({ open: false });
-    replacePath();
+    replacePath("addTracking");
   };
 
   //   const updateDataTable = (data: typeof deliveryData.data)=>{
@@ -505,9 +526,9 @@ export const RenderPopoverImg = (props: { imgUrl: string }) => {
     <Popover placement="right">
       <PopoverTrigger className="cursor-pointer">
         <Image
-          className="rounded-sm"
-          width={24}
-          height={34}
+          className="rounded-sm min-w-7"
+          width={28}
+          height={40}
           alt="NextUI hero Image"
           src={imgUrl}
         />
