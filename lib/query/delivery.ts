@@ -59,7 +59,6 @@ export const formatCourse = (
 
   delivery.Delivery_Course?.forEach((course) => {
     course.Course?.CourseLesson?.forEach((lesson) => {
-      console.log("lesson", lesson);
       if (lesson.LessonOnDocumentBook.length > 0) {
         // bookLesson.push(lesson.LessonOnDocumentBook)
         bookLesson = [...bookLesson, ...lesson.LessonOnDocumentBook];
@@ -83,7 +82,6 @@ export const formatRecord = (
 ) => {
   let bookRecord: (typeof delivery.RecordBook)[0][] = [];
   let sheetRecord: (typeof delivery.RecordSheet)[0][] = [];
-  console.log("delivery 86", delivery);
   delivery.RecordBook?.forEach((book) => {
     bookRecord.push(book);
   });
@@ -132,14 +130,27 @@ export const useDeliverByIds = (Ids: number[] | undefined) => {
   });
 };
 export const useDeliverById = (Id: number | undefined, enabled: boolean) => {
+  const queryKey = ["deliverId", Id ? (isNaN(Id) ? undefined : Id) : undefined];
   return useQuery({
-    queryKey: ["deliverById", Id],
+    queryKey: ["deliverId", queryKey],
     queryFn: async () => {
       const masterDeliver = await getDeliverById(Id!);
       return masterDeliver;
     },
     refetchInterval: 5 * 60 * 1000, // refetch every x minute
-    enabled,
+    enabled: enabled,
+  });
+};
+export const useViewEdit = (Id: number | undefined, enabled: boolean) => {
+  const queryKey = ["viewEdit", Id ? (isNaN(Id) ? undefined : Id) : undefined];
+  return useQuery({
+    queryKey: ["deliverId", queryKey],
+    queryFn: async () => {
+      const masterDeliver = await getDeliverById(Id!);
+      return masterDeliver;
+    },
+    refetchInterval: 5 * 60 * 1000, // refetch every x minute
+    enabled: enabled,
   });
 };
 

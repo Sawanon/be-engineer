@@ -55,7 +55,6 @@ const AddTracking = ({
   refetch: () => void;
   onClose: () => void;
 }) => {
-  const queryClient = getQueryClient();
   const { open, data, type, id } = dialogState;
   const [isError, setIsError] = useState(false);
   const onError = (e: Error) => {

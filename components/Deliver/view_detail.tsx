@@ -90,7 +90,10 @@ const ViewDetail = ({
   }, [queryData.data, data]);
   const checkCourse = useMemo(() => {
     if (queryData.data) {
-      return formatCourse(queryData.data);
+      return {
+        record: formatRecord(queryData.data),
+        course: formatCourse(queryData.data),
+      };
     }
     return undefined;
   }, [queryData.data]);
@@ -158,74 +161,162 @@ const ViewDetail = ({
                     );
                   }
                 })}
-
-                {checkCourse && checkCourse.bookLesson.length > 0 && (
-                  <div className="gap-2">
-                    <p className=" text-[14px] text-[#A1A1AA]">หนังสือ</p>
-                    <div className="space-y-1">
-                      {checkCourse.bookLesson.map((d) => {
-                        return d.DocumentBook?.image ? (
-                          <div
-                            className="flex gap-2 items-center"
-                            key={d.DocumentBook.id}
-                          >
-                            {/* <Image
+                {queryData.data?.status === "success" ? (
+                  <>
+                    {checkCourse?.record &&
+                      checkCourse.record.bookRecord.length > 0 && (
+                        <div className="gap-2">
+                          <p className=" text-[14px] text-[#A1A1AA]">หนังสือ</p>
+                          <div className="space-y-1">
+                            {checkCourse.record.bookRecord.map((d) => {
+                              return d.DocumentBook?.image ? (
+                                <div
+                                  className="flex gap-2 items-center"
+                                  key={d.DocumentBook.id}
+                                >
+                                  {/* <Image
                               className="min-w-6 rounded-sm"
                               width={24}
                               height={34}
                               alt="NextUI hero Image"
                               src={d.DocumentBook.image}
                             /> */}
-                            <RenderPopoverImg imgUrl={d.DocumentBook.image!} />
-                            <p
-                              key={d.DocumentBook?.id}
-                              className="leading-6 text-base font-serif"
-                            >
-                              {renderBookName(d.DocumentBook)}
-                            </p>
+                                  <RenderPopoverImg
+                                    imgUrl={d.DocumentBook.image!}
+                                  />
+                                  <p
+                                    key={d.DocumentBook?.id}
+                                    className="leading-6 text-base font-serif"
+                                  >
+                                    {renderBookName(d.DocumentBook)}
+                                  </p>
+                                </div>
+                              ) : (
+                                <></>
+                              );
+                            })}
                           </div>
-                        ) : (
-                          <></>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                {checkCourse && checkCourse.sheetLesson.length > 0 && (
-                  <div className="mt-3">
-                    <p className=" text-[14px] text-[#A1A1AA]">เอกสาร</p>
-                    <div className="space-y-1">
-                      <div className="text-[14px] md:text-[12px]">
-                        {checkCourse.sheetLesson.map((d) => {
-                          return (
-                            <div
-                              className=" flex gap-2 items-center"
-                              key={d.DocumentSheet?.id}
-                            >
-                              <LuScrollText className="min-w-5" size={20} />
-                              <div className="flex items-center gap-2">
-                                <p className="leading-6 text-base font-serif">
-                                  {d.DocumentSheet?.name}{" "}
-                                </p>
-                                <Button
-                                  variant="flat"
-                                  onClick={() => {
-                                    window.open(d.DocumentSheet?.url);
-                                    // openSheetPage(d.DocumentSheet?.id!);
-                                  }}
-                                  isIconOnly
-                                  // color="secondary"
-                                  className="bg-default-100 text-default-foreground"
-                                >
-                                  <LuExternalLink size={24} />
-                                </Button>
-                              </div>
+                        </div>
+                      )}
+                    {checkCourse?.record &&
+                      checkCourse.record.sheetRecord.length > 0 && (
+                        <div className="mt-3">
+                          <p className=" text-[14px] text-[#A1A1AA]">เอกสาร</p>
+                          <div className="space-y-1">
+                            <div className="text-[14px] md:text-[12px]">
+                              {checkCourse.record.sheetRecord.map((d) => {
+                                return (
+                                  <div
+                                    className=" flex gap-2 items-center"
+                                    key={d.DocumentSheet?.id}
+                                  >
+                                    <LuScrollText
+                                      className="min-w-5"
+                                      size={20}
+                                    />
+                                    <div className="flex items-center gap-2">
+                                      <p className="leading-6 text-base font-serif">
+                                        {d.DocumentSheet?.name}{" "}
+                                      </p>
+                                      <Button
+                                        variant="flat"
+                                        onClick={() => {
+                                          window.open(d.DocumentSheet?.url);
+                                          // openSheetPage(d.DocumentSheet?.id!);
+                                        }}
+                                        isIconOnly
+                                        // color="secondary"
+                                        className="bg-default-100 text-default-foreground"
+                                      >
+                                        <LuExternalLink size={24} />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
+                          </div>
+                        </div>
+                      )}
+                  </>
+                ) : (
+                  <>
+                    {checkCourse?.course &&
+                      checkCourse?.course.bookLesson.length > 0 && (
+                        <div className="gap-2">
+                          <p className=" text-[14px] text-[#A1A1AA]">หนังสือ</p>
+                          <div className="space-y-1">
+                            {checkCourse.course.bookLesson.map((d) => {
+                              return d.DocumentBook?.image ? (
+                                <div
+                                  className="flex gap-2 items-center"
+                                  key={d.DocumentBook.id}
+                                >
+                                  {/* <Image
+                              className="min-w-6 rounded-sm"
+                              width={24}
+                              height={34}
+                              alt="NextUI hero Image"
+                              src={d.DocumentBook.image}
+                            /> */}
+                                  <RenderPopoverImg
+                                    imgUrl={d.DocumentBook.image!}
+                                  />
+                                  <p
+                                    key={d.DocumentBook?.id}
+                                    className="leading-6 text-base font-serif"
+                                  >
+                                    {renderBookName(d.DocumentBook)}
+                                  </p>
+                                </div>
+                              ) : (
+                                <></>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    {checkCourse?.course &&
+                      checkCourse?.course.sheetLesson.length > 0 && (
+                        <div className="mt-3">
+                          <p className=" text-[14px] text-[#A1A1AA]">เอกสาร</p>
+                          <div className="space-y-1">
+                            <div className="text-[14px] md:text-[12px]">
+                              {checkCourse.course.sheetLesson.map((d) => {
+                                return (
+                                  <div
+                                    className=" flex gap-2 items-center"
+                                    key={d.DocumentSheet?.id}
+                                  >
+                                    <LuScrollText
+                                      className="min-w-5"
+                                      size={20}
+                                    />
+                                    <div className="flex items-center gap-2">
+                                      <p className="leading-6 text-base font-serif">
+                                        {d.DocumentSheet?.name}{" "}
+                                      </p>
+                                      <Button
+                                        variant="flat"
+                                        onClick={() => {
+                                          window.open(d.DocumentSheet?.url);
+                                          // openSheetPage(d.DocumentSheet?.id!);
+                                        }}
+                                        isIconOnly
+                                        // color="secondary"
+                                        className="bg-default-100 text-default-foreground"
+                                      >
+                                        <LuExternalLink size={24} />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                  </>
                 )}
               </>
             )}

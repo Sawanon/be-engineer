@@ -25,7 +25,7 @@ import {
   LuSearch,
   LuX,
 } from "react-icons/lu";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CustomInput from "../CustomInput";
 import {
   Controller,
@@ -43,19 +43,20 @@ import { register } from "module";
 import _ from "lodash";
 import {
   formatRecord,
-  useAddTracking,
-  useChangeType,
   useDeliverById,
-  useDeliverByIds,
-  useUpdatePickup,
   useUpdateTracking,
+  useViewEdit,
 } from "@/lib/query/delivery";
 import { deliveryType } from "@/lib/res/const";
 import SingleTrack from "./singleTrack";
 import { addDeliverShipService } from "@/lib/actions/delivery_ship.actions";
 import ChangeReceiveType from "./change_type.modal";
 import ReceiveOrder from "./receive_order";
-import { deliveryPrismaProps, getDeliver } from "@/lib/actions/deliver.actions";
+import {
+  deliveryPrismaProps,
+  getDeliver,
+  getDeliverById,
+} from "@/lib/actions/deliver.actions";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { RenderPopoverImg } from ".";
@@ -76,7 +77,6 @@ const EditTracking = ({
   refetch: () => void;
   onClose: () => void;
 }) => {
-  const router = useRouter();
   const { open, data, id } = dialogState;
   const [isError, setIsError] = useState(false);
   const onError = (e: Error) => {
@@ -100,17 +100,16 @@ const EditTracking = ({
   } = form;
 
   const [newData, setNewData] = useState(data);
-  const queryData = useDeliverById(
-    id ? parseInt(id) : undefined,
-    id !== undefined
-  );
+
+  const queryData = useViewEdit(id ? parseInt(id) : undefined, true);
+
   useMemo(() => {
     if (queryData.data && open && data === undefined && id !== undefined) {
       setNewData(queryData.data);
     } else {
       setNewData(data);
     }
-  }, [queryData.data, data]);
+  }, [queryData.data]);
   const checkCourse = useMemo(() => {
     if (queryData.data) {
       const data = queryData.data;
@@ -187,7 +186,7 @@ const EditTracking = ({
               </div>
               {isError && <Alert />}
             </div>
-            {queryData.isPending ? (
+            {queryData.isFetching ? (
               <div className="flex flex-1 h-full items-center justify-center">
                 <Spinner className="w-[60px] h-[60px]" color="default" />
               </div>
@@ -251,7 +250,7 @@ const EditTracking = ({
                               className=" flex gap-2 items-center"
                               key={d.DocumentSheet?.id}
                             >
-                              <LuScrollText size={20}  className="min-w-5"/>
+                              <LuScrollText size={20} className="min-w-5" />
                               <div className="flex items-center gap-2">
                                 <p className="leading-6 text-base font-serif">
                                   {d.DocumentSheet?.name}{" "}
@@ -326,7 +325,7 @@ const EditTracking = ({
                         ([form.watch("delivery")] as Iterable<any>)
                       }
                       renderValue={() => {
-                        return deliveryType[form.watch("delivery")!].txt;
+                        return deliveryType[form.watch("delivery")!]?.txt ?? "";
                       }}
                       // defaultSelectedKeys={["flash"]}
                     >

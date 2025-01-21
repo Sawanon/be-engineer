@@ -11,6 +11,7 @@ import { cn, rowsPerPage } from "@/lib/util";
 import {
   useDeliver,
   useDeliverByFilter,
+  useDeliverById,
   useInfinityDeliver,
 } from "@/lib/query/delivery";
 import AddMultiTracking from "./add_multi_tracking.modal";
@@ -57,7 +58,6 @@ const DeliverComp = ({
   isNewData: boolean;
   deliveryData: DeliverRes;
 }) => {
-  console.log("deliveryData.data[0]", deliveryData.data[0]);
   const searchParams = useSearchParams();
 
   const route = useRouter();
@@ -278,14 +278,18 @@ const DeliverComp = ({
     const id = searchParams.get("editAddress");
     if (id && !isEditAddress.open) {
       const findDataByID = deliveryData.data.find((d) => d.id === parseInt(id));
-      setIsEditAddress({ open: true, data: findDataByID, id });
+      setTimeout(() => {
+        setIsEditAddress({ open: true, data: findDataByID, id });
+      });
     }
   }, [searchParams.get("editAddress")]);
   useMemo(() => {
     const id = searchParams.get("editTracking");
-    if (id && !isEditTracking.open) {
+    if (id) {
       const findDataByID = deliveryData.data.find((d) => d.id === parseInt(id));
-      setIsEditTracking({ open: true, data: findDataByID, id });
+      setTimeout(() => {
+        setIsEditTracking({ open: true, data: findDataByID, id: id });
+      });
     }
   }, [searchParams.get("editTracking")]);
 
@@ -293,11 +297,13 @@ const DeliverComp = ({
     const id = searchParams.get("addTracking");
     if (id) {
       const findDataByID = deliveryData.data.find((d) => d.id === parseInt(id));
-      setIsAddTracking({
-        open: true,
-        data: findDataByID,
-        type: findDataByID?.type as deliveryTypeProps,
-        id: id,
+      setTimeout(() => {
+        setIsAddTracking({
+          open: true,
+          data: findDataByID,
+          type: findDataByID?.type as deliveryTypeProps,
+          id: id,
+        });
       });
     }
   }, [searchParams.get("addTracking")]);

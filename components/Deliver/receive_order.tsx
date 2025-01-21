@@ -6,6 +6,7 @@ import {
 } from "@/lib/actions/deliver.actions";
 import {
   formatCourse,
+  useDeliverById,
   useDeliverByIds,
   useUpdatePickup,
 } from "@/lib/query/delivery";
@@ -58,10 +59,10 @@ const ReceiveOrder = ({
   };
   // TODO: fetch data
 
-  const queryData = useDeliverByIds(id ? [id] : undefined);
+  const queryData = useDeliverById(id ? id : undefined, id !== undefined);
   const checkCourse = useMemo(() => {
-    if (queryData.data?.[0]) {
-      return formatCourse(queryData.data[0]);
+    if (queryData.data) {
+      return formatCourse(queryData.data);
     }
     return undefined;
   }, [queryData]);
@@ -86,8 +87,8 @@ const ReceiveOrder = ({
           </div>
         ) : (
           <>
-            {queryData.data?.[0]?.Delivery_WebappCourse.map((d) => {
-              const checkCMapCourse = queryData.data?.[0].Delivery_Course.some(
+            {queryData.data?.Delivery_WebappCourse.map((d) => {
+              const checkCMapCourse = queryData.data?.Delivery_Course.some(
                 (course) => {
                   return (
                     course.webappCourseId === d.webappCourseId &&
@@ -141,7 +142,7 @@ const ReceiveOrder = ({
                           key={d.DocumentSheet.id}
                           className="flex gap-2 items-center "
                         >
-                               <LuScrollText size={20}  className="min-w-5"/>
+                          <LuScrollText size={20} className="min-w-5" />
                           <p className="flex items-center gap-2">
                             {d.DocumentSheet.name}
                             <Button

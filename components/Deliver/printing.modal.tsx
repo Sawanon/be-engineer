@@ -88,7 +88,7 @@ const PrintModal = ({
             <div className="flex flex-1  overflow-y-hidden">
               <div className="hidden md:block flex-1"></div>
 
-              <div className=" md:w-[460px] w-screen flex flex-col   bg-gradient-to-b from-[#838388] to-[#9B9BA5] px-4 py-2">
+              <div className="  md:min-w-[400px] md:w-fit w-screen flex flex-col   bg-gradient-to-b from-[#838388] to-[#9B9BA5] px-4 py-2">
                 <div className="flex gap-1 justify-between ">
                   <Button
                     className="bg-default-100 text-default-foreground"
@@ -194,7 +194,7 @@ const CardDeliver = ({
 
   return (
     <Card
-      className="break-after-page flex-1 h-[281px]  rounded-none  hover:bg-black hover:bg-opacity-15  shadow-md "
+      className="break-after-page flex-1 h-[281px] w-[392px]  rounded-none  hover:bg-black hover:bg-opacity-15  shadow-md "
       style={
         {
           // width : 281,
@@ -218,7 +218,7 @@ const CardDeliver = ({
         </div>
 
         <p className=" text-[10px] md:text-[10px]">{delivery?.webappOrderId}</p>
-        <p className="px-2 mt-1 leading-[19.6px] text-[14px] md:text-[16px]">
+        <p className="px-2 mt-1 leading-[19.6px] text-[14px] md:text-[16px] ">
           {/* {delivery?.member} <br /> */}
           {delivery?.updatedAddress}
           {/* เบอร์โทร {delivery?.mobile} */}
@@ -247,7 +247,7 @@ const CardDeliver = ({
             })}
             {checkCourse.bookLesson.length > 0 && (
               <div className="flex gap-2">
-                <p className=" text-[8px] md:text-[10px] text-[#A1A1AA]">
+                <p className=" text-[8px] md:text-[10px] w-[34px] text-[#A1A1AA]">
                   หนังสือ
                 </p>
                 <div className="space-y-1">
@@ -262,7 +262,7 @@ const CardDeliver = ({
                       );
                     })}
                   </div>
-                  <div className="flex gap-1 ">
+                  {/* <div className="flex gap-1 ">
                     {checkCourse.bookLesson.map((d) => {
                       return d.DocumentBook.image ? (
                         <Image
@@ -277,13 +277,13 @@ const CardDeliver = ({
                         <></>
                       );
                     })}
-                  </div>
+                  </div> */}
                 </div>
               </div>
             )}
             {checkCourse.sheetLesson.length > 0 && (
               <div className="flex gap-2">
-                <p className=" text-[8px] md:text-[10px] text-[#A1A1AA]">
+                <p className=" text-[8px] md:text-[10px] w-[34px] text-[#A1A1AA]">
                   เอกสาร
                 </p>
                 <div className="space-y-1">
