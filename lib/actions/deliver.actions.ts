@@ -411,6 +411,7 @@ export const getTest = async (id: string | undefined) => {
   return "test";
 };
 export const getDeliverById = async (Id: number) => {
+  console.log('414', "call getDeliverById")
   try {
     const res = await prisma.delivery.findFirst({
       where: {

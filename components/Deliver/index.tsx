@@ -21,6 +21,7 @@ import {
   deliveryPrismaProps,
   getDeliver,
   getDeliverByFilter,
+  getDeliverById,
   refetchData,
   testAddBook,
   updateAddress,
@@ -236,6 +237,7 @@ const DeliverComp = ({
       param.set("editTracking", data.id.toString());
       const newPath = `${pathname}?${param.toString()}`;
       window.history.replaceState(null, "", newPath);
+
       setIsEditTracking((prev) => ({ open: true, data: data, id: id }));
     }
   };
@@ -274,7 +276,7 @@ const DeliverComp = ({
     window.history.replaceState(null, "", `/deliver?${param.toString()}`);
   };
 
-  useMemo(() => {
+  useEffect(() => {
     const id = searchParams.get("editAddress");
     if (id && !isEditAddress.open) {
       const findDataByID = deliveryData.data.find((d) => d.id === parseInt(id));
@@ -283,17 +285,21 @@ const DeliverComp = ({
       });
     }
   }, [searchParams.get("editAddress")]);
-  useMemo(() => {
+  useEffect(() => {
     const id = searchParams.get("editTracking");
     if (id) {
-      const findDataByID = deliveryData.data.find((d) => d.id === parseInt(id));
-      setTimeout(() => {
-        setIsEditTracking({ open: true, data: findDataByID, id: id });
+      getDeliverById(parseInt(id)).then((data) => {
+        if (data) {
+          setIsEditTracking({ open: true, data: data, id: id });
+        }
       });
+      // setTimeout(() => {
+      // setIsEditTracking({ open: true, data: data, id: id });
+      // });
     }
   }, [searchParams.get("editTracking")]);
 
-  useMemo(() => {
+  useEffect(() => {
     const id = searchParams.get("addTracking");
     if (id) {
       const findDataByID = deliveryData.data.find((d) => d.id === parseInt(id));
