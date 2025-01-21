@@ -35,6 +35,7 @@ import {
   DeliverRes,
   deliveryPrismaProps,
   getDeliverByFilter,
+  getDeliverById,
 } from "@/lib/actions/deliver.actions";
 import { useRouter } from "next/navigation";
 import { changeType as changeTypefn } from "@/lib/actions/deliver.actions";
@@ -49,9 +50,10 @@ const AddTracking = ({
     type: deliveryTypeProps,
     newData: Awaited<ReturnType<typeof changeTypefn>>
   ) => void;
-  dialogState: modalProps<
-    Awaited<ReturnType<typeof getDeliverByFilter>>["data"][0]
-  > & { id?: string; type?: deliveryTypeProps };
+  dialogState: modalProps<Awaited<ReturnType<typeof getDeliverById>>> & {
+    id?: string;
+    type?: deliveryTypeProps;
+  };
   refetch: () => void;
   onClose: () => void;
 }) => {
@@ -72,8 +74,8 @@ const AddTracking = ({
     open && data === undefined && id !== undefined
   );
   const [newData, setNewData] = useState(data);
-  useMemo(() => {
-    if (getData.data && open && data === undefined && id !== undefined) {
+  useEffect(() => {
+    if (getData.data && open) {
       setNewData(getData.data);
     } else {
       setNewData(data);
@@ -171,6 +173,7 @@ const AddTracking = ({
               )}
               {newData?.type === "pickup" && (
                 <ReceiveOrder
+                  isLoading={getData.isFetching}
                   id={id ? parseInt(id) : undefined}
                   data={newData!}
                   mutation={updatePickup}

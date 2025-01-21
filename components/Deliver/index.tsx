@@ -4,7 +4,7 @@ import { deliveryTypeProps, modalProps } from "@/@type";
 import FormDeliver, { DeliverFilter } from "./form";
 import PrintModal from "./printing.modal";
 import TableDeliver from "./table";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import EditAddress from "./edit_address.modal";
 import AddTracking from "./add_tracking.modal";
 import { cn, rowsPerPage } from "@/lib/util";
@@ -49,11 +49,15 @@ export type multiTrackDialog = {
   open?: boolean;
 };
 const DeliverComp = ({
+  editTrackingData,
+  addTrackingData,
   isNewData,
   deliveryData,
   page,
   searchFilter,
 }: {
+  addTrackingData?: Awaited<ReturnType<typeof getDeliverById>>;
+  editTrackingData?: Awaited<ReturnType<typeof getDeliverById>>;
   searchFilter: DeliverFilter;
   page: number;
   isNewData: boolean;
@@ -214,14 +218,17 @@ const DeliverComp = ({
   >({ open: false, data: undefined });
 
   const [isAddTracking, setIsAddTracking] = useState<
-    modalProps<DeliverRes["data"][0]> & {
+    modalProps<Awaited<ReturnType<typeof getDeliverById>>> & {
       type?: deliveryTypeProps;
       id?: string;
     }
   >({ open: false, data: undefined, type: undefined, id: undefined });
 
   const [isEditTracking, setIsEditTracking] = useState<
-    modalProps<DeliverRes["data"][0]> & { id?: string }
+    modalProps<Awaited<ReturnType<typeof getDeliverById>>> & {
+      id?: string;
+      // fullData?: Awaited<ReturnType<typeof getDeliverById>>;
+    }
   >({ open: false, data: undefined, id: undefined });
 
   const handleOpenMultiTracking = () => {
@@ -238,7 +245,7 @@ const DeliverComp = ({
       const newPath = `${pathname}?${param.toString()}`;
       window.history.replaceState(null, "", newPath);
 
-      setIsEditTracking((prev) => ({ open: true, data: data, id: id }));
+      setIsEditTracking((prev) => ({ open: true, data: undefined, id: id }));
     }
   };
   const onCloseEditTracking = () => {
@@ -288,28 +295,29 @@ const DeliverComp = ({
   useEffect(() => {
     const id = searchParams.get("editTracking");
     if (id) {
-      getDeliverById(parseInt(id)).then((data) => {
-        if (data) {
-          setIsEditTracking({ open: true, data: data, id: id });
-        }
-      });
-      // setTimeout(() => {
-      // setIsEditTracking({ open: true, data: data, id: id });
+      // getDeliverById(parseInt(id)).then((data) => {
+      //   if (data) {
+      //     setIsEditTracking({ open: true, data: data, id: id });
+      //   }
       // });
+      // setTimeout(() => {
+      setIsEditTracking({
+        open: true,
+        data: editTrackingData,
+        id: id,
+      });
+      // }, 200);
     }
   }, [searchParams.get("editTracking")]);
 
   useEffect(() => {
     const id = searchParams.get("addTracking");
     if (id) {
-      const findDataByID = deliveryData.data.find((d) => d.id === parseInt(id));
-      setTimeout(() => {
-        setIsAddTracking({
-          open: true,
-          data: findDataByID,
-          type: findDataByID?.type as deliveryTypeProps,
-          id: id,
-        });
+      setIsAddTracking({
+        open: true,
+        data: addTrackingData,
+        type: addTrackingData?.type as deliveryTypeProps,
+        id: id,
       });
     }
   }, [searchParams.get("addTracking")]);
@@ -322,7 +330,7 @@ const DeliverComp = ({
     param.set("addTracking", data.id.toString());
     const newPath = `${pathname}?${param.toString()}`;
     window.history.replaceState(null, "", newPath);
-    setIsAddTracking({ open: true, data, type, id: data.id.toString() });
+    setIsAddTracking({ open: true, data : undefined, type, id: data.id.toString() });
   };
   const onChangeTypeSuccess = (
     type: deliveryTypeProps,
@@ -428,23 +436,27 @@ const DeliverComp = ({
         onEditAddress={onEditAddress}
         onClose={handleClosePrint}
       />
-      <EditAddress
-        refetch={refetch}
-        dialogState={[isEditAddress, setIsEditAddress]}
-        updatePrintModal={updatePrintModal}
-        onEditAddress={onEditAddress}
-      />
+      <Suspense>
+        <EditAddress
+          refetch={refetch}
+          dialogState={[isEditAddress, setIsEditAddress]}
+          updatePrintModal={updatePrintModal}
+          onEditAddress={onEditAddress}
+        />
+      </Suspense>
       <AddTracking
         onChangeTypeSuccess={onChangeTypeSuccess}
         dialogState={isAddTracking}
         refetch={refetch}
         onClose={onCloseAddTrack}
       />
-      <EditTracking
-        dialogState={isEditTracking}
-        refetch={refetch}
-        onClose={onCloseEditTracking}
-      />
+      <Suspense>
+        <EditTracking
+          dialogState={isEditTracking}
+          refetch={refetch}
+          onClose={onCloseEditTracking}
+        />
+      </Suspense>
 
       <AddMultiTracking
         dialogState={multiTrackingState}

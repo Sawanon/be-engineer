@@ -70,7 +70,7 @@ const EditTracking = ({
   refetch,
   dialogState,
 }: {
-  dialogState: modalProps<Awaited<ReturnType<typeof getDeliver>>["data"][0]> & {
+  dialogState: modalProps<Awaited<ReturnType<typeof getDeliverById>>> & {
     type?: deliveryTypeProps;
     id?: string;
   };
@@ -101,33 +101,38 @@ const EditTracking = ({
 
   const [newData, setNewData] = useState(data);
 
-  const queryData = useViewEdit(id ? parseInt(id) : undefined, true);
-
+  const queryData = useViewEdit(
+    id ? parseInt(id) : undefined,
+    data === undefined && id !== undefined
+  );
+  // useEffect(() => {
+  // setNewData(data);
+  // }, [data]);
   useMemo(() => {
-    if (queryData.data && open && data === undefined && id !== undefined) {
+    if (queryData.data && open) {
       setNewData(queryData.data);
     } else {
       setNewData(data);
     }
-  }, [queryData.data]);
+  }, [queryData.data, data]);
   const checkCourse = useMemo(() => {
-    if (queryData.data) {
-      const data = queryData.data;
-      if (data.type === "pickup") {
-        setValue("note", data.note!);
-      } else if (data.type === "ship") {
-        setValue("trackingNumber", data.trackingCode!);
-        setValue("note", data.note!);
+    if (newData) {
+      // const data = queryData.data;
+      if (newData.type === "pickup") {
+        setValue("note", newData.note!);
+      } else if (newData.type === "ship") {
+        setValue("trackingNumber", newData.trackingCode!);
+        setValue("note", newData.note!);
         setValue(
           "delivery",
-          data.DeliverShipService?.name as deliverShipServiceKey
+          newData.DeliverShipService?.name as deliverShipServiceKey
         );
       }
 
-      return formatRecord(queryData.data);
+      return formatRecord(newData);
     }
     return undefined;
-  }, [queryData.data]);
+  }, [, newData]);
   const mutation = useUpdateTracking({
     onError: onError,
     onSuccess: () => {
@@ -152,7 +157,7 @@ const EditTracking = ({
     form.setValue("note", "");
     form.setValue("trackingNumber", "");
   };
-
+  console.log("queryData", queryData);
   return (
     <Modal
       //  size={"full"}
@@ -173,7 +178,7 @@ const EditTracking = ({
             <div className=" flex flex-col md:rounded-none   bg-white flex-1 px-4 space-y-2">
               <div className="flex gap-1 justify-center my-3  ">
                 <p className="text-3xl font-semibold font-IBM-Thai">
-                  {newData?.member}
+                  {queryData.isFetching ? "" : newData?.member}
                 </p>
                 <Button
                   variant="flat"
@@ -382,7 +387,7 @@ const EditTracking = ({
                 </div>
                 <div className="py-2 grid grid-cols-3 gap-2">
                   <Button
-                    isLoading={mutation.isPending || queryData.isPending}
+                    isLoading={mutation.isPending || queryData.isFetching}
                     type="submit"
                     fullWidth
                     color="primary"

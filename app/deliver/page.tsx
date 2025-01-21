@@ -3,6 +3,7 @@ import {
   cloneNewData,
   getDeliver,
   getDeliverByFilter,
+  getDeliverById,
   getLatestId,
   refetchData,
   testFn,
@@ -25,6 +26,8 @@ const DeliverPage = async (props: {
     page?: string;
     search?: string;
     status?: string;
+    editTracking?: string;
+    addTracking?: string;
     university?: string;
   };
 }) => {
@@ -35,6 +38,8 @@ const DeliverPage = async (props: {
     endDate,
     startDate,
     university,
+    editTracking,
+    addTracking,
   } = props.searchParams;
   const delivery = await getDeliverByFilter({
     status: status,
@@ -53,6 +58,13 @@ const DeliverPage = async (props: {
     startDate,
     university,
   };
+
+  const getEditTracking = editTracking
+    ? await getDeliverById(parseInt(editTracking))
+    : undefined;
+  const getAddTracking = addTracking
+    ? await getDeliverById(parseInt(addTracking))
+    : undefined;
   return (
     // <section className="absolute inset-0  flex flex-col bg-[#FAFAFA] overflow-x-hidden  ">
     <section className="flex-1 flex flex-col">
@@ -66,6 +78,8 @@ const DeliverPage = async (props: {
         }
       >
         <DeliverComp
+          editTrackingData={getEditTracking}
+          addTrackingData={getAddTracking}
           searchFilter={searchData}
           page={parseInt(page.toString())}
           isNewData={newData}
