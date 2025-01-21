@@ -402,6 +402,7 @@ const ManageLesson = ({
           startContent={<Plus />}
           className={`bg-default-foreground text-primary-foreground font-IBM-Thai text-base font-medium`}
           onClick={() => setIsAddLesson(true)}
+          isDisabled={courseId === 0}
         >
           บทเรียน
         </Button>

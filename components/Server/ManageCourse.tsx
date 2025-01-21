@@ -358,7 +358,9 @@ const ManageCourse = ({
             // admin mode
             <div className={`mt-app`}>
               <div className={`flex gap-1 items-center`}>
-                <StatusIcon status={selectedCourse?.status!} />
+                <div className={`min-w-5`}>
+                  <StatusIcon status={selectedCourse?.status!} />
+                </div>
                 <Popover placement="top">
                   <PopoverTrigger className={`cursor-pointer`}>
                     <div
