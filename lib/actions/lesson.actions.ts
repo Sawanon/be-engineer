@@ -36,6 +36,53 @@ export const addLessonToDB = async (courseId: number, lesson: any) => {
   }
 }
 
+export const updatePreExamInLesson = async (oldPreExamId: number, preExamId: number, lessonId: number) => {
+  try {
+    const response = await prisma.lessonOnDocument.update({
+      where: {
+        lessonId_preExamId: {
+          lessonId: lessonId,
+          preExamId: oldPreExamId,
+        },
+      },
+      data: {
+        preExamId: preExamId,
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
+  } finally {
+    prisma.$disconnect()
+  }
+}
+export const updateSheetInLesson = async (oldSheetId: number, sheetId: number, lessonId: number) => {
+  try {
+    const response = await prisma.lessonOnDocumentSheet.update({
+      where: {
+        lessonId_sheetId: {
+          lessonId: lessonId,
+          sheetId: oldSheetId,
+        },
+      },
+      data: {
+        sheetId: sheetId,
+      }
+    })
+    return response
+  } catch (error) {
+    console.error(error)
+    if(error instanceof Prisma.PrismaClientKnownRequestError){
+      return error.message
+    }
+  } finally {
+    prisma.$disconnect()
+  }
+}
+
 export const updateBookInLesson = async (oldBookId: number, newBookId: number, lessonId: number) => {
   try {
     const lesson = await prisma.courseLesson.findFirst({

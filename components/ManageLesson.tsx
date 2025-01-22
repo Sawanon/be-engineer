@@ -180,7 +180,7 @@ const ManageLesson = ({
   }
 
   const handleOnEditDocumentSuccess = (type: string) => {
-    revalidateCourse()
+    revalidateCourse(location.search)
     if(type === "book"){
       refetchBookList()
     }

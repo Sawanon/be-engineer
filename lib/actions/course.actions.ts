@@ -598,7 +598,9 @@ export const countBookInCourse = async (courseId: number, bookId: number):Promis
   }
 }
 
-export const revalidateCourse = async () => {
+export const revalidateCourse = async (params?: string) => {
   console.log("revalidateCourse !!");
-  revalidatePath('/course')
+  const mainPath = `/course`
+  const url = params ? `${mainPath}${params}` : mainPath
+  revalidatePath(url)
 }

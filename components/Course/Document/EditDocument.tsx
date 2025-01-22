@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ClipboardSignature, ScrollText, X } from "lucide-react";
 import React, { Key, useMemo, useState } from "react";
 import DisconnectDocument from "./DisconnectDocument";
-import { updateBookInLesson } from "@/lib/actions/lesson.actions";
+import { updateBookInLesson, updatePreExamInLesson, updateSheetInLesson } from "@/lib/actions/lesson.actions";
 import { renderBookName } from "@/lib/util";
 import { DocumentBook } from "@prisma/client";
 
@@ -96,6 +96,7 @@ const EditDocument = ({
   };
 
   const handleOnChangeDocument = (key: Key | null) => {
+    console.log('key', key);
     if (!key) {
       setSelectedDocument(undefined);
       return;
@@ -105,6 +106,7 @@ const EditDocument = ({
 
   const handleOnConfirm = async () => {
     try {
+      console.log("selectedDocument", selectedDocument);
       if (!selectedDocument) {
         setError({
           isError: true,
@@ -122,6 +124,12 @@ const EditDocument = ({
       if (type === "sheet") {
         // const response = await addDocumentToLesson(parseInt(id), lessonId)
         // console.log("🚀 ~ submitAddDocumentToLesson ~ response:", response)
+        const response = await updateSheetInLesson(
+          oldDocumentId,
+          parseInt(id),
+          lessonId,
+        )
+        console.log("🚀 ~ handleOnConfirm ~ response:", response)
       } else if (type === "book") {
         // const oldBookId = document.DocumentBook.id
         // console.log("old book", oldBookId);
@@ -136,6 +144,12 @@ const EditDocument = ({
       } else if (type === "preExam") {
         // const response = await addPreExamToLessonAction(parseInt(id), lessonId)
         // console.log("🚀 ~ submitAddDocumentToLesson ~ response:", response)
+        const response = await updatePreExamInLesson(
+          oldDocumentId,
+          parseInt(id),
+          lessonId,
+        )
+        console.log("🚀 ~ handleOnConfirm ~ response:", response)
       }
       onConfirm(type);
       handleOnClose();
@@ -298,7 +312,14 @@ const EditDocument = ({
             disabledKeys={["loading"]}
           >
             {documentList ? (
-              documentList?.map((document, index) => {
+              documentList?.sort((a, b) => {
+                if(a.updatedAt! > b.updatedAt!){
+                  return -1
+                }else if(a.updatedAt! < b.updatedAt!){
+                  return 1
+                }
+                return 0
+              }).map((document, index) => {
                 const name =
                   document.type === "book"
                     ? renderBookName(document as DocumentBook)
