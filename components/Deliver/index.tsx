@@ -49,6 +49,7 @@ export type multiTrackDialog = {
   open?: boolean;
 };
 const DeliverComp = ({
+  editAddressData,
   editTrackingData,
   addTrackingData,
   isNewData,
@@ -56,6 +57,7 @@ const DeliverComp = ({
   page,
   searchFilter,
 }: {
+  editAddressData?: Awaited<ReturnType<typeof getDeliverById>>;
   addTrackingData?: Awaited<ReturnType<typeof getDeliverById>>;
   editTrackingData?: Awaited<ReturnType<typeof getDeliverById>>;
   searchFilter: DeliverFilter;
@@ -214,7 +216,9 @@ const DeliverComp = ({
     data: undefined,
   });
   const [isEditAddress, setIsEditAddress] = useState<
-    modalProps<DeliverRes["data"][0]> & { refetch?: () => void; id?: string }
+    modalProps<
+      DeliverRes["data"][0] | Awaited<ReturnType<typeof getDeliverById>>
+    > & { refetch?: () => void; id?: string }
   >({ open: false, data: undefined });
 
   const [isAddTracking, setIsAddTracking] = useState<
@@ -285,10 +289,9 @@ const DeliverComp = ({
 
   useEffect(() => {
     const id = searchParams.get("editAddress");
-    if (id && !isEditAddress.open) {
-      const findDataByID = deliveryData.data.find((d) => d.id === parseInt(id));
+    if (id) {
       setTimeout(() => {
-        setIsEditAddress({ open: true, data: findDataByID, id });
+        setIsEditAddress({ open: true, data: editAddressData, id });
       });
     }
   }, [searchParams.get("editAddress")]);
@@ -330,7 +333,12 @@ const DeliverComp = ({
     param.set("addTracking", data.id.toString());
     const newPath = `${pathname}?${param.toString()}`;
     window.history.replaceState(null, "", newPath);
-    setIsAddTracking({ open: true, data : undefined, type, id: data.id.toString() });
+    setIsAddTracking({
+      open: true,
+      data: undefined,
+      type,
+      id: data.id.toString(),
+    });
   };
   const onChangeTypeSuccess = (
     type: deliveryTypeProps,

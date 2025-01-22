@@ -28,6 +28,7 @@ const DeliverPage = async (props: {
     status?: string;
     editTracking?: string;
     addTracking?: string;
+    editAddress?: string;
     university?: string;
   };
 }) => {
@@ -40,6 +41,7 @@ const DeliverPage = async (props: {
     university,
     editTracking,
     addTracking,
+    editAddress
   } = props.searchParams;
   const delivery = await getDeliverByFilter({
     status: status,
@@ -48,6 +50,7 @@ const DeliverPage = async (props: {
     endDate,
     startDate,
     university,
+    
   });
   const newData = await cloneNewData();
   const searchData = {
@@ -65,6 +68,9 @@ const DeliverPage = async (props: {
   const getAddTracking = addTracking
     ? await getDeliverById(parseInt(addTracking))
     : undefined;
+  const getEditAddress = editAddress
+    ? await getDeliverById(parseInt(editAddress))
+    : undefined;
   return (
     // <section className="absolute inset-0  flex flex-col bg-[#FAFAFA] overflow-x-hidden  ">
     <section className="flex-1 flex flex-col">
@@ -79,6 +85,7 @@ const DeliverPage = async (props: {
       >
         <DeliverComp
           editTrackingData={getEditTracking}
+          editAddressData={getEditAddress}
           addTrackingData={getAddTracking}
           searchFilter={searchData}
           page={parseInt(page.toString())}
