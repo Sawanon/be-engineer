@@ -149,13 +149,13 @@ export const PDFDocument = ({
             style={styles.page}
           >
             <View style={styles.section}>
-              <Text style={{ fontSize: 8 }}>{delivery.webappOrderId}</Text>
+              <Text style={{ fontSize: 6 }}>{delivery.webappOrderId}</Text>
 
               <Text
                 style={{
-                  fontSize: "12px",
-                  lineHeight: 1.1,
-                  // padding: "0px 8px",
+                  fontSize: "10px",
+                  lineHeight: 1.2,
+                  padding: "0px 0px 0px 8px",
                 }}
               >
                 {delivery.updatedAddress}
@@ -168,94 +168,117 @@ export const PDFDocument = ({
                   padding: "0.5px 0px",
                 }}
               />
-              {delivery.Delivery_Course.some(
-                (course) => course.Course?.id !== undefined
-              ) ? (
-                <View>
-                  {delivery?.Delivery_WebappCourse.map((d) => {
-                    const checkCMapCourse = delivery.Delivery_Course.some(
-                      (course) => {
-                        return (
-                          course.webappCourseId === d.webappCourseId &&
-                          course.Course === null
-                        );
-                      }
-                    );
 
-                    if (checkCMapCourse) {
+              <View>
+                {delivery?.Delivery_WebappCourse.map((d) => {
+                  const checkCMapCourse = delivery.Delivery_Course.some(
+                    (course) => {
                       return (
+                        course.webappCourseId === d.webappCourseId &&
+                        course.Course === null
+                      );
+                    }
+                  );
+                  if (checkCMapCourse) {
+                    return (
+                      <View
+                        key={delivery.id}
+                        style={{
+                          // gap: 4,
+                          display: "flex",
+                          flexDirection: "row",
+                          paddingLeft: "3px",
+                          // paddingVertical: 3,
+                          color: "#F31260",
+                          backgroundColor: "#F31260",
+                          alignItems: "center",
+                          borderRadius: "4px",
+                        }}
+                      >
                         <View
                           key={delivery.id}
                           style={{
-                            gap: 4,
+                            // gap: 4,
                             display: "flex",
                             flexDirection: "row",
-                            paddingLeft: "16px",
-                            paddingVertical: 2,
-                            color: "#F31260",
+                            paddingVertical: 4,
                             backgroundColor: "#FEE7EF",
                             // alignItems: "center",
+                            width: "100%",
                             borderRadius: 4,
                           }}
                         >
                           <ErrorIcon />
 
-                          <Text style={{ fontSize: 8 }}>
+                          <Text style={{ fontSize: 8, marginLeft: 4 }}>
                             ไม่มีข้อมูลคอร์ส {d.WebappCourse?.name}
                           </Text>
                         </View>
-                      );
-                    }
-                  })}
-                  {checkCourse.bookLesson.length > 0 && (
+                      </View>
+                    );
+                  }
+                })}
+                {checkCourse.bookLesson.length > 0 && (
+                  <View
+                    style={{
+                      display: "flex",
+
+                      flexDirection: "row",
+                      gap: 2,
+                    }}
+                  >
                     <View
-                      style={{ display: "flex", flexDirection: "row", gap: 2 }}
+                      style={{
+                        width: 24,
+                      }}
                     >
                       <Text
                         style={{
-                          fontSize: 8,
+                          fontSize: "6px",
+                          marginTop : 1,
                           color: "#A1A1AA",
                           lineHeight: 0.9,
                         }}
                       >
                         หนังสือ
                       </Text>
-                      <View
-                        style={{
-                          fontSize: 10,
-                        }}
-                      >
-                        {checkCourse.bookLesson.map((d, index) => {
-                          return (
-                            <View
-                              key={d.bookId}
+                    </View>
+                    <View
+                      style={{
+                        fontSize: 10,
+                      }}
+                    >
+                      {checkCourse.bookLesson.map((d, index) => {
+                        return (
+                          <View
+                            key={d.bookId}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              flexDirection: "row",
+                              marginLeft: 4,
+                            }}
+                          >
+                            <Text
                               style={{
-                                display: "flex",
-                                alignItems: "center",
-                                flexDirection: "row",
-                                marginLeft: 4,
+                                backgroundColor: "#000",
+                                //  padding: "4px",
+                                height: "2px",
+                                width: "2px",
+                                borderRadius: 99999,
                               }}
+                            />
+                            <Text
+                              style={{ marginLeft: "4px", fontSize: "8px" }}
+                              key={d.DocumentBook.id}
                             >
-                              <Text
-                                style={{
-                                  backgroundColor: "#000",
-                                  //  padding: "4px",
-                                  height: "4px",
-                                  width: "4px",
-                                  borderRadius: 99999,
-                                }}
-                              />
-                              <Text
-                                style={{ marginLeft: "4px" }}
-                                key={d.DocumentBook.id}
-                              >
-                                {renderBookName(d.DocumentBook)}
-                                {/* {d.DocumentBook.name} */}
-                              </Text>
-                            </View>
-                          );
-                        })}
-                        <View
+                              {renderBookName(d.DocumentBook)}
+                              {/* {d.DocumentBook.name} */}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                      {/* <View
                           style={{ display: "flex", gap: 1, marginLeft: 12 }}
                         >
                           {checkCourse.bookLesson.map((d) => {
@@ -272,106 +295,77 @@ export const PDFDocument = ({
                               <></>
                             );
                           })}
-                        </View>
-                      </View>
+                        </View> */}
                     </View>
-                  )}
+                  </View>
+                )}
 
-                  {checkCourse.sheetLesson.length > 0 && (
+                {checkCourse.sheetLesson.length > 0 && (
+                  <View
+                    style={{ display: "flex", flexDirection: "row", gap: 2 }}
+                  >
+                    {" "}
                     <View
-                      style={{ display: "flex", flexDirection: "row", gap: 2 }}
+                      style={{
+                        width: 28,
+                      }}
                     >
                       <Text
                         style={{
-                          fontSize: 8,
+                          fontSize: 6,
+                          marginTop : 1,
+
                           color: "#A1A1AA",
                           lineHeight: 0.9,
                         }}
                       >
                         เอกสาร
                       </Text>
-                      <View
-                        style={{
-                          fontSize: 10,
-                        }}
-                      >
-                        {checkCourse.sheetLesson.map((d, index) => {
-                          return (
-                            <View
-                              key={d.sheetId}
+                    </View>
+                    <View
+                      style={{
+                        fontSize: 10,
+                      }}
+                    >
+                      {checkCourse.sheetLesson.map((d, index) => {
+                        return (
+                          <View
+                            key={d.sheetId}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              flexDirection: "row",
+                              // marginLeft: 4,
+                            }}
+                          >
+                            <Text
                               style={{
-                                display: "flex",
-                                alignItems: "center",
-                                flexDirection: "row",
-                                marginLeft: 4,
+                                backgroundColor: "#000",
+                                //  padding: "4px",
+                                height: "2px",
+                                width: "2px",
+                                borderRadius: 99999,
                               }}
-                            >
+                            />
+                            <View style={{}}>
                               <Text
                                 style={{
-                                  backgroundColor: "#000",
-                                  //  padding: "4px",
-                                  height: "4px",
-                                  width: "4px",
-                                  borderRadius: 99999,
+                                  maxWidth: "210px",
+                                  marginLeft: "3px",
+                                  fontSize: "8px",
                                 }}
-                              />
-                              <Text
-                                style={{ marginLeft: "3px" }}
                                 key={d.DocumentSheet.id}
                               >
                                 {d.DocumentSheet.name}
                               </Text>
                             </View>
-                          );
-                        })}
-                      </View>
+                          </View>
+                        );
+                      })}
                     </View>
-                  )}
-                </View>
-              ) : (
-                <View
-                  style={{
-                    borderRadius: "4px",
-                    paddingLeft: "4px",
-                    backgroundColor: "#F31260",
-                  }}
-                >
-                  {delivery?.Delivery_WebappCourse.map((d) => {
-                    if (
-                      !delivery.Delivery_Course.some(
-                        (course) => course.webappCourseId === d.webappCourseId
-                      )
-                    ) {
-                      return (
-                        <View
-                          key={delivery.id}
-                          style={{
-                            gap: 4,
-                            display: "flex",
-                            flexDirection: "row",
-                            paddingLeft: "16px",
-                            paddingVertical: 2,
-                            color: "#F31260",
-                            backgroundColor: "#FEE7EF",
-                            // alignItems: "center",
-                            borderRadius: 4,
-                          }}
-                        >
-                          {/* <ErrorIcon />
-
-                          <Text style={{ fontSize: 8 }}>
-                            ไม่มีข้อมูลคอร์ส{" "}
-                            {
-                              delivery.Delivery_WebappCourse[0].WebappCourse
-                                ?.name
-                            }
-                          </Text> */}
-                        </View>
-                      );
-                    }
-                  })}
-                </View>
-              )}
+                  </View>
+                )}
+              </View>
             </View>
           </Page>
         );
@@ -418,7 +412,13 @@ export const PDFDocument = ({
 
 const ErrorIcon = () => {
   return (
-    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+    <Svg
+      style={{ marginLeft: 4 }}
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
       <Path
         d="M21.76 15.92 15.36 4.4C14.5 2.85 13.31 2 12 2s-2.5.85-3.36 2.4l-6.4 11.52c-.81 1.47-.9 2.88-.25 3.99.65 1.11 1.93 1.72 3.61 1.72h12.8c1.68 0 2.96-.61 3.61-1.72.65-1.11.56-2.53-.25-3.99ZM11.25 9c0-.41.34-.75.75-.75s.75.34.75.75v5c0 .41-.34.75-.75.75s-.75-.34-.75-.75V9Zm1.46 8.71-.15.12c-.06.04-.12.07-.18.09-.06.03-.12.05-.19.06-.06.01-.13.02-.19.02s-.13-.01-.2-.02a.636.636 0 0 1-.18-.06.757.757 0 0 1-.18-.09l-.15-.12c-.18-.19-.29-.45-.29-.71 0-.26.11-.52.29-.71l.15-.12c.06-.04.12-.07.18-.09.06-.03.12-.05.18-.06.13-.03.27-.03.39 0 .07.01.13.03.19.06.06.02.12.05.18.09l.15.12c.18.19.29.45.29.71 0 .26-.11.52-.29.71Z"
         fill="#f31260"

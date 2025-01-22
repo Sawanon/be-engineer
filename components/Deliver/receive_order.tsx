@@ -3,9 +3,11 @@ import {
   deliveryPrismaProps,
   getDeliver,
   getDeliverByFilter,
+  getDeliverById,
 } from "@/lib/actions/deliver.actions";
 import {
   formatCourse,
+  useDeliverById,
   useDeliverByIds,
   useUpdatePickup,
 } from "@/lib/query/delivery";
@@ -33,8 +35,9 @@ const ReceiveOrder = ({
   mutation,
   data,
   id,
+  isLoading,
 }: {
-  data: Awaited<ReturnType<typeof getDeliverByFilter>>["data"][0];
+  data: Awaited<ReturnType<typeof getDeliverById>>;
   mutation: ReturnType<typeof useUpdatePickup>;
   onChangeType: (data: {
     detail: deliveryPrismaProps;
@@ -42,6 +45,7 @@ const ReceiveOrder = ({
   }) => void;
   onClose: () => void;
   id?: number;
+  isLoading: boolean;
 }) => {
   const form = useForm<{ note: string }>();
   const auth = useSession();
@@ -58,18 +62,19 @@ const ReceiveOrder = ({
   };
   // TODO: fetch data
 
-  const queryData = useDeliverByIds(id ? [id] : undefined);
   const checkCourse = useMemo(() => {
-    if (queryData.data?.[0]) {
-      return formatCourse(queryData.data[0]);
+    if (data) {
+      return formatCourse(data);
     }
     return undefined;
-  }, [queryData]);
+  }, [data]);
   return (
     <div className="flex flex-col ">
       <div className=" flex flex-col rounded-xl md:rounded-none   bg-white flex-1 px-4 space-y-2">
         <div className="flex gap-1 justify-center my-3  ">
-          <p className="text-3xl font-sans font-semibold">{data.member}</p>
+          <p className="text-3xl font-sans font-semibold">
+            {isLoading ? "" : data?.member}
+          </p>
           <Button
             variant="flat"
             isIconOnly
@@ -80,21 +85,19 @@ const ReceiveOrder = ({
           </Button>
         </div>
 
-        {queryData.isFetching ? (
+        {isLoading ? (
           <div className="flex flex-1 h-full items-center justify-center">
             <Spinner className="w-[60px] h-[60px]" color="default" />
           </div>
         ) : (
           <>
-            {queryData.data?.[0]?.Delivery_WebappCourse.map((d) => {
-              const checkCMapCourse = queryData.data?.[0].Delivery_Course.some(
-                (course) => {
-                  return (
-                    course.webappCourseId === d.webappCourseId &&
-                    course.Course === null
-                  );
-                }
-              );
+            {data?.Delivery_WebappCourse.map((d) => {
+              const checkCMapCourse = data?.Delivery_Course.some((course) => {
+                return (
+                  course.webappCourseId === d.webappCourseId &&
+                  course.Course === null
+                );
+              });
 
               if (checkCMapCourse) {
                 return (
@@ -141,7 +144,7 @@ const ReceiveOrder = ({
                           key={d.DocumentSheet.id}
                           className="flex gap-2 items-center "
                         >
-                               <LuScrollText size={20}  className="min-w-5"/>
+                          <LuScrollText size={20} className="min-w-5" />
                           <p className="flex items-center gap-2">
                             {d.DocumentSheet.name}
                             <Button

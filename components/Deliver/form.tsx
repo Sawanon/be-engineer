@@ -145,7 +145,7 @@ const FormDeliver = ({
     <section className=" py-2  grid grid-cols-12  gap-2  items-center">
       <div className="col-span-12 md:col-span-8 order-1">
         <CustomInput
-          value={search.input}
+          defaultValue={search.input}
           classNames={{
             input: "bg-default-foreground rounded-[12px] ",
             // base: "",

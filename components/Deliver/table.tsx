@@ -148,7 +148,6 @@ const TableDeliver = ({
     });
     // }
   }, [data, search]);
-
   const RenderTable = useMemo(() => {
     return (
       <Table
@@ -182,9 +181,10 @@ const TableDeliver = ({
         aria-label="deliver-table"
         selectedKeys={selectKeys.key}
         onSelectionChange={onSelectRow}
+
         //  defaultSelectedKeys={["2", "3"]}
         //  aria-label="Example static collection table"
-        // TODO: pagination
+
         // baseRef={scrollerRef}
         // bottomContent={
         //    query.hasNextPage ? (
@@ -226,7 +226,7 @@ const TableDeliver = ({
                 <TableCell
                   className="cursor-pointer"
                   onClick={() => {
-                    onOpenDetail(deliver)
+                    onOpenDetail(deliver);
                   }}
                 >
                   <pre className="font-serif whitespace-nowrap">
@@ -313,7 +313,7 @@ const TableDeliver = ({
         </TableBody>
       </Table>
     );
-  }, [data.data]);
+  }, [data.data, selectState, selectKeys]);
 
   // useMemo(() => {
   //   setPage(1);

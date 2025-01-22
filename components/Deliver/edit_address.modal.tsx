@@ -1,7 +1,9 @@
+"use client";
 import { modalProps, stateProps } from "@/@type";
 import {
   DeliverRes,
   deliveryPrismaProps,
+  getDeliverById,
   updateAddress,
 } from "@/lib/actions/deliver.actions";
 import { useDeliverById, useUpdateAddress } from "@/lib/query/delivery";
@@ -30,7 +32,9 @@ const EditAddress = ({
   updatePrintModal: (data: Awaited<ReturnType<typeof updateAddress>>) => void;
   refetch?: () => void;
   dialogState: stateProps<
-    modalProps<DeliverRes["data"][0]> & { refetch?: () => void; id?: string }
+    modalProps<
+      Awaited<ReturnType<typeof getDeliverById>> | DeliverRes["data"][0]
+    > & { refetch?: () => void; id?: string }
   >;
   onEditAddress: (data: DeliverRes["data"][0] | undefined) => void;
 }) => {

@@ -1,4 +1,4 @@
-"use server";
+"use server"
 
 import axios from "axios";
 import { checkStatus, handleError, parseStringify } from "../util";
@@ -51,43 +51,36 @@ export const cloneNewData = async () => {
     let newData = false;
     const getLastIdKmitl = await getLastApproveId("KMITL");
     const getLastIdOdm = await getLastApproveId("ODM");
-
     // const lastItemsByBranch = _.chain(delivery.data)
     //   .groupBy("branch") // Group items by 'branch'
     //   .mapValues((group) => _.maxBy(group, "webappOrderId")) // Get the item with the max 'id' in each group
     //   .value();
-
-    console.log("getLastIdKmitl", getLastIdKmitl);
-
     const lastWebappOrderIdOdm = (await getLastsApprove("ODM"))?.approved;
     const lastWebappOrderIdKmitl = (await getLastsApprove("KMITL"))?.approved;
-    console.log(
-      "lastWebappOrderIdKmitl",
-
-      new Date(getLastIdKmitl).toISOString(),
-      lastWebappOrderIdKmitl
-    );
     if (
+      lastWebappOrderIdKmitl === undefined ||
       dayjs(getLastIdKmitl)
         .millisecond(0)
         .isAfter(dayjs(lastWebappOrderIdKmitl).millisecond(0))
     ) {
       newData = true;
-      await updateDataByBranchLastApprove({
+      const res = await updateDataByBranchLastApprove({
         branch: "KMITL",
         startApprove: lastWebappOrderIdKmitl,
       });
+      newData = res ? res?.length > 0 : false;
     }
     if (
+      lastWebappOrderIdOdm === undefined ||
       dayjs(getLastIdOdm)
         .millisecond(0)
         .isAfter(dayjs(lastWebappOrderIdOdm).millisecond(0))
     ) {
-      newData = true;
-      await updateDataByBranchLastApprove({
+      const res = await updateDataByBranchLastApprove({
         branch: "ODM",
         startApprove: lastWebappOrderIdOdm,
       });
+      newData = res ? res?.length > 0 : false;
     }
     // console.table({
     //   lastODM: getLastIdOdm,
@@ -215,11 +208,25 @@ export const getDeliverByFilter = async (
   props: DeliverFilter & { page: number }
 ) => {
   const { page } = props;
+
   try {
-    const splitStatus =
+    let status = props.status;
+    if (status?.[0] === ",") {
+      status.substring(0);
+    }
+
+    let splitStatus =
       props?.status === ","
         ? undefined
         : (props.status?.split(",") as (keyof typeof checkStatus)[]);
+    if (
+      splitStatus &&
+      splitStatus.length > 0 &&
+      splitStatus[0] === ("" as keyof typeof checkStatus)
+    ) {
+      splitStatus.shift();
+    }
+
     let query: Prisma.DeliveryFindManyArgs = {
       where: {
         OR: [
@@ -271,6 +278,7 @@ export const getDeliverByFilter = async (
               },
               {
                 OR: splitStatus?.map((staus) => {
+                  console.log("checkStatus[staus]", checkStatus[staus]);
                   if (checkStatus[staus] === undefined) {
                     return {
                       OR: Object.values(checkStatus).map((value) => {
@@ -323,6 +331,8 @@ export const getDeliverByFilter = async (
     // });
     // const test = _.uniqBy(res, "status");
     // test.map(d=> console.log('d.status', d.status))
+    // console.log('res', res[0])
+
     return parseStringify({
       total: count,
       data: res,
@@ -396,7 +406,12 @@ export const getDeliverByIds = cache(async (Ids: number[]) => {
     prisma.$disconnect();
   }
 });
+export const getTest = async (id: string | undefined) => {
+  console.log("411", id);
+  return "test";
+};
 export const getDeliverById = async (Id: number) => {
+  console.log('414', "call getDeliverById")
   try {
     const res = await prisma.delivery.findFirst({
       where: {
@@ -452,6 +467,7 @@ export const getDeliverById = async (Id: number) => {
 
     return parseStringify(res);
   } catch (e) {
+    console.log("e", e);
     throw handleError(e);
   } finally {
     prisma.$disconnect();
@@ -1041,14 +1057,18 @@ export const updateDataByBranchLastApprove = async ({
   branch: "ODM" | "KMITL";
 }) => {
   try {
+    let url = `${B_END_POINT}/api/deliver?branch=${branch}`;
+    if (startApprove) {
+      url += `&start-approved-date=${startApprove}`;
+    }
     const res = await axios({
       method: "GET",
-      url: `${B_END_POINT}/api/deliver?start-approved-date=${startApprove}&branch=${branch}`,
+      url: url,
       headers: {
         "B-API-KEY": B_API_KEY,
       },
     });
-    const orderData = _.orderBy(res.data, ["id"], ["asc"]);
+    const orderData = _.orderBy(res.data, ["last_updated"], ["asc"]);
     for (let index = 0; index < orderData.length; index++) {
       const deliver = orderData[index] as deliveryProps;
       const type = deliver.note?.includes("รับที่สถาบัน") ? "pickup" : "ship";
