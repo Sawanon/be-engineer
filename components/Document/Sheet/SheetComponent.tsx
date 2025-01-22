@@ -8,6 +8,7 @@ import SheetUsage from './SheetUsage'
 import { Button, Input, Modal, ModalContent, Textarea } from '@nextui-org/react'
 import { X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import AddSheetModal from './AddSheetModal'
 
 const SheetComponent = ({
   sheetItems,
@@ -111,7 +112,11 @@ const SheetComponent = ({
         onEditSheet={handleOnClickEditSheet}
         onViewUsage={handleOnOpenSheetViewUsage}
       />
-      <Modal
+      <AddSheetModal
+        isOpen={isOpenAddDocumentSheet}
+        onClose={handleOnCloseAddSheet}
+      />
+      {/* <Modal
         isOpen={isOpenAddDocumentSheet}
         closeButton={<></>}
         backdrop="blur"
@@ -170,7 +175,7 @@ const SheetComponent = ({
               บันทึก
             </Button>
         </ModalContent>
-      </Modal>
+      </Modal> */}
     </div>
   )
 }

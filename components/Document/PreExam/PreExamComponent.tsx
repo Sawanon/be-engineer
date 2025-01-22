@@ -8,6 +8,7 @@ import PreExamUsage from './PreExamUsage'
 import { Button, Input, Modal, ModalContent, Textarea } from '@nextui-org/react'
 import { X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import AddPreExamModal from './AddPreExamModal'
 
 const PreExamComponent = ({
   preExamItems,
@@ -84,7 +85,11 @@ const PreExamComponent = ({
 
   return (
     <div>
-      <Modal
+      <AddPreExamModal
+        isOpen={isOpenAddDocumentPreExam}
+        onClose={handleCloseAddPreExam}
+      />
+      {/* <Modal
         isOpen={isOpenAddDocumentPreExam}
         closeButton={<></>}
         backdrop="blur"
@@ -142,7 +147,7 @@ const PreExamComponent = ({
               บันทึก
             </Button>
         </ModalContent>
-      </Modal>
+      </Modal> */}
       {isOpenEditPreExam &&
         <EditPreExamModal
             isOpen={isOpenEditPreExam}
