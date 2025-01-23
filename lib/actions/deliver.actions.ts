@@ -1,4 +1,4 @@
-"use server"
+"use server";
 
 import axios from "axios";
 import { checkStatus, handleError, parseStringify } from "../util";
@@ -227,6 +227,11 @@ export const getDeliverByFilter = async (
       splitStatus.shift();
     }
 
+    console.log({
+      start: dayjs(props.startDate, "YYYYMMDD").startOf("date").toISOString(),
+      end: dayjs(props.endDate, "YYYYMMDD").endOf("date").toISOString(),
+    });
+
     let query: Prisma.DeliveryFindManyArgs = {
       where: {
         OR: [
@@ -272,7 +277,9 @@ export const getDeliverByFilter = async (
                         .toISOString()
                     : undefined,
                   lte: props.endDate
-                    ? dayjs(props.endDate, "YYYYMMDD").endOf("date").toISOString()
+                    ? dayjs(props.endDate, "YYYYMMDD")
+                        .endOf("date")
+                        .toISOString()
                     : undefined,
                 },
               },
@@ -410,7 +417,7 @@ export const getTest = async (id: string | undefined) => {
   return "test";
 };
 export const getDeliverById = async (Id: number) => {
-  console.log('414', "call getDeliverById")
+  console.log("414", "call getDeliverById");
   try {
     const res = await prisma.delivery.findFirst({
       where: {
