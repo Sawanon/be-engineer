@@ -230,14 +230,7 @@ export const getDeliverByFilter = async (
     ) {
       splitStatus.shift();
     }
-    console.log({
-      gte: props.startDate
-        ? dayjs(props.startDate, "YYYY-MM-DD").startOf("date").subtract(7,'hour').toDate()
-        : undefined,
-      lte: props.endDate
-        ? dayjs(props.endDate, "YYYY-MM-DD").endOf("date").subtract(7,'hour').toDate()
-        : undefined,
-    });
+
 
     let query: Prisma.DeliveryFindManyArgs = {
       where: {
