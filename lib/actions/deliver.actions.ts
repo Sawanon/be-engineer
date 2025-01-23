@@ -269,16 +269,15 @@ export const getDeliverByFilter = async (
                   gte: props.startDate
                     ? dayjs(props.startDate, "YYYYMMDD")
                         .startOf("date")
-                        .toDate()
+                        .toISOString()
                     : undefined,
                   lte: props.endDate
-                    ? dayjs(props.endDate, "YYYYMMDD").endOf("date").toDate()
+                    ? dayjs(props.endDate, "YYYYMMDD").endOf("date").toISOString()
                     : undefined,
                 },
               },
               {
                 OR: splitStatus?.map((staus) => {
-                  console.log("checkStatus[staus]", checkStatus[staus]);
                   if (checkStatus[staus] === undefined) {
                     return {
                       OR: Object.values(checkStatus).map((value) => {
