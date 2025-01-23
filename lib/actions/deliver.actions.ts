@@ -26,6 +26,7 @@ import { addBookTransactionAction } from "./bookTransactions";
 import { addBookRecord, addRecordData, addSheetRecord } from "./record.actions";
 import dayjs from "dayjs";
 import PrismaDB from "../db";
+dayjs.tz.setDefault("Asia/Bangkok");
 
 const { B_API_KEY, B_END_POINT } = process.env;
 const prisma = PrismaDB;
@@ -226,7 +227,6 @@ export const getDeliverByFilter = async (
     ) {
       splitStatus.shift();
     }
-
     console.log({
       start: dayjs(props.startDate, "YYYYMMDD").startOf("date").toDate(),
       end: dayjs(props.endDate, "YYYYMMDD").endOf("date").toDate(),
@@ -277,9 +277,7 @@ export const getDeliverByFilter = async (
                         .toDate()
                     : undefined,
                   lte: props.endDate
-                    ? dayjs(props.endDate, "YYYYMMDD")
-                        .endOf("date")
-                        .toDate()
+                    ? dayjs(props.endDate, "YYYYMMDD").endOf("date").toDate()
                     : undefined,
                 },
               },
