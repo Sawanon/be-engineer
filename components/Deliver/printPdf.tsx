@@ -154,7 +154,7 @@ export const PDFDocument = ({
                 style={{
                   fontSize: "10px",
                   lineHeight: 1.2,
-                  padding: "0px 8px 0px 8px",
+                  padding: "0px 0px 0px 8px",
                   minWidth: "100%",
                 }}
               >

@@ -228,8 +228,8 @@ export const getDeliverByFilter = async (
     }
 
     console.log({
-      start: dayjs(props.startDate, "YYYYMMDD").startOf("date").toISOString(),
-      end: dayjs(props.endDate, "YYYYMMDD").endOf("date").toISOString(),
+      start: dayjs(props.startDate, "YYYYMMDD").startOf("date").toDate(),
+      end: dayjs(props.endDate, "YYYYMMDD").endOf("date").toDate(),
     });
 
     let query: Prisma.DeliveryFindManyArgs = {
@@ -274,12 +274,12 @@ export const getDeliverByFilter = async (
                   gte: props.startDate
                     ? dayjs(props.startDate, "YYYYMMDD")
                         .startOf("date")
-                        .toISOString()
+                        .toDate()
                     : undefined,
                   lte: props.endDate
                     ? dayjs(props.endDate, "YYYYMMDD")
                         .endOf("date")
-                        .toISOString()
+                        .toDate()
                     : undefined,
                 },
               },
