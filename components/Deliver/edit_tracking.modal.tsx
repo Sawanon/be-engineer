@@ -133,6 +133,10 @@ const EditTracking = ({
     }
     return undefined;
   }, [, newData]);
+  useEffect(() => {
+    setIsError(false);
+  }, [open]);
+
   const mutation = useUpdateTracking({
     onError: onError,
     onSuccess: () => {
@@ -146,7 +150,7 @@ const EditTracking = ({
   const onSubmit = (props: createProp) => {
     mutation.mutate({
       ...props,
-      id: data?.id!,
+      id: parseInt(id!),
       webappAdminUsername: auth.data?.user.username!,
       webappAdminId: auth.data?.user.id,
     });
@@ -157,7 +161,7 @@ const EditTracking = ({
     form.setValue("note", "");
     form.setValue("trackingNumber", "");
   };
-  console.log("queryData", queryData);
+
   return (
     <Modal
       //  size={"full"}
@@ -189,8 +193,8 @@ const EditTracking = ({
                   <LuX size={24} />
                 </Button>
               </div>
-              {isError && <Alert />}
             </div>
+            {isError && <Alert />}
             {queryData.isFetching ? (
               <div className="flex flex-1 h-full items-center justify-center">
                 <Spinner className="w-[60px] h-[60px]" color="default" />
@@ -283,7 +287,6 @@ const EditTracking = ({
               </>
             )}
             <div className="pt-3.5"></div>
-            {isError && <Alert />}
 
             <div>
               {!_.isEmpty(errors) && <Alert label="กรุณากรอกข้อมูลให้ครบ" />}
