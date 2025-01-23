@@ -232,10 +232,10 @@ export const getDeliverByFilter = async (
     }
     console.log({
       gte: props.startDate
-        ? dayjs(props.startDate, "YYYY-MM-DD").startOf("date").toDate()
+        ? dayjs(props.startDate, "YYYY-MM-DD").startOf("date").subtract(7,'hour').toDate()
         : undefined,
       lte: props.endDate
-        ? dayjs(props.endDate, "YYYY-MM-DD").endOf("date").toDate()
+        ? dayjs(props.endDate, "YYYY-MM-DD").endOf("date").subtract(7,'hour').toDate()
         : undefined,
     });
 
@@ -280,11 +280,11 @@ export const getDeliverByFilter = async (
                 approved: {
                   gte: props.startDate
                     ? dayjs(props.startDate, "YYYY-MM-DD")
-                        .startOf("date")
+                        .startOf("date").subtract(7,'hour')
                         .toDate()
                     : undefined,
                   lte: props.endDate
-                    ? dayjs(props.endDate, "YYYY-MM-DD").endOf("date").toDate()
+                    ? dayjs(props.endDate, "YYYY-MM-DD").endOf("date").subtract(7,'hour').toDate()
                     : undefined,
                 },
               },
