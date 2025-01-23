@@ -26,8 +26,11 @@ import { addBookTransactionAction } from "./bookTransactions";
 import { addBookRecord, addRecordData, addSheetRecord } from "./record.actions";
 import dayjs from "dayjs";
 import PrismaDB from "../db";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+dayjs.extend(utc);
+dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Bangkok");
-
 const { B_API_KEY, B_END_POINT } = process.env;
 const prisma = PrismaDB;
 export type deliveryPrismaProps = NonNullable<
