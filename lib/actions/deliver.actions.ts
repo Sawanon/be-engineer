@@ -276,11 +276,11 @@ export const getDeliverByFilter = async (
                 approved: {
                   gte: props.startDate
                     ? dayjs(props.startDate, "YYYYMMDD")
-                        .startOf("date")
+                        .startOf("date").subtract(7,'hour')
                         .toDate()
                     : undefined,
                   lte: props.endDate
-                    ? dayjs(props.endDate, "YYYYMMDD").endOf("date").toDate()
+                    ? dayjs(props.endDate, "YYYYMMDD").endOf("date").subtract(7,'hour').toDate()
                     : undefined,
                 },
               },
