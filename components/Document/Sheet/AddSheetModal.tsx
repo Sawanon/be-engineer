@@ -42,12 +42,6 @@ const AddSheetModal = ({
     onClose()
   }
 
-  const handleOnCloseAddSheet = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("add");
-    route.replace(`/document?${params.toString()}`);
-  };
-
   const handleOnSuccess = async () => {
     try {
       revalidateSheet(`/document${location.search}`);
@@ -74,7 +68,7 @@ const AddSheetModal = ({
       if (!response) {
         console.error("response is undefiend Document/index:89");
       }
-      handleOnCloseAddSheet();
+      handleOnClose();
       handleOnSuccess();
     } catch (error) {
       console.error(error);

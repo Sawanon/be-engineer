@@ -47,12 +47,6 @@ const AddPreExamModal = ({
     revalidatePreExam();
   };
 
-  const handleCloseAddPreExam = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("add");
-    route.replace(`/document?${params.toString()}`);
-  };
-
   const submitCreatePreExam: SubmitHandler<CreatePreExam> = async (data) => {
     try {
       if (!data.name || !data.url) {
@@ -69,7 +63,7 @@ const AddPreExamModal = ({
         console.error(`response is undefined Document/index:102`);
         return;
       }
-      handleCloseAddPreExam();
+      handleOnClose()
       revalidate();
     } catch (error) {
       console.error(error);
