@@ -149,6 +149,9 @@ const EditAddress = ({
                       {...form.register("address", { required: true })}
                       value={form.watch("address")}
                       minRows={1}
+                      classNames={{
+                        input: cn("text-base"),
+                      }}
                       // defaultValue={data?.note}
                       //       defaultValue="582/47 ซอยรัชดา 3 (แยก 10) ถนนอโศก-ดินแดง แขวงดินแดง
                       // เขตดินแดง กทม. 10400 เบอร์โทร 0956628171

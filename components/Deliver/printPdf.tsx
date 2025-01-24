@@ -193,6 +193,7 @@ export const PDFDocument = ({
                           backgroundColor: "#F31260",
                           alignItems: "center",
                           borderRadius: "4px",
+                          marginTop: "2px",
                         }}
                       >
                         <View
@@ -250,11 +251,17 @@ export const PDFDocument = ({
                     >
                       {checkCourse.bookLesson.map((d, index) => {
                         return (
+                          // <View
+                          //   style={{
+                          //     display: "flex",
+                          //     flexDirection: "row",
+                          //   }}
+                          // >
                           <View
                             key={d.bookId}
                             style={{
                               display: "flex",
-                              alignItems: "center",
+                              // alignItems: "center",
                               flexDirection: "row",
                               marginLeft: 4,
                             }}
@@ -266,6 +273,7 @@ export const PDFDocument = ({
                                 height: "2px",
                                 width: "2px",
                                 borderRadius: 99999,
+                                marginTop: 5,
                               }}
                             />
                             <Text
@@ -276,6 +284,7 @@ export const PDFDocument = ({
                               {/* {d.DocumentBook.name} */}
                             </Text>
                           </View>
+                          // </View>
                         );
                       })}
                       {/* <View
@@ -333,7 +342,7 @@ export const PDFDocument = ({
                             key={d.sheetId}
                             style={{
                               display: "flex",
-                              alignItems: "center",
+                              // alignItems: "center",
                               flexDirection: "row",
                               // marginLeft: 4,
                             }}
@@ -345,6 +354,7 @@ export const PDFDocument = ({
                                 height: "2px",
                                 width: "2px",
                                 borderRadius: 99999,
+                                marginTop: 5,
                               }}
                             />
                             <View style={{}}>

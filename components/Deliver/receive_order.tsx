@@ -11,7 +11,7 @@ import {
   useDeliverByIds,
   useUpdatePickup,
 } from "@/lib/query/delivery";
-import { openSheetPage, renderBookName } from "@/lib/util";
+import { cn, openSheetPage, renderBookName } from "@/lib/util";
 import Alert from "@/ui/alert";
 import {
   Button,
@@ -171,6 +171,9 @@ const ReceiveOrder = ({
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
           <div id="textarea-wrapper">
             <Textarea
+              classNames={{
+                input: cn("text-base"),
+              }}
               {...form.register("note")}
               placeholder="หมายเหตุ(ถ้ามี)"
               minRows={1}
