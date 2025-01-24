@@ -61,11 +61,22 @@ export const listBookTransactionByBookIdGroupByYearMonth = async (bookId: number
     const responseWithoutDeliver = await prisma.bookTransactions.findMany({
       where :{
         bookId: bookId,
-        detail: {
-          not : {
-            startsWith: "deliver",
+        AND: [
+          {
+            detail: {
+              not : {
+                startsWith: "ship",
+              },
+            },
           },
-        },
+          {
+            detail: {
+              not : {
+                startsWith: "pickup",
+              },
+            },
+          },
+        ],
       },
       select: {
         // startDate: true,
@@ -87,7 +98,7 @@ export const listBookTransactionByBookIdGroupByYearMonth = async (bookId: number
       SELECT detail, DATE_FORMAT(startDate, '%Y-%m') as year_months, SUM(qty) AS total_amount
       FROM defaultdb.BookTransactions
       WHERE bookId = ${bookId}
-      AND detail LIKE 'deliver%'
+      AND (detail LIKE 'ship%' OR detail LIKE 'pickup%')
       GROUP BY detail, year_months
       ORDER BY year_months desc;
     `

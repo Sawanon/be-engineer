@@ -1,6 +1,6 @@
 import { listBookTransactionByBookId, listBookTransactionByBookIdGroupByYearMonth } from "@/lib/actions/bookTransactions";
 import { tableClassnames } from "@/lib/res/const";
-import { cn } from "@/lib/util";
+import { cn, renderBookName } from "@/lib/util";
 import {
    Modal,
    ModalContent,
@@ -181,7 +181,7 @@ const BookInventory = ({
                            <div className="flex flex-1 justify-between items-center">
                               <div className="text-lg font-semibold font-IBM-Thai">
                                  {/* หนังสือ Dynamics midterm vol.1 - 2/2566{" "} */}
-                                 {book?.name}
+                                 {book ? renderBookName(book) : "-"}
                               </div>
                               <div className="whitespace-nowrap ">
                                  <p className="text-[#393E44] font-IBM-Thai-Looped text-xs">

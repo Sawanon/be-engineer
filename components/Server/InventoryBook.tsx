@@ -2,7 +2,7 @@
 import { getBookById } from "@/lib/actions/book.actions";
 import { listBookTransactionByBookId, listBookTransactionByBookIdGroupByYearMonth } from "@/lib/actions/bookTransactions";
 import { tableClassnames } from "@/lib/res/const";
-import { cn } from "@/lib/util";
+import { cn, renderBookName } from "@/lib/util";
 import {
    Modal,
    ModalContent,
@@ -110,22 +110,25 @@ const BookInventory = ({
    }
 
    const renderDetail = (detail: string) => {
-      if(detail.includes(`deliver`)){
-         const arrDeliverDetail = detail.split(`:`)
-         const [type, label, date] = arrDeliverDetail
-         const deliverText = `คำสั่งซื้อ`
+      if(detail.includes(`ship`)){
+         const arrShipDetail = detail.split(`:`)
+         const [type, label, date] = arrShipDetail
+         const shipText = `คำสั่งซื้อ`
          const restoreFromChangeWebapp = {
             value: `restore from change web app`,
             text: `เปลี่ยนหนังสือในคอร์ส`,
          }
          const dateStr = date ? dayjs(date).format(`DD MMM YYYY`) : ''
-         if(arrDeliverDetail.length > 1){
+         if(arrShipDetail.length > 1){
             if(label === restoreFromChangeWebapp.value){
                return `${restoreFromChangeWebapp.text} ${dateStr}`
             }
             return `-`
          }
-         return `${deliverText}`
+         return `${shipText}`
+      }else if(detail.includes(`pickup`)){
+         const shipText = `คำสั่งซื้อ (รับที่สถานบัน)`
+         return shipText
       }
       return detail
    }
@@ -201,11 +204,11 @@ const BookInventory = ({
                            <div className="flex flex-1 justify-between items-center">
                               <div className="text-lg font-semibold font-IBM-Thai">
                                  {/* หนังสือ Dynamics midterm vol.1 - 2/2566{" "} */}
-                                 {book?.name}
+                                 {book ? renderBookName(book) : "-"}
                               </div>
                               <div className="whitespace-nowrap ">
                                  <p className="text-[#393E44] font-IBM-Thai-Looped text-xs">
-                                    คงเหลือ{" "}
+                                    คงเหลือ
                                  </p>
                                  <p className="text-[#393E44]">
                                     <span className={`text-lg font-semibold font-IBM-Thai`}>
