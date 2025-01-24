@@ -38,33 +38,17 @@ import EditInventory from "../Document/inventory.book.edit";
 import { useRouter } from "next/navigation";
 
 const BookInventory = ({
-  //  open,
-  //  onClose,
-  //  onEditStock,
    book,
    bookTransactionsList,
 }: {
-  //  open: boolean;
-  //  onClose: () => void;
-  //  onEditStock: () => void;
    book: Awaited<ReturnType<typeof getBookById>>,
    bookTransactionsList: Awaited<ReturnType<typeof listBookTransactionByBookIdGroupByYearMonth>>
 }) => {
 
-   // const {data: bookTransactionsList} =  useQuery({
-   //    queryKey: ["listBookTransactionByBookId", book?.id],
-   //    queryFn: () => listBookTransactionByBookId(book!.id),
-   //    enabled: book !== undefined
-   // })
-  //  const {data: bookTransactionsList} =  useQuery({
-  //     queryKey: ["listBookTransactionByBookIdGroupByYearMonth", book?.id],
-  //     queryFn: () => listBookTransactionByBookIdGroupByYearMonth(book!.id),
-  //     enabled: book !== undefined
-  //  })
    const route = useRouter()
-   const rowPerPage = 10
+   const rowPerPage = 20
    const [page, setPage] = useState(1)
-   const [pageSize, setPageSize] = useState(5)
+   const [pageSize, setPageSize] = useState(50)
    const [isEditStock, setIsEditStock] = useState(false)
 
    const booTransactionItems = useMemo(() => {
@@ -73,23 +57,26 @@ const BookInventory = ({
       if(bookTransactionsList){
          setPageSize(Math.ceil(bookTransactionsList.length / rowPerPage))
       }
-      return bookTransactionsList?.slice(startIndex, endIndex);
+      console.log("bookTransactionsList", bookTransactionsList);
+      return bookTransactionsList?.slice(startIndex, endIndex).sort((a, b) => {
+         const prevEndDate = dayjs(a.endDate)
+         const nextEndDate = dayjs(b.endDate)
+         if(prevEndDate.isSame(nextEndDate, 'date')){
+            return -1
+         }
+         if(prevEndDate.isBefore(nextEndDate)){
+            return 1
+         }else if(prevEndDate.isAfter(nextEndDate)){
+            return -1
+         }
+         return 0
+      });
    }, [bookTransactionsList, page])
 
    const renderStartEndDate = (startDate: Date, endDate: Date) => {
       dayjs.tz.setDefault('Asia/Bangkok')
       const startDayjs = dayjs(startDate)
       const endDayjs = dayjs(endDate)
-      // console.log(new Date().getTimezoneOffset());
-      // console.log("startDate:", startDate);
-      // console.log("endDate:", endDate);
-      // console.log('startDayjs:', `${startDayjs}`);
-      // console.log('endDayjs:', `${endDayjs}`);
-      // console.log('date start', startDayjs.date());
-      // console.log('date end', endDayjs.date());
-      // console.log('date start format', startDayjs.format('DD'));
-      // console.log('date end format', endDayjs.format('DD'));
-      
       
       if(startDayjs.isSame(endDayjs, 'date')){
          return `${startDayjs.format('DD')} ${startDayjs.format('MMM')} ${startDayjs.year()}`
@@ -181,7 +168,7 @@ const BookInventory = ({
                   onClose={() => setIsEditStock(false)}
                   book={book}
               />
-               <div className="flex flex-1 md:flex-row-reverse overflow-y-hidden">
+               <div className="flex flex-1 md:flex-row-reverse ">
                   {/* <div className="hidden md:block flex-1"></div> */}
                   <div className="shadow-nextui-large flex flex-col h-full  w-full md:w-[480px] gap-2  bg-white px-4 py-2">
                      <div className="flex gap-2 items-center  ">
@@ -198,7 +185,6 @@ const BookInventory = ({
                               width={36}
                               height={52}
                               alt="NextUI hero Image"
-                              // src="https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg"
                               src={`${book?.image}`}
                            />
                            <div className="flex flex-1 justify-between items-center">

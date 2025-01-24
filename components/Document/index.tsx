@@ -68,8 +68,6 @@ const DocumentComp = ({
       queryFn: () => listPreExamAction(),
       refetchOnWindowFocus: true,
    })
-
-   const [isInventory, setIsInventory] = useState(false);
    const [isAddDocumentBook, setIsAddDocumentBook] = useState(false);
    const [isOpenEditDocumentBook, setIsOpenEditDocumentBook] = useState(false);
    const [isEditStock, setIsEditStock] = useState(false);
@@ -347,18 +345,6 @@ const DocumentComp = ({
 
    return (
       <div className="relative flex flex-col">
-         <BookInventory
-            open={isInventory}
-            onClose={() => {
-               // setIsInventory(false)
-               const params = new URLSearchParams(searchParams.toString())
-               // params.delete(`stock`)
-               params.delete(`stockBookId`)
-               route.replace(`/document?${params.toString()}`)
-            }}
-            onEditStock={() => setIsEditStock(true)}
-            book={selectedBook ?? undefined}
-         />
          <EditInventory
             open={isEditStock}
             onClose={() => setIsEditStock(false)}

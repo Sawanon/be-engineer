@@ -110,6 +110,7 @@ const HeaderForm = () => {
                 const size = (mode as any).size as number;
                 console.log("🚀 ~ HeaderForm ~ size:", size);
                 const params = new URLSearchParams(searchParams.toString());
+                params.set('page', '1')
                 if (size > 0 && mode.currentKey) {
                   params.set("type", mode.currentKey);
                 } else {
