@@ -109,6 +109,9 @@ const AddTracking = ({
     onSuccess: (d) => {
       // alert("Add track Success");
       // router.refresh();
+      if (getData.data) {
+        getData.refetch();
+      }
       refetch();
       onClose();
     },
@@ -117,6 +120,9 @@ const AddTracking = ({
     onError: onError,
     onSuccess: () => {
       // alert("Update Pickup Success");
+      if (getData.data) {
+        getData.refetch();
+      }
       refetch();
       onClose();
     },

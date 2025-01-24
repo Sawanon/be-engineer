@@ -40,6 +40,7 @@ const EditAddress = ({
 }) => {
   const [dialog, setDialog] = dialogState;
   const { open, data, id } = dialog;
+  console.log("dialogState", dialogState);
   const router = useRouter();
 
   const onClose = () => {
@@ -52,11 +53,18 @@ const EditAddress = ({
     console.error(error);
     setIsError(true);
   };
+  const getData = useDeliverById(
+    parseInt(id!),
+    open && data === undefined && id !== undefined
+  );
   const mutationUpdateAddress = useUpdateAddress({
     onError: onError,
     onSuccess: (data: Awaited<ReturnType<typeof updateAddress>>) => {
       if (refetch) {
         refetch();
+      }
+      if (getData.data) {
+        getData.refetch();
       }
       updatePrintModal(data);
       onClose();
@@ -73,10 +81,6 @@ const EditAddress = ({
     });
   };
 
-  const getData = useDeliverById(
-    parseInt(id!),
-    open && data === undefined && id !== undefined
-  );
   const [newData, setNewData] = useState(data);
   useMemo(() => {
     if (getData.data && open && data === undefined && id !== undefined) {

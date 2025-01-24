@@ -138,6 +138,7 @@ export const useDeliverById = (Id: number | undefined, enabled: boolean) => {
       return masterDeliver;
     },
     refetchInterval: 5 * 60 * 1000, // refetch every x minute
+    refetchOnMount: true,
     enabled: enabled,
   });
 };
@@ -225,9 +226,11 @@ export const useUpdateTracking = ({
 }) => {
   return useMutation({
     mutationFn: (data: updateTrackingProps) => {
+  
       return updateDeliver(data);
     },
     onError(error, variables, context) {
+      console.log("error", error);
       if (onError) onError(error);
     },
     async onSuccess(data, variables, context) {

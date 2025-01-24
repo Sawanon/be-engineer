@@ -1,4 +1,4 @@
-"use server"
+"use server";
 
 import axios from "axios";
 import { checkStatus, handleError, parseStringify } from "../util";
@@ -26,7 +26,11 @@ import { addBookTransactionAction } from "./bookTransactions";
 import { addBookRecord, addRecordData, addSheetRecord } from "./record.actions";
 import dayjs from "dayjs";
 import PrismaDB from "../db";
-
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Bangkok");
 const { B_API_KEY, B_END_POINT } = process.env;
 const prisma = PrismaDB;
 export type deliveryPrismaProps = NonNullable<
@@ -227,6 +231,7 @@ export const getDeliverByFilter = async (
       splitStatus.shift();
     }
 
+
     let query: Prisma.DeliveryFindManyArgs = {
       where: {
         OR: [
@@ -267,18 +272,17 @@ export const getDeliverByFilter = async (
               {
                 approved: {
                   gte: props.startDate
-                    ? dayjs(props.startDate, "YYYYMMDD")
-                        .startOf("date")
+                    ? dayjs(props.startDate, "YYYY-MM-DD")
+                        .startOf("date").subtract(7,'hour')
                         .toDate()
                     : undefined,
                   lte: props.endDate
-                    ? dayjs(props.endDate, "YYYYMMDD").endOf("date").toDate()
+                    ? dayjs(props.endDate, "YYYY-MM-DD").endOf("date").subtract(7,'hour').toDate()
                     : undefined,
                 },
               },
               {
                 OR: splitStatus?.map((staus) => {
-                  console.log("checkStatus[staus]", checkStatus[staus]);
                   if (checkStatus[staus] === undefined) {
                     return {
                       OR: Object.values(checkStatus).map((value) => {
@@ -411,7 +415,7 @@ export const getTest = async (id: string | undefined) => {
   return "test";
 };
 export const getDeliverById = async (Id: number) => {
-  console.log('414', "call getDeliverById")
+  console.log("414", "call getDeliverById");
   try {
     const res = await prisma.delivery.findFirst({
       where: {

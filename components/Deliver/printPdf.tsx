@@ -150,15 +150,15 @@ export const PDFDocument = ({
           >
             <View style={styles.section}>
               <Text style={{ fontSize: 6 }}>{delivery.webappOrderId}</Text>
-
               <Text
                 style={{
                   fontSize: "10px",
                   lineHeight: 1.2,
                   padding: "0px 0px 0px 8px",
+                  minWidth: "100%",
                 }}
               >
-                {delivery.updatedAddress}
+                {delivery?.updatedAddress + "          "}
               </Text>
 
               <Text
@@ -235,7 +235,7 @@ export const PDFDocument = ({
                       <Text
                         style={{
                           fontSize: "6px",
-                          marginTop : 1,
+                          marginTop: 1,
                           color: "#A1A1AA",
                           lineHeight: 0.9,
                         }}
@@ -313,7 +313,7 @@ export const PDFDocument = ({
                       <Text
                         style={{
                           fontSize: 6,
-                          marginTop : 1,
+                          marginTop: 1,
 
                           color: "#A1A1AA",
                           lineHeight: 0.9,
